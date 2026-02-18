@@ -5,377 +5,698 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Transform your team with AI-powered Super Agents. Custom digital employees built for every role in your organization.">
     <title>World Shift Technologies - AI Super Agents</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                sans-serif;
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00205C;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #4B858E;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        
+        .cta-button:hover {
+            opacity: 0.9;
+        }
+        
+        .cta-button-large {
+            padding: 1.25rem 2.5rem;
+            font-size: 1.125rem;
+            box-shadow: 0 10px 30px rgba(75, 133, 142, 0.3);
+        }
+        
+        .cta-button-secondary {
+            background: transparent;
+            color: #00205C;
+            border: 2px solid #00205C;
+        }
+        
+        .cta-button-secondary:hover {
+            background: #f5f5f5;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 6rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero .highlight {
+            color: #4B858E;
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: #767B7A;
+            margin-bottom: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        
+        .social-proof {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #767B7A;
+        }
+        
+        /* Section Styles */
+        section {
+            padding: 5rem 0;
+        }
+        
+        .bg-gray {
+            background: #F5F5F5;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00205C;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: #767B7A;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        /* Card Styles */
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: #91B5BB;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .card-highlight {
+            border: 2px solid #4B858E;
+        }
+        
+        .card-highlight .card-icon {
+            background: #4B858E;
+        }
+        
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 0.75rem;
+        }
+        
+        .card p {
+            color: #767B7A;
+        }
+        
+        /* Benefits Section */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .benefit-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .benefit-item p {
+            font-size: 1.125rem;
+            color: #767B7A;
+        }
+        
+        .roi-card {
+            background: linear-gradient(135deg, #e0f2fe 0%, #d1fae5 100%);
+            padding: 2rem;
+            border-radius: 16px;
+        }
+        
+        .roi-number {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4B858E;
+            margin-bottom: 0.5rem;
+        }
+        
+        .roi-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 1rem;
+        }
+        
+        .roi-description {
+            color: #767B7A;
+            margin-bottom: 1.5rem;
+        }
+        
+        .roi-features {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #4B858E;
+            line-height: 1.8;
+        }
+        
+        /* Steps Section */
+        .step {
+            position: relative;
+        }
+        
+        .step-number {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4B858E;
+            opacity: 0.2;
+            margin-bottom: 1rem;
+        }
+        
+        .step h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 1rem;
+        }
+        
+        .step p {
+            color: #767B7A;
+        }
+        
+        /* Pricing Cards */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .pricing-card {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 2rem;
+            transition: box-shadow 0.3s;
+        }
+        
+        .pricing-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .pricing-card-popular {
+            border-color: #4B858E;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .badge-popular {
+            color: #4B858E;
+        }
+        
+        .badge-secondary {
+            color: #767B7A;
+        }
+        
+        .pricing-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 1rem;
+        }
+        
+        .pricing-description {
+            color: #767B7A;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: #767B7A;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #4B858E;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        
+        .pricing-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #767B7A;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Who It's For */
+        .audience-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+        
+        .audience-icon {
+            width: 64px;
+            height: 64px;
+            background: #91B5BB;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+        }
+        
+        .audience-icon-primary {
+            background: #4B858E;
+        }
+        
+        .audience-icon-dark {
+            background: #00205C;
+        }
+        
+        .audience-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 0.75rem;
+        }
+        
+        .audience-description {
+            color: #767B7A;
+        }
+        
+        /* Final CTA */
+        .final-cta {
+            text-align: center;
+            padding: 5rem 0;
+        }
+        
+        .final-cta h2 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .final-cta p {
+            font-size: 1.25rem;
+            color: #767B7A;
+            margin-bottom: 2rem;
+        }
+        
+        .final-cta .note {
+            font-size: 0.875rem;
+            color: #767B7A;
+            margin-top: 1rem;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            border-top: 1px solid #e5e5e5;
+            text-align: center;
+            color: #767B7A;
+        }
+        
+        .footer-brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #00205C;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-note {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.25rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .final-cta h2 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { Calendar, Users, Zap, TrendingUp, CheckCircle, ArrowRight } = lucide;
-        const { useState } = React;
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">World Shift Technologies</div>
+            <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" target="_blank" rel="noopener noreferrer">Book a Demo</a>
+        </div>
+    </header>
 
-        function WorldShiftLanding() {
-          const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
-          const roles = [
-            { title: "CEO Agent", desc: "Executive reporting & strategic intelligence" },
-            { title: "Project Manager", desc: "Task tracking & blocker escalation" },
-            { title: "Operations", desc: "Quality assurance & workflow monitoring" },
-            { title: "Sales", desc: "Pipeline management & CRM intelligence" },
-            { title: "Finance", desc: "Reporting automation & approval workflows" }
-          ];
-
-          const benefits = [
-            "Automate repetitive tasks and daily operations",
-            "Get intelligent recommendations and real-time insights",
-            "Free your team to focus on strategy and growth",
-            "Proven frameworks and real-world case studies"
-          ];
-
-          const steps = [
-            { num: "01", title: "Discovery", desc: "Map your team's roles and identify automation opportunities" },
-            { num: "02", title: "Build", desc: "Configure your workspace and deploy custom Super Agents" },
-            { num: "03", title: "Onboard", desc: "Train your team to work with their agents" },
-            { num: "04", title: "Optimize", desc: "Continuous improvement and support" }
-          ];
-
-          return (
-            <div className="min-h-screen bg-white">
-              {/* Header */}
-              <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
-                <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-                  <div className="text-2xl font-bold" style={{ color: '#00205C' }}>
-                    World Shift Technologies
-                  </div>
-                  <a 
-                    href="https://calendly.com/fractionalbusinesscompanion/wst"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-2.5 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: '#4B858E' }}
-                  >
-                    Book a Demo
-                  </a>
-                </div>
-              </header>
-
-              {/* Hero Section */}
-              <section className="pt-32 pb-20 px-6">
-                <div className="max-w-6xl mx-auto text-center">
-                  <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ color: '#00205C' }}>
-                    Transform Your Team with<br />
-                    <span style={{ color: '#4B858E' }}>AI-Powered Digital Employees</span>
-                  </h1>
-                  <p className="text-xl md:text-2xl mb-8" style={{ color: '#767B7A' }}>
-                    Unlock productivity, eliminate busywork, and scale your business with dedicated Super Agents—custom AI assistants built for every role in your organization.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                    <a 
-                      href="https://calendly.com/fractionalbusinesscompanion/wst"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-8 py-4 rounded-lg font-bold text-white text-lg flex items-center gap-2 transition-all hover:opacity-90 shadow-lg"
-                      style={{ backgroundColor: '#4B858E' }}
-                    >
-                      See It Live in Action <ArrowRight size={20} />
-                    </a>
-                    <button 
-                      onClick={() => setIsVideoPlaying(true)}
-                      className="px-8 py-4 rounded-lg font-bold text-lg border-2 transition-all hover:bg-gray-50"
-                      style={{ color: '#00205C', borderColor: '#00205C' }}
-                    >
-                      Watch Demo
-                    </button>
-                  </div>
-                  
-                  {/* Social Proof */}
-                  <div className="text-sm font-semibold" style={{ color: '#767B7A' }}>
-                    Trusted by growing teams, agencies, and knowledge businesses
-                  </div>
-                </div>
-              </section>
-
-              {/* What We Offer */}
-              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
-                    What I Offer
-                  </h2>
-                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
-                    Each team member gets a Super Agent tailored to their role
-                  </p>
-                  
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {roles.map((role, idx) => (
-                      <div key={idx} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#91B5BB' }}>
-                          <Users size={24} className="text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
-                          {role.title}
-                        </h3>
-                        <p style={{ color: '#767B7A' }}>{role.desc}</p>
-                      </div>
-                    ))}
-                    
-                    <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border-2" style={{ borderColor: '#4B858E' }}>
-                      <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#4B858E' }}>
-                        <Zap size={24} className="text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
-                        Custom Roles
-                      </h3>
-                      <p style={{ color: '#767B7A' }}>Need something specific? I build agents for any role in your organization.</p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Why Super Agents */}
-              <section className="py-20 px-6">
-                <div className="max-w-6xl mx-auto">
-                  <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div>
-                      <h2 className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>
-                        Why Super Agents?
-                      </h2>
-                      <div className="space-y-4">
-                        {benefits.map((benefit, idx) => (
-                          <div key={idx} className="flex items-start gap-3">
-                            <CheckCircle size={24} style={{ color: '#4B858E', flexShrink: 0 }} />
-                            <p className="text-lg" style={{ color: '#767B7A' }}>{benefit}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-8 rounded-2xl">
-                      <div className="text-6xl font-bold mb-2" style={{ color: '#4B858E' }}>4-10×</div>
-                      <div className="text-2xl font-bold mb-4" style={{ color: '#00205C' }}>ROI in Year 1</div>
-                      <p className="mb-6" style={{ color: '#767B7A' }}>
-                        Most clients see a 4–10x return on investment in the first year through time savings, error reduction, and increased decision speed.
-                      </p>
-                      <div className="text-sm font-semibold" style={{ color: '#4B858E' }}>
-                        ✓ Proven with Fortune 500 clients<br />
-                        ✓ Real case studies from consulting agencies<br />
-                        ✓ Built on enterprise-grade ClickUp infrastructure
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* How It Works */}
-              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
-                    How It Works
-                  </h2>
-                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
-                    From discovery to deployment in 4-6 weeks
-                  </p>
-                  
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {steps.map((step, idx) => (
-                      <div key={idx} className="relative">
-                        <div className="text-6xl font-bold mb-4 opacity-20" style={{ color: '#4B858E' }}>
-                          {step.num}
-                        </div>
-                        <h3 className="text-2xl font-bold mb-3" style={{ color: '#00205C' }}>
-                          {step.title}
-                        </h3>
-                        <p style={{ color: '#767B7A' }}>{step.desc}</p>
-                        {idx < steps.length - 1 && (
-                          <div className="hidden lg:block absolute top-12 -right-4 text-4xl" style={{ color: '#91B5BB' }}>
-                            →
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Service Models */}
-              <section className="py-20 px-6">
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
-                    Choose Your Model
-                  </h2>
-                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
-                    Managed subscription or rights-to-own build
-                  </p>
-                  
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Subscription Model */}
-                    <div className="bg-white border-2 rounded-2xl p-8 hover:shadow-xl transition-shadow" style={{ borderColor: '#4B858E' }}>
-                      <div className="text-sm font-bold mb-2" style={{ color: '#4B858E' }}>MOST POPULAR</div>
-                      <h3 className="text-3xl font-bold mb-4" style={{ color: '#00205C' }}>
-                        Subscription (Managed)
-                      </h3>
-                      <p className="mb-6" style={{ color: '#767B7A' }}>
-                        I handle everything—workspace setup, billing, ongoing optimization, and support.
-                      </p>
-                      <ul className="space-y-3 mb-8">
-                        {[
-                          "All platform costs included",
-                          "Continuous training & upgrades",
-                          "Dedicated support",
-                          "Flexible scaling as you grow"
-                        ].map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-3">
-                            <CheckCircle size={20} style={{ color: '#4B858E' }} />
-                            <span style={{ color: '#767B7A' }}>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="text-sm font-semibold mb-2" style={{ color: '#767B7A' }}>STARTING AT</div>
-                      <div className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>Contact Me</div>
-                      <a 
-                        href="https://calendly.com/fractionalbusinesscompanion/wst"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full text-center px-6 py-3 rounded-lg font-bold text-white transition-all hover:opacity-90"
-                        style={{ backgroundColor: '#4B858E' }}
-                      >
-                        Get Custom Quote
-                      </a>
-                    </div>
-                    
-                    {/* Rights-to-Own */}
-                    <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-shadow">
-                      <div className="text-sm font-bold mb-2" style={{ color: '#767B7A' }}>ONE-TIME BUILD</div>
-                      <h3 className="text-3xl font-bold mb-4" style={{ color: '#00205C' }}>
-                        Rights-to-Own
-                      </h3>
-                      <p className="mb-6" style={{ color: '#767B7A' }}>
-                        You own the system after build. Perfect for teams with internal tech resources.
-                      </p>
-                      <ul className="space-y-3 mb-8">
-                        {[
-                          "Complete ownership of agents",
-                          "Custom build for your workflows",
-                          "Full training & documentation",
-                          "Optional ongoing support available"
-                        ].map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-3">
-                            <CheckCircle size={20} style={{ color: '#767B7A' }} />
-                            <span style={{ color: '#767B7A' }}>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="text-sm font-semibold mb-2" style={{ color: '#767B7A' }}>TYPICAL RANGE</div>
-                      <div className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>Contact Me</div>
-                      <a 
-                        href="https://calendly.com/fractionalbusinesscompanion/wst"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full text-center px-6 py-3 rounded-lg font-bold border-2 transition-all hover:bg-gray-50"
-                        style={{ color: '#00205C', borderColor: '#00205C' }}
-                      >
-                        Learn More
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Who It's For */}
-              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-4xl font-bold text-center mb-16" style={{ color: '#00205C' }}>
-                    Who It's For
-                  </h2>
-                  
-                  <div className="grid md:grid-cols-3 gap-8">
-                    <div className="text-center">
-                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#91B5BB' }}>
-                        <TrendingUp size={32} className="text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Growing Teams</h3>
-                      <p style={{ color: '#767B7A' }}>
-                        Scale operations without scaling headcount
-                      </p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#4B858E' }}>
-                        <Users size={32} className="text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Agencies</h3>
-                      <p style={{ color: '#767B7A' }}>
-                        Deliver consistent results across all clients
-                      </p>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#00205C' }}>
-                        <Zap size={32} className="text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Knowledge Businesses</h3>
-                      <p style={{ color: '#767B7A' }}>
-                        Turn expertise into automated intelligence
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Final CTA */}
-              <section className="py-20 px-6">
-                <div className="max-w-4xl mx-auto text-center">
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#00205C' }}>
-                    Ready to Clone Your Team?
-                  </h2>
-                  <p className="text-xl mb-8" style={{ color: '#767B7A' }}>
-                    Book a live demo and see Super Agents in action solving real problems for real teams.
-                  </p>
-                  <a 
-                    href="https://calendly.com/fractionalbusinesscompanion/wst"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-10 py-5 rounded-lg font-bold text-white text-xl transition-all hover:opacity-90 shadow-xl"
-                    style={{ backgroundColor: '#4B858E' }}
-                  >
-                    <Calendar size={24} />
-                    Schedule Your Demo
-                  </a>
-                  <p className="text-sm mt-4" style={{ color: '#767B7A' }}>
-                    Most demos take 30 minutes. See actual ROI calculations for your team.
-                  </p>
-                </div>
-              </section>
-
-              {/* Footer */}
-              <footer className="py-12 px-6 border-t border-gray-200">
-                <div className="max-w-6xl mx-auto text-center" style={{ color: '#767B7A' }}>
-                  <div className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
-                    World Shift Technologies
-                  </div>
-                  <p>Built on enterprise-grade ClickUp infrastructure</p>
-                  <p className="mt-4 text-sm">© 2026 World Shift Technologies. All rights reserved.</p>
-                </div>
-              </footer>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Transform Your Team with<br><span class="highlight">AI-Powered Digital Employees</span></h1>
+            <p>Unlock productivity, eliminate busywork, and scale your business with dedicated Super Agents—custom AI assistants built for every role in your organization.</p>
+            <div class="hero-buttons">
+                <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-large" target="_blank" rel="noopener noreferrer">See It Live in Action →</a>
             </div>
-          );
-        }
+            <div class="social-proof">Trusted by growing teams, agencies, and knowledge businesses</div>
+        </div>
+    </section>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<WorldShiftLanding />);
-    </script>
+    <!-- What I Offer -->
+    <section class="bg-gray">
+        <div class="container">
+            <h2>What I Offer</h2>
+            <p class="section-subtitle">Each team member gets a Super Agent tailored to their role</p>
+            
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="card-icon">👔</div>
+                    <h3>CEO Agent</h3>
+                    <p>Executive reporting & strategic intelligence</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3>Project Manager</h3>
+                    <p>Task tracking & blocker escalation</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h3>Operations</h3>
+                    <p>Quality assurance & workflow monitoring</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">💼</div>
+                    <h3>Sales</h3>
+                    <p>Pipeline management & CRM intelligence</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">💰</div>
+                    <h3>Finance</h3>
+                    <p>Reporting automation & approval workflows</p>
+                </div>
+                
+                <div class="card card-highlight">
+                    <div class="card-icon">⚡</div>
+                    <h3>Custom Roles</h3>
+                    <p>Need something specific? I build agents for any role in your organization.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Super Agents -->
+    <section>
+        <div class="container">
+            <div class="benefits-grid">
+                <div>
+                    <h2 style="text-align: left;">Why Super Agents?</h2>
+                    <div class="benefit-item">
+                        <span style="color: #4B858E; font-size: 1.5rem;">✓</span>
+                        <p>Automate repetitive tasks and daily operations</p>
+                    </div>
+                    <div class="benefit-item">
+                        <span style="color: #4B858E; font-size: 1.5rem;">✓</span>
+                        <p>Get intelligent recommendations and real-time insights</p>
+                    </div>
+                    <div class="benefit-item">
+                        <span style="color: #4B858E; font-size: 1.5rem;">✓</span>
+                        <p>Free your team to focus on strategy and growth</p>
+                    </div>
+                    <div class="benefit-item">
+                        <span style="color: #4B858E; font-size: 1.5rem;">✓</span>
+                        <p>Proven frameworks and real-world case studies</p>
+                    </div>
+                </div>
+                
+                <div class="roi-card">
+                    <div class="roi-number">4-10×</div>
+                    <div class="roi-title">ROI in Year 1</div>
+                    <p class="roi-description">Most clients see a 4–10x return on investment in the first year through time savings, error reduction, and increased decision speed.</p>
+                    <div class="roi-features">
+                        ✓ Proven with Fortune 500 clients<br>
+                        ✓ Real case studies from consulting agencies<br>
+                        ✓ Built on enterprise-grade ClickUp infrastructure
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="bg-gray">
+        <div class="container">
+            <h2>How It Works</h2>
+            <p class="section-subtitle">From discovery to deployment in 4-6 weeks</p>
+            
+            <div class="grid grid-4">
+                <div class="step">
+                    <div class="step-number">01</div>
+                    <h3>Discovery</h3>
+                    <p>Map your team's roles and identify automation opportunities</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">02</div>
+                    <h3>Build</h3>
+                    <p>Configure your workspace and deploy custom Super Agents</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">03</div>
+                    <h3>Onboard</h3>
+                    <p>Train your team to work with their agents</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">04</div>
+                    <h3>Optimize</h3>
+                    <p>Continuous improvement and support</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Models -->
+    <section>
+        <div class="container">
+            <h2>Choose Your Model</h2>
+            <p class="section-subtitle">Managed subscription or rights-to-own build</p>
+            
+            <div class="pricing-grid">
+                <!-- Subscription Model -->
+                <div class="pricing-card pricing-card-popular">
+                    <div class="badge badge-popular">MOST POPULAR</div>
+                    <div class="pricing-title">Subscription (Managed)</div>
+                    <p class="pricing-description">I handle everything—workspace setup, billing, ongoing optimization, and support.</p>
+                    <ul class="feature-list">
+                        <li>All platform costs included</li>
+                        <li>Continuous training & upgrades</li>
+                        <li>Dedicated support</li>
+                        <li>Flexible scaling as you grow</li>
+                    </ul>
+                    <div class="pricing-label">STARTING AT</div>
+                    <div class="pricing-amount">Contact Me</div>
+                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" style="display: block; text-align: center;" target="_blank" rel="noopener noreferrer">Get Custom Quote</a>
+                </div>
+                
+                <!-- Rights-to-Own -->
+                <div class="pricing-card">
+                    <div class="badge badge-secondary">ONE-TIME BUILD</div>
+                    <div class="pricing-title">Rights-to-Own</div>
+                    <p class="pricing-description">You own the system after build. Perfect for teams with internal tech resources.</p>
+                    <ul class="feature-list">
+                        <li>Complete ownership of agents</li>
+                        <li>Custom build for your workflows</li>
+                        <li>Full training & documentation</li>
+                        <li>Optional ongoing support available</li>
+                    </ul>
+                    <div class="pricing-label">TYPICAL RANGE</div>
+                    <div class="pricing-amount">Contact Me</div>
+                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-secondary" style="display: block; text-align: center;" target="_blank" rel="noopener noreferrer">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who It's For -->
+    <section class="bg-gray">
+        <div class="container">
+            <h2>Who It's For</h2>
+            
+            <div class="audience-grid">
+                <div>
+                    <div class="audience-icon">📈</div>
+                    <div class="audience-title">Growing Teams</div>
+                    <p class="audience-description">Scale operations without scaling headcount</p>
+                </div>
+                
+                <div>
+                    <div class="audience-icon audience-icon-primary">👥</div>
+                    <div class="audience-title">Agencies</div>
+                    <p class="audience-description">Deliver consistent results across all clients</p>
+                </div>
+                
+                <div>
+                    <div class="audience-icon audience-icon-dark">⚡</div>
+                    <div class="audience-title">Knowledge Businesses</div>
+                    <p class="audience-description">Turn expertise into automated intelligence</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Ready to Clone Your Team?</h2>
+            <p>Book a live demo and see Super Agents in action solving real problems for real teams.</p>
+            <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-large" target="_blank" rel="noopener noreferrer">📅 Schedule Your Demo</a>
+            <p class="note">Most demos take 30 minutes. See actual ROI calculations for your team.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-brand">World Shift Technologies</div>
+            <p>Built on enterprise-grade ClickUp infrastructure</p>
+            <p class="footer-note">© 2026 World Shift Technologies. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
