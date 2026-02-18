@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Transform your team with AI-powered Super Agents. Custom digital employees built for every role in your organization.">
+    <title>World Shift Technologies - AI Super Agents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { Calendar, Users, Zap, TrendingUp, CheckCircle, ArrowRight } = lucide;
+        const { useState } = React;
+
+        function WorldShiftLanding() {
+          const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+          const roles = [
+            { title: "CEO Agent", desc: "Executive reporting & strategic intelligence" },
+            { title: "Project Manager", desc: "Task tracking & blocker escalation" },
+            { title: "Operations", desc: "Quality assurance & workflow monitoring" },
+            { title: "Sales", desc: "Pipeline management & CRM intelligence" },
+            { title: "Finance", desc: "Reporting automation & approval workflows" }
+          ];
+
+          const benefits = [
+            "Automate repetitive tasks and daily operations",
+            "Get intelligent recommendations and real-time insights",
+            "Free your team to focus on strategy and growth",
+            "Proven frameworks and real-world case studies"
+          ];
+
+          const steps = [
+            { num: "01", title: "Discovery", desc: "Map your team's roles and identify automation opportunities" },
+            { num: "02", title: "Build", desc: "Configure your workspace and deploy custom Super Agents" },
+            { num: "03", title: "Onboard", desc: "Train your team to work with their agents" },
+            { num: "04", title: "Optimize", desc: "Continuous improvement and support" }
+          ];
+
+          return (
+            <div className="min-h-screen bg-white">
+              {/* Header */}
+              <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+                <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                  <div className="text-2xl font-bold" style={{ color: '#00205C' }}>
+                    World Shift Technologies
+                  </div>
+                  <a 
+                    href="https://calendly.com/fractionalbusinesscompanion/wst"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 rounded-lg font-semibold text-white transition-all hover:opacity-90"
+                    style={{ backgroundColor: '#4B858E' }}
+                  >
+                    Book a Demo
+                  </a>
+                </div>
+              </header>
+
+              {/* Hero Section */}
+              <section className="pt-32 pb-20 px-6">
+                <div className="max-w-6xl mx-auto text-center">
+                  <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ color: '#00205C' }}>
+                    Transform Your Team with<br />
+                    <span style={{ color: '#4B858E' }}>AI-Powered Digital Employees</span>
+                  </h1>
+                  <p className="text-xl md:text-2xl mb-8" style={{ color: '#767B7A' }}>
+                    Unlock productivity, eliminate busywork, and scale your business with dedicated Super Agents—custom AI assistants built for every role in your organization.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <a 
+                      href="https://calendly.com/fractionalbusinesscompanion/wst"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-8 py-4 rounded-lg font-bold text-white text-lg flex items-center gap-2 transition-all hover:opacity-90 shadow-lg"
+                      style={{ backgroundColor: '#4B858E' }}
+                    >
+                      See It Live in Action <ArrowRight size={20} />
+                    </a>
+                    <button 
+                      onClick={() => setIsVideoPlaying(true)}
+                      className="px-8 py-4 rounded-lg font-bold text-lg border-2 transition-all hover:bg-gray-50"
+                      style={{ color: '#00205C', borderColor: '#00205C' }}
+                    >
+                      Watch Demo
+                    </button>
+                  </div>
+                  
+                  {/* Social Proof */}
+                  <div className="text-sm font-semibold" style={{ color: '#767B7A' }}>
+                    Trusted by growing teams, agencies, and knowledge businesses
+                  </div>
+                </div>
+              </section>
+
+              {/* What We Offer */}
+              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
+                <div className="max-w-6xl mx-auto">
+                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
+                    What I Offer
+                  </h2>
+                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
+                    Each team member gets a Super Agent tailored to their role
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {roles.map((role, idx) => (
+                      <div key={idx} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#91B5BB' }}>
+                          <Users size={24} className="text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
+                          {role.title}
+                        </h3>
+                        <p style={{ color: '#767B7A' }}>{role.desc}</p>
+                      </div>
+                    ))}
+                    
+                    <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border-2" style={{ borderColor: '#4B858E' }}>
+                      <div className="w-12 h-12 rounded-lg mb-4 flex items-center justify-center" style={{ backgroundColor: '#4B858E' }}>
+                        <Zap size={24} className="text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
+                        Custom Roles
+                      </h3>
+                      <p style={{ color: '#767B7A' }}>Need something specific? I build agents for any role in your organization.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Why Super Agents */}
+              <section className="py-20 px-6">
+                <div className="max-w-6xl mx-auto">
+                  <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                      <h2 className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>
+                        Why Super Agents?
+                      </h2>
+                      <div className="space-y-4">
+                        {benefits.map((benefit, idx) => (
+                          <div key={idx} className="flex items-start gap-3">
+                            <CheckCircle size={24} style={{ color: '#4B858E', flexShrink: 0 }} />
+                            <p className="text-lg" style={{ color: '#767B7A' }}>{benefit}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-8 rounded-2xl">
+                      <div className="text-6xl font-bold mb-2" style={{ color: '#4B858E' }}>4-10×</div>
+                      <div className="text-2xl font-bold mb-4" style={{ color: '#00205C' }}>ROI in Year 1</div>
+                      <p className="mb-6" style={{ color: '#767B7A' }}>
+                        Most clients see a 4–10x return on investment in the first year through time savings, error reduction, and increased decision speed.
+                      </p>
+                      <div className="text-sm font-semibold" style={{ color: '#4B858E' }}>
+                        ✓ Proven with Fortune 500 clients<br />
+                        ✓ Real case studies from consulting agencies<br />
+                        ✓ Built on enterprise-grade ClickUp infrastructure
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* How It Works */}
+              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
+                <div className="max-w-6xl mx-auto">
+                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
+                    How It Works
+                  </h2>
+                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
+                    From discovery to deployment in 4-6 weeks
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {steps.map((step, idx) => (
+                      <div key={idx} className="relative">
+                        <div className="text-6xl font-bold mb-4 opacity-20" style={{ color: '#4B858E' }}>
+                          {step.num}
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3" style={{ color: '#00205C' }}>
+                          {step.title}
+                        </h3>
+                        <p style={{ color: '#767B7A' }}>{step.desc}</p>
+                        {idx < steps.length - 1 && (
+                          <div className="hidden lg:block absolute top-12 -right-4 text-4xl" style={{ color: '#91B5BB' }}>
+                            →
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Service Models */}
+              <section className="py-20 px-6">
+                <div className="max-w-6xl mx-auto">
+                  <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#00205C' }}>
+                    Choose Your Model
+                  </h2>
+                  <p className="text-xl text-center mb-16" style={{ color: '#767B7A' }}>
+                    Managed subscription or rights-to-own build
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Subscription Model */}
+                    <div className="bg-white border-2 rounded-2xl p-8 hover:shadow-xl transition-shadow" style={{ borderColor: '#4B858E' }}>
+                      <div className="text-sm font-bold mb-2" style={{ color: '#4B858E' }}>MOST POPULAR</div>
+                      <h3 className="text-3xl font-bold mb-4" style={{ color: '#00205C' }}>
+                        Subscription (Managed)
+                      </h3>
+                      <p className="mb-6" style={{ color: '#767B7A' }}>
+                        I handle everything—workspace setup, billing, ongoing optimization, and support.
+                      </p>
+                      <ul className="space-y-3 mb-8">
+                        {[
+                          "All platform costs included",
+                          "Continuous training & upgrades",
+                          "Dedicated support",
+                          "Flexible scaling as you grow"
+                        ].map((item, idx) => (
+                          <li key={idx} className="flex items-center gap-3">
+                            <CheckCircle size={20} style={{ color: '#4B858E' }} />
+                            <span style={{ color: '#767B7A' }}>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="text-sm font-semibold mb-2" style={{ color: '#767B7A' }}>STARTING AT</div>
+                      <div className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>Contact Me</div>
+                      <a 
+                        href="https://calendly.com/fractionalbusinesscompanion/wst"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full text-center px-6 py-3 rounded-lg font-bold text-white transition-all hover:opacity-90"
+                        style={{ backgroundColor: '#4B858E' }}
+                      >
+                        Get Custom Quote
+                      </a>
+                    </div>
+                    
+                    {/* Rights-to-Own */}
+                    <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-shadow">
+                      <div className="text-sm font-bold mb-2" style={{ color: '#767B7A' }}>ONE-TIME BUILD</div>
+                      <h3 className="text-3xl font-bold mb-4" style={{ color: '#00205C' }}>
+                        Rights-to-Own
+                      </h3>
+                      <p className="mb-6" style={{ color: '#767B7A' }}>
+                        You own the system after build. Perfect for teams with internal tech resources.
+                      </p>
+                      <ul className="space-y-3 mb-8">
+                        {[
+                          "Complete ownership of agents",
+                          "Custom build for your workflows",
+                          "Full training & documentation",
+                          "Optional ongoing support available"
+                        ].map((item, idx) => (
+                          <li key={idx} className="flex items-center gap-3">
+                            <CheckCircle size={20} style={{ color: '#767B7A' }} />
+                            <span style={{ color: '#767B7A' }}>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="text-sm font-semibold mb-2" style={{ color: '#767B7A' }}>TYPICAL RANGE</div>
+                      <div className="text-4xl font-bold mb-6" style={{ color: '#00205C' }}>Contact Me</div>
+                      <a 
+                        href="https://calendly.com/fractionalbusinesscompanion/wst"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full text-center px-6 py-3 rounded-lg font-bold border-2 transition-all hover:bg-gray-50"
+                        style={{ color: '#00205C', borderColor: '#00205C' }}
+                      >
+                        Learn More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Who It's For */}
+              <section className="py-20 px-6" style={{ backgroundColor: '#F5F5F5' }}>
+                <div className="max-w-6xl mx-auto">
+                  <h2 className="text-4xl font-bold text-center mb-16" style={{ color: '#00205C' }}>
+                    Who It's For
+                  </h2>
+                  
+                  <div className="grid md:grid-cols-3 gap-8">
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#91B5BB' }}>
+                        <TrendingUp size={32} className="text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Growing Teams</h3>
+                      <p style={{ color: '#767B7A' }}>
+                        Scale operations without scaling headcount
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#4B858E' }}>
+                        <Users size={32} className="text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Agencies</h3>
+                      <p style={{ color: '#767B7A' }}>
+                        Deliver consistent results across all clients
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#00205C' }}>
+                        <Zap size={32} className="text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-3" style={{ color: '#00205C' }}>Knowledge Businesses</h3>
+                      <p style={{ color: '#767B7A' }}>
+                        Turn expertise into automated intelligence
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Final CTA */}
+              <section className="py-20 px-6">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#00205C' }}>
+                    Ready to Clone Your Team?
+                  </h2>
+                  <p className="text-xl mb-8" style={{ color: '#767B7A' }}>
+                    Book a live demo and see Super Agents in action solving real problems for real teams.
+                  </p>
+                  <a 
+                    href="https://calendly.com/fractionalbusinesscompanion/wst"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-10 py-5 rounded-lg font-bold text-white text-xl transition-all hover:opacity-90 shadow-xl"
+                    style={{ backgroundColor: '#4B858E' }}
+                  >
+                    <Calendar size={24} />
+                    Schedule Your Demo
+                  </a>
+                  <p className="text-sm mt-4" style={{ color: '#767B7A' }}>
+                    Most demos take 30 minutes. See actual ROI calculations for your team.
+                  </p>
+                </div>
+              </section>
+
+              {/* Footer */}
+              <footer className="py-12 px-6 border-t border-gray-200">
+                <div className="max-w-6xl mx-auto text-center" style={{ color: '#767B7A' }}>
+                  <div className="text-xl font-bold mb-2" style={{ color: '#00205C' }}>
+                    World Shift Technologies
+                  </div>
+                  <p>Built on enterprise-grade ClickUp infrastructure</p>
+                  <p className="mt-4 text-sm">© 2026 World Shift Technologies. All rights reserved.</p>
+                </div>
+              </footer>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<WorldShiftLanding />);
+    </script>
+</body>
+</html>
