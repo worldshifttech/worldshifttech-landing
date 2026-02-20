@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Shift Technologies — HOA Board Operations Systems</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ── HEADER ── */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #00205C;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span { color: #4B858E; }
+
+        .cta-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #4B858E;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .cta-button:hover { opacity: 0.9; }
+
+        .cta-button-large {
+            padding: 1.25rem 2.5rem;
+            font-size: 1.125rem;
+            box-shadow: 0 10px 30px rgba(75,133,142,0.3);
+        }
+
+        .cta-button-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 10rem 0 6rem;
+            text-align: center;
+            background: linear-gradient(135deg, #00205C 0%, #4B858E 100%);
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            line-height: 1.15;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero h1 .highlight { color: #91B5BB; }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2.5rem;
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stat-row {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .hero-stat {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .hero-stat strong {
+            display: block;
+            font-size: 1.75rem;
+            color: white;
+        }
+
+        /* ── SECTIONS ── */
+        section { padding: 5rem 1.5rem; }
+        .bg-gray { background: #F5F5F5; }
+
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #00205C;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.15rem;
+            color: #767B7A;
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── PAIN POINTS ── */
+        .pain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pain-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-left: 4px solid #4B858E;
+        }
+
+        .pain-card .icon { font-size: 2rem; margin-bottom: 0.75rem; }
+
+        .pain-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00205C;
+            margin-bottom: 0.5rem;
+        }
+
+        .pain-card p { color: #767B7A; font-size: 0.95rem; }
+
+        /* ── WHAT YOU GET ── */
+        .deliverables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .deliverable {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: box-shadow 0.3s;
+        }
+
+        .deliverable:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+        .deliverable .d-icon {
+            width: 48px;
+            height: 48px;
+            background: #91B5BB;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .deliverable h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #00205C;
+            margin-bottom: 0.5rem;
+        }
+
+        .deliverable p { color: #767B7A; }
+
+        /* ── PRICING ── */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 2.5rem;
+        }
+
+        .pricing-card.popular { border-color: #4B858E; }
+
+        .badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-popular { color: #4B858E; }
+        .badge-secondary { color: #767B7A; }
+
+        .pricing-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #00205C;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #4B858E;
+            margin-bottom: 0.25rem;
+        }
+
+        .pricing-note {
+            font-size: 0.875rem;
+            color: #767B7A;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+            color: #767B7A;
+            font-size: 0.95rem;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: #4B858E;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        /* ── ROI CALLOUT ── */
+        .roi-strip {
+            background: linear-gradient(135deg, #00205C 0%, #1a3a6e 100%);
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .roi-strip h2 { color: white; margin-bottom: 0.75rem; }
+        .roi-strip p { color: rgba(255,255,255,0.85); max-width: 620px; margin: 0 auto 2rem; font-size: 1.1rem; }
+
+        .roi-numbers {
+            display: flex;
+            gap: 3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .roi-stat strong {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #91B5BB;
+        }
+
+        .roi-stat span { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+        /* ── HOW IT WORKS ── */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step-num {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #4B858E;
+            opacity: 0.2;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .step h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #00205C;
+            margin-bottom: 0.5rem;
+        }
+
+        .step p { color: #767B7A; font-size: 0.95rem; }
+
+        /* ── FINAL CTA ── */
+        .final-cta {
+            background: #4B858E;
+            padding: 5rem 1.5rem;
+            text-align: center;
+        }
+
+        .final-cta h2 { color: white; }
+        .final-cta p { color: rgba(255,255,255,0.9); font-size: 1.1rem; max-width: 600px; margin: 1rem auto 2.5rem; }
+
+        .cta-button-white {
+            background: white;
+            color: #00205C;
+            font-weight: 700;
+        }
+
+        .note { color: rgba(255,255,255,0.7); font-size: 0.875rem; margin-top: 1rem; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: #00205C;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.875rem;
+        }
+
+        footer .footer-brand { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 0.25rem; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1.1rem; }
+            h2 { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="header-content">
+        <div class="logo-text">World Shift <span>Technologies</span></div>
+        <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" target="_blank" rel="noopener noreferrer">Book Free Call</a>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <h1>When Your Board Turns Over,<br><span class="highlight">Nothing Gets Lost.</span></h1>
+        <p>We build the operational backbone HOA boards need — so institutional knowledge, vendor contacts, and board processes survive every transition.</p>
+        <div class="hero-buttons">
+            <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-large" target="_blank" rel="noopener noreferrer">📅 Book a Free Board Audit</a>
+            <a href="#what-you-get" class="cta-button cta-button-outline">See What's Included</a>
+        </div>
+        <div class="hero-stat-row">
+            <div class="hero-stat"><strong>8,300+</strong>HOAs in Colorado</div>
+            <div class="hero-stat"><strong>1–3 yrs</strong>Average board tenure</div>
+            <div class="hero-stat"><strong>$0</strong>Dedicated systems consultants for HOAs</div>
+        </div>
+    </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section>
+    <div class="container">
+        <h2>The Real Cost of Running a Board Without Systems</h2>
+        <p class="section-subtitle">These aren't hypothetical problems. Every self-managed board in Denver is dealing with at least three of these right now.</p>
+        <div class="pain-grid">
+            <div class="pain-card">
+                <div class="icon">🧠</div>
+                <h3>Knowledge Walks Out the Door</h3>
+                <p>When a board member resigns, they take years of vendor contacts, budget context, and process knowledge with them. The next person starts from scratch — every single time.</p>
+            </div>
+            <div class="pain-card">
+                <div class="icon">🔥</div>
+                <h3>Volunteer Burnout Is Accelerating</h3>
+                <p>Board members signed up to help their community, not manage a second unpaid job. Without documented processes, every task requires reinvention — and eventually, people quit.</p>
+            </div>
+            <div class="pain-card">
+                <div class="icon">📬</div>
+                <h3>Communication Falls Through the Cracks</h3>
+                <p>Homeowner complaints scattered across personal email, text threads, and Facebook messages. No single place where anything is tracked or resolved.</p>
+            </div>
+            <div class="pain-card">
+                <div class="icon">🏗️</div>
+                <h3>Vendor Relationships Disappear</h3>
+                <p>The board president who managed the landscaping contract leaves. No one knows who the contact is, what the terms are, or when it renews.</p>
+            </div>
+            <div class="pain-card">
+                <div class="icon">⚖️</div>
+                <h3>Violation Enforcement Looks Biased</h3>
+                <p>When enforcement lives in someone's head or a paper notebook, it's inconsistent — and neighbors notice. A neutral tracked system protects you legally and relationally.</p>
+            </div>
+            <div class="pain-card">
+                <div class="icon">💸</div>
+                <h3>Management Companies Aren't Cheap</h3>
+                <p>Professional management runs $10,000–$25,000/year. Most boards switch because they're overwhelmed — not because they need someone to handle it for them.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="bg-gray" id="what-you-get">
+    <div class="container">
+        <h2>Your Board's Operational Backbone</h2>
+        <p class="section-subtitle">We set up a ClickUp workspace built specifically for HOA operations — then document every process so the next board can hit the ground running.</p>
+        <div class="deliverables-grid">
+            <div class="deliverable">
+                <div class="d-icon">📋</div>
+                <h3>Board Operations Workspace</h3>
+                <p>A centralized ClickUp hub for your board — meeting agendas, action items, violations, maintenance requests, and vendor tracking all in one place.</p>
+            </div>
+            <div class="deliverable">
+                <div class="d-icon">📚</div>
+                <h3>Process Playbooks (SOPs)</h3>
+                <p>Step-by-step documented procedures for every recurring board task. New board members open a playbook and know exactly what to do — no one to call, no guessing.</p>
+            </div>
+            <div class="deliverable">
+                <div class="d-icon">🤝</div>
+                <h3>Vendor Contact Library</h3>
+                <p>Every vendor, contract term, and contact documented and searchable. Board turnover no longer means losing your landscaper, plumber, or insurance broker.</p>
+            </div>
+            <div class="deliverable">
+                <div class="d-icon">📊</div>
+                <h3>Board Transition Checklist</h3>
+                <p>A structured handoff system so outgoing members pass knowledge — not chaos. Incoming members get oriented in days, not months.</p>
+            </div>
+            <div class="deliverable">
+                <div class="d-icon">🤖</div>
+                <h3>AI-Assisted Workflows</h3>
+                <p>Automated reminders, violation tracking, and meeting documentation so your board spends less time on admin and more time on the community.</p>
+            </div>
+            <div class="deliverable">
+                <div class="d-icon">🎓</div>
+                <h3>Board Training & Handoff Support</h3>
+                <p>We train your current board and document the system so future boards can self-manage without needing us — or us, if you want ongoing support.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ROI STRIP -->
+<div class="roi-strip">
+    <h2>The Math Is Simple</h2>
+    <p>One board crisis — a mass resignation, a legal dispute, a vendor gone dark — costs more than years of having a proper system in place.</p>
+    <div class="roi-numbers">
+        <div class="roi-stat"><strong>$10–25K</strong><span>Annual management company fees</span></div>
+        <div class="roi-stat"><strong>$50K+</strong><span>Cost of a court-appointed receiver</span></div>
+        <div class="roi-stat"><strong>$2,500</strong><span>One-time system setup with WST</span></div>
+    </div>
+    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-white cta-button-large" target="_blank" rel="noopener noreferrer">Get a Free Board Audit</a>
+</div>
+
+<!-- HOW IT WORKS -->
+<section>
+    <div class="container">
+        <h2>How It Works</h2>
+        <p class="section-subtitle">From discovery to handoff in 4–6 weeks. No long-term commitment. No tech expertise required.</p>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-num">01</div>
+                <h3>Free Board Audit</h3>
+                <p>30-minute call. We map your current workflows, identify your biggest operational gaps, and show you exactly what a system would solve — whether you work with us or not.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <h3>We Build Your System</h3>
+                <p>Custom ClickUp workspace, SOPs, vendor library, and workflows — built for your specific community's needs and current processes.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <h3>Board Training</h3>
+                <p>We walk your current board through the system and document everything. You'll know how to use it and how to pass it on.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">04</div>
+                <h3>You Own It Forever</h3>
+                <p>The system is yours. No ongoing fees unless you want continued optimization support. One investment that protects your community for years.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section class="bg-gray">
+    <div class="container">
+        <h2>Straightforward Pricing</h2>
+        <p class="section-subtitle">Built for the budget reality of volunteer boards — not enterprise software budgets.</p>
+        <div class="pricing-grid">
+            <div class="pricing-card popular">
+                <div class="badge badge-popular">MOST POPULAR</div>
+                <div class="pricing-title">Board Operations Setup</div>
+                <div class="pricing-price">$2,500 – $3,500</div>
+                <div class="pricing-note">One-time investment. Your community keeps everything.</div>
+                <ul class="feature-list">
+                    <li>Full ClickUp workspace built for your HOA</li>
+                    <li>10–15 documented process playbooks (SOPs)</li>
+                    <li>Vendor & contract library</li>
+                    <li>Board transition checklist</li>
+                    <li>Live board training session</li>
+                    <li>30-day post-launch support</li>
+                </ul>
+                <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" style="display:block;text-align:center;" target="_blank" rel="noopener noreferrer">Book Free Audit Call</a>
+            </div>
+            <div class="pricing-card">
+                <div class="badge badge-secondary">ONGOING PARTNER</div>
+                <div class="pricing-title">Board Ops Managed</div>
+                <div class="pricing-price">$250 – $400<span style="font-size:1rem;font-weight:500;color:#767B7A;">/mo</span></div>
+                <div class="pricing-note">Month-to-month. Cancel anytime.</div>
+                <ul class="feature-list">
+                    <li>Everything in Board Operations Setup</li>
+                    <li>Ongoing system updates & maintenance</li>
+                    <li>New SOP documentation as processes change</li>
+                    <li>Annual board transition support</li>
+                    <li>Priority access for questions & adjustments</li>
+                </ul>
+                <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-secondary" style="display:block;text-align:center;background:transparent;color:#00205C;border:2px solid #00205C;" target="_blank" rel="noopener noreferrer">Learn More</a>
+            </div>
+        </div>
+        <p style="text-align:center;margin-top:2rem;color:#767B7A;font-size:0.9rem;">Compare: Professional management companies charge $10,000–$25,000/year. A one-time setup with WST gives you self-management infrastructure at a fraction of that cost.</p>
+    </div>
+</section>
+
+<!-- FOUNDER -->
+<section>
+    <div class="container">
+        <h2>Built by Someone Who Understands Systems</h2>
+        <div style="display:grid;grid-template-columns:180px 1fr;gap:3rem;align-items:start;max-width:850px;margin:0 auto;">
+            <div>
+                <img src="Drew_Headshot.jpg" alt="Drew Griffiths" style="width:180px;height:180px;border-radius:50%;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            </div>
+            <div>
+                <h3 style="font-size:1.6rem;font-weight:800;color:#00205C;margin-bottom:0.75rem;">Drew Griffiths<br><span style="font-size:1rem;font-weight:500;color:#767B7A;">Founder, World Shift Technologies</span></h3>
+                <p style="color:#767B7A;margin-bottom:1rem;">I've built knowledge management systems for technology firms, customer success automation for SaaS companies, and process documentation for distribution businesses. I specialize in turning operational chaos into systems that actually survive when people leave.</p>
+                <p style="color:#4B858E;font-weight:600;">HOA boards are dealing with exactly the problems I solve — and no one is bringing this kind of thinking to your space yet. That's exactly why I'm here.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="bg-gray">
+    <div class="container">
+        <h2>Common Questions</h2>
+        <div style="max-width:750px;margin:0 auto;">
+            <details style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:8px;cursor:pointer;">
+                <summary style="font-size:1.05rem;font-weight:700;color:#00205C;cursor:pointer;">Do we have to keep paying you after setup?</summary>
+                <p style="color:#767B7A;margin-top:0.75rem;">No. The one-time build gives you full ownership of the system. There are no ongoing fees unless you choose the managed monthly option. Most boards do the one-time build and self-manage from there.</p>
+            </details>
+            <details style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:8px;cursor:pointer;">
+                <summary style="font-size:1.05rem;font-weight:700;color:#00205C;cursor:pointer;">We already use a management company. Is this still useful?</summary>
+                <p style="color:#767B7A;margin-top:0.75rem;">Yes. Management companies handle accounting and compliance — they don't build internal board processes or document your community's institutional knowledge. These systems work alongside what your management company does.</p>
+            </details>
+            <details style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:8px;cursor:pointer;">
+                <summary style="font-size:1.05rem;font-weight:700;color:#00205C;cursor:pointer;">Our board isn't technical. Will they actually use this?</summary>
+                <p style="color:#767B7A;margin-top:0.75rem;">That's the whole point of the design. We build it to be as simple as a checklist. If your board can send email, they can use this system. Training is included and everything is documented.</p>
+            </details>
+            <details style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:8px;cursor:pointer;">
+                <summary style="font-size:1.05rem;font-weight:700;color:#00205C;cursor:pointer;">How do we get the board to approve this?</summary>
+                <p style="color:#767B7A;margin-top:0.75rem;">We can prepare a one-page proposal for your board meeting that includes ROI framing and a clear scope. Most boards approve it in a single meeting — especially when framed against the cost of bringing in a management company.</p>
+            </details>
+            <details style="background:white;padding:1.5rem;border-radius:8px;cursor:pointer;">
+                <summary style="font-size:1.05rem;font-weight:700;color:#00205C;cursor:pointer;">How long does the setup take?</summary>
+                <p style="color:#767B7A;margin-top:0.75rem;">4–6 weeks from kickoff to handoff, depending on the size of your community and how many processes we're documenting. We work asynchronously so board members aren't dragged into hours of meetings.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+    <div class="container">
+        <h2 style="color:white;">Ready to Protect Your Community?</h2>
+        <p>Book a free 30-minute board audit. We'll identify your top three operational vulnerabilities and show you what a system would look like — no commitment required.</p>
+        <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-large cta-button-white" target="_blank" rel="noopener noreferrer">📅 Book Your Free Board Audit</a>
+        <p class="note">30-minute call. Zero sales pressure. Just a real look at where your board is vulnerable.</p>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-brand">World Shift Technologies</div>
+    <p>HOA Board Operations Systems — Denver, CO</p>
+    <p style="margin-top:0.5rem;">© 2026 World Shift Technologies. All rights reserved.</p>
+</footer>
+
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+</script>
+
+</body>
+</html>
