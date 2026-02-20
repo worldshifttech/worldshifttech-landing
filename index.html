@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Empower your team with AI Super Agents - custom AI assistants that work alongside each team member to amplify productivity and eliminate busywork.">
-    <meta name="keywords" content="AI automation, team productivity, Super Agents, ClickUp automation, business process automation, AI assistants">
+    <meta name="keywords" content="AI automation, team productivity, Super Agents, business process automation, AI assistants">
     <title>World Shift Technologies - AI Super Agents That Empower Your Team</title>
     <style>
         * {
@@ -202,7 +202,7 @@
         
         /* Section Styles */
         section {
-            padding: 5rem 0;
+            padding: 5rem 2rem;
         }
         
         .bg-gray {
@@ -221,7 +221,10 @@
             font-size: 1.25rem;
             color: #767B7A;
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         /* Grid Layouts */
@@ -524,6 +527,10 @@
         
         /* Responsive */
         @media (max-width: 768px) {
+            section {
+                padding: 3rem 1.5rem;
+            }
+            
             .header-content {
                 flex-wrap: wrap;
             }
@@ -542,23 +549,64 @@
             }
             
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
             
             .hero p {
-                font-size: 1.25rem;
+                font-size: 1.125rem;
             }
             
             h2 {
-                font-size: 2rem;
+                font-size: 1.75rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
             }
             
             .benefits-grid {
                 grid-template-columns: 1fr;
             }
             
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .audience-grid {
+                grid-template-columns: 1fr;
+            }
+            
             .final-cta h2 {
-                font-size: 2rem;
+                font-size: 1.75rem;
+            }
+            
+            /* Make table responsive */
+            table {
+                font-size: 0.875rem;
+            }
+            
+            table th,
+            table td {
+                padding: 0.75rem 0.5rem !important;
+            }
+            
+            /* Stack details elements better on mobile */
+            details {
+                padding: 1rem !important;
+            }
+            
+            details summary {
+                font-size: 1rem !important;
+            }
+            
+            /* Founder section mobile */
+            .container > div[style*="grid-template-columns: 200px 1fr"] {
+                grid-template-columns: 1fr !important;
+                text-align: center;
+            }
+            
+            .container > div[style*="grid-template-columns: 200px 1fr"] img {
+                margin: 0 auto 1.5rem;
             }
         }
     </style>
@@ -598,7 +646,7 @@
     <section class="hero">
         <div class="container">
             <h1>Stop Spending 60% of Your Day<br><span class="highlight">on Work AI Should Be Doing</span></h1>
-            <p>Custom AI Super Agents built, managed, and optimized inside your ClickUp workspace. For solo consultants and growing teams who are done wasting time on repetitive operations.</p>
+            <p>Custom AI Super Agents built, managed, and optimized for your business. For solo consultants and growing teams who are done wasting time on repetitive operations.</p>
             <div class="hero-buttons">
                 <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-large" target="_blank" rel="noopener noreferrer">Book Your Free Discovery Call</a>
             </div>
@@ -744,7 +792,7 @@
                     <div class="roi-features">
                         ✓ Built from real consulting engagements<br>
                         ✓ Proven frameworks refined over multiple clients<br>
-                        ✓ Enterprise-grade ClickUp infrastructure
+                        ✓ Enterprise-grade infrastructure
                     </div>
                 </div>
             </div>
@@ -914,16 +962,16 @@
         <div class="container">
             <h2>Built by Someone Who's Done the Work</h2>
             
-            <div class="benefits-grid" style="align-items: center;">
-                <div style="text-align: center;">
-                    <div style="width: 200px; height: 200px; border-radius: 50%; background: #91B5BB; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 4rem;">👤</div>
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 3rem; align-items: start; max-width: 900px; margin: 0 auto;">
+                <div>
+                    <img src="drew-headshot.jpg" alt="Drew Griffiths" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                 </div>
                 
                 <div>
-                    <h3 style="font-size: 1.75rem; font-weight: bold; color: #00205C; margin-bottom: 1rem;">Drew Griffiths, Founder & AI Systems Architect</h3>
-                    <p style="color: #767B7A; margin-bottom: 1rem;">After years of seeing businesses drown in manual work while AI sat unused, I founded World Shift Technologies to bridge the gap — building Super Agents that actually do the work, not just promise to.</p>
-                    <p style="color: #767B7A; margin-bottom: 1.5rem;">I've built knowledge management systems for technology firms, customer success automation for SaaS companies, and quality control systems for distribution businesses. I specialize in ClickUp automation, AI integration, and turning operational chaos into scalable systems.</p>
-                    <p style="color: #4B858E; font-weight: 600;">I believe every growing business deserves the operational leverage that Fortune 500 companies get from their six-figure automation teams — at a price that actually makes sense.</p>
+                    <h3 style="font-size: 1.75rem; font-weight: bold; color: #00205C; margin-bottom: 1rem; margin-top: 0;">Drew Griffiths, Founder & AI Systems Architect</h3>
+                    <p style="color: #767B7A; margin-bottom: 1rem; line-height: 1.6;">After years of seeing businesses drown in manual work while AI sat unused, I founded World Shift Technologies to bridge the gap — building Super Agents that actually do the work, not just promise to.</p>
+                    <p style="color: #767B7A; margin-bottom: 1.5rem; line-height: 1.6;">I've built knowledge management systems for technology firms, customer success automation for SaaS companies, and quality control systems for distribution businesses. I specialize in AI automation, systems integration, and turning operational chaos into scalable processes.</p>
+                    <p style="color: #4B858E; font-weight: 600; line-height: 1.6;">I believe every growing business deserves the operational leverage that Fortune 500 companies get from their six-figure automation teams — at a price that actually makes sense.</p>
                 </div>
             </div>
         </div>
@@ -987,7 +1035,7 @@
     <footer>
         <div class="container">
             <div class="footer-brand">World Shift Technologies</div>
-            <p>Built on enterprise-grade ClickUp infrastructure</p>
+            <p>Enterprise-grade AI automation infrastructure</p>
             <p class="footer-note">© 2026 World Shift Technologies. All rights reserved.</p>
         </div>
     </footer>
