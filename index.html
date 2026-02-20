@@ -47,11 +47,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 2rem;
         }
         
         .logo {
             display: flex;
             align-items: center;
+            flex-shrink: 0;
         }
         
         .logo img {
@@ -64,6 +66,8 @@
             display: flex;
             gap: 2rem;
             align-items: center;
+            flex: 1;
+            justify-content: center;
         }
         
         nav a {
@@ -126,6 +130,17 @@
             .mobile-menu-toggle {
                 display: block;
             }
+            
+            .header-content .cta-button {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .header-content .cta-button {
+                display: none;
+            }
         }
         
         .cta-button {
@@ -137,6 +152,7 @@
             border-radius: 8px;
             font-weight: 600;
             transition: opacity 0.3s;
+            flex-shrink: 0;
         }
         
         .cta-button:hover {
@@ -203,6 +219,7 @@
         /* Section Styles */
         section {
             padding: 5rem 2rem;
+            scroll-margin-top: 100px;
         }
         
         .bg-gray {
@@ -877,13 +894,6 @@
                     </tbody>
                 </table>
             </div>
-            
-            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #d1fae5 100%); padding: 2rem; border-radius: 16px; max-width: 800px; margin: 0 auto;">
-                <h3 style="font-size: 1.5rem; font-weight: bold; color: #00205C; margin-bottom: 1rem;">Real ROI Example</h3>
-                <p style="color: #767B7A; margin-bottom: 1.5rem;">If your team spends 20 hours/week on tasks a Super Agent can handle, at a blended rate of $75/hour, that's <strong style="color: #00205C;">$78,000/year in labor cost on repetitive work.</strong></p>
-                <p style="color: #767B7A; margin-bottom: 1.5rem;">Our managed service eliminates 80% of that, saving you <strong style="color: #00205C;">$62,400/year.</strong></p>
-                <p style="color: #767B7A; margin-bottom: 0;">Your investment: $1,500/month ($18,000/year). <strong style="color: #4B858E; font-size: 1.25rem;">ROI: 3.5x in Year 1, compounding every year after.</strong></p>
-            </div>
         </div>
     </section>
 
@@ -906,9 +916,7 @@
                         <li>Flexible scaling as your needs evolve</li>
                         <li>Works for solo consultants or full teams</li>
                     </ul>
-                    <div class="pricing-label">STARTING AT</div>
-                    <div class="pricing-amount">Contact Me</div>
-                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" style="display: block; text-align: center;" target="_blank" rel="noopener noreferrer">Book Free Discovery Call</a>
+                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button" style="display: block; text-align: center; margin-top: 2rem;" target="_blank" rel="noopener noreferrer">Book Free Discovery Call</a>
                 </div>
                 
                 <!-- Rights-to-Own -->
@@ -922,9 +930,7 @@
                         <li>Full training & documentation</li>
                         <li>Optional ongoing support available</li>
                     </ul>
-                    <div class="pricing-label">TYPICAL RANGE</div>
-                    <div class="pricing-amount">Contact Me</div>
-                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-secondary" style="display: block; text-align: center;" target="_blank" rel="noopener noreferrer">Learn More</a>
+                    <a href="https://calendly.com/fractionalbusinesscompanion/wst" class="cta-button cta-button-secondary" style="display: block; text-align: center; margin-top: 2rem;" target="_blank" rel="noopener noreferrer">Learn More</a>
                 </div>
             </div>
         </div>
