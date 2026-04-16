@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# World Shift Technologies — Landing App
 
-## Getting Started
+Next.js marketing site at worldshifttech.com. Personalized front door: visitors answer 2 questions, Claude generates a custom page based on Drew's case study library.
 
-First, run the development server:
+## Dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build Status
 
-## Learn More
+- [x] Next.js scaffold deployed to Vercel
+- [x] GitHub repo connected
+- [x] ANTHROPIC_API_KEY set in Vercel env
+- [x] Brand fonts (Playfair Display, DM Sans) and CSS variables configured
+- [x] `/meet` — two-question conversational flow, cookie write, redirect
+- [x] `/for-you` — skeleton placeholder (reads `wst_visitor` cookie, shows description)
+- [ ] `/api/personalize` — Claude API route: reads case studies + visitor cookie, streams personalized page content
+- [ ] `/for-you` — wire real Claude response into the page
+- [ ] Case study markdown files in `/content/case-studies/`
+- [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
 
-To learn more about Next.js, take a look at the following resources:
+## Next Task
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Wire `/api/personalize` Claude API route + connect to `/for-you`**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Create `/lib/case-studies.ts` to read and parse markdown files from `/content/case-studies/`
+- Create `/lib/claude.ts` wrapper using `claude-sonnet-4-20250514`
+- Create `/app/api/personalize/route.ts` — POST handler that reads `wst_visitor` cookie, loads case studies, calls Claude with personalization prompt from CLAUDE.md, streams response
+- Update `/app/for-you/page.tsx` to call the route and render the streamed personalized content
 
-## Deploy on Vercel
+## Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+/app
+  /page.tsx              — Home (personal intro, Drew photo, CTA → /meet)
+  /meet/page.tsx         — Question flow (2 Qs, stores wst_visitor cookie)
+  /for-you/page.tsx      — Personalized result (Claude-generated)
+  /api
+    /personalize/route.ts      — Claude API call w/ visitor + case studies
+    /ingest-case-study/route.ts — Zapier webhook for content pipeline
+/content
+  /case-studies/         — Markdown files, one per case study
+/lib
+  /case-studies.ts       — Parse case study files
+  /claude.ts             — Claude API wrapper
+```
