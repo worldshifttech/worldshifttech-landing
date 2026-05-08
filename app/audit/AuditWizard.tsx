@@ -470,7 +470,7 @@ export default function AuditWizard() {
                       flexShrink: 0,
                     }}
                   >
-                    {done ? “✓” : num}
+                    {done ? "✓": num}
                   </div>
                   <span
                     style={{
@@ -735,7 +735,7 @@ export default function AuditWizard() {
                       onClick={() => toggleAi(tool)}
                       style={pill(!!aiUsage[tool])}
                     >
-                      {aiUsage[tool] ? “✓ “ : “”}{tool}
+                      {aiUsage[tool] ? "✓" : “”}{tool}
                     </button>
                   ))}
                 </div>
