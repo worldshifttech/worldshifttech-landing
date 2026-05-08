@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { auditId, answers }: { auditId: string; answers: AuditAnswers } = body;
 
-    if (!auditId || !answers) {
-      return NextResponse.json({ error: "Missing auditId or answers" }, { status: 400 });
+    if (!answers) {
+      return NextResponse.json({ error: "Missing answers" }, { status: 400 });
     }
 
     // Read tool registry

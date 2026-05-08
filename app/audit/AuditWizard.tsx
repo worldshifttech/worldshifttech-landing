@@ -470,7 +470,7 @@ export default function AuditWizard() {
                       flexShrink: 0,
                     }}
                   >
-                    {done ? "âœ“" : num}
+                    {done ? “✓” : num}
                   </div>
                   <span
                     style={{
@@ -638,7 +638,7 @@ export default function AuditWizard() {
         {phase === 3 && currentDept && (
           <div>
             <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
-              Your Tools â€” {deptIndex + 1} of {selectedDepts.length}
+              Your Tools, {deptIndex + 1} of {selectedDepts.length}
             </p>
             <h1
               style={{
@@ -735,7 +735,7 @@ export default function AuditWizard() {
                       onClick={() => toggleAi(tool)}
                       style={pill(!!aiUsage[tool])}
                     >
-                      {aiUsage[tool] ? "âœ“ " : ""}{tool}
+                      {aiUsage[tool] ? “✓ “ : “”}{tool}
                     </button>
                   ))}
                 </div>
@@ -1059,7 +1059,7 @@ export default function AuditWizard() {
                 >
                   {reportSaved ? (
                     <div style={{ textAlign: "center" }}>
-                      <p style={{ color: "var(--color-teal)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>âœ“</p>
+                      <p style={{ color: “var(--color-teal)”, fontSize: “1.5rem”, marginBottom: “0.5rem” }}>✓</p>
                       <p style={{ color: "var(--color-offwhite)", fontFamily: "var(--font-dm-sans)", fontWeight: 600, marginBottom: "0.5rem" }}>
                         Your report is saved.
                       </p>
