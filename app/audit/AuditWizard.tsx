@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import AuthModal from "./AuthModal";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
-// â”€â”€â”€ Department â†’ tool mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Department â†’ tool mapping â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const DEPT_TOOLS: Record<string, string[]> = {
   "Operations": [
@@ -106,7 +106,7 @@ const LOADING_LINES = [
   "Calculating waste and environmental impact...",
 ];
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Types â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 interface Finding {
   tool: string;
@@ -129,7 +129,7 @@ interface AuditReport {
   redirect_estimate_usd: number;
 }
 
-// â”€â”€â”€ Style helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Style helpers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const WASTE_COLORS: Record<string, string> = {
   low: "#4ade80",
@@ -209,7 +209,7 @@ const ctaDisabled: React.CSSProperties = {
   cursor: "not-allowed",
 };
 
-// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Main component â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export default function AuditWizard() {
   const [phase, setPhase] = useState(1);
@@ -272,7 +272,7 @@ export default function AuditWizard() {
     }
   }, [showReport]);
 
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Handlers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   function handleBusinessTypeSelect(type: string) {
     setBusinessType(type);
@@ -380,7 +380,7 @@ export default function AuditWizard() {
           .single();
         if (data?.id) currentAuditId = data.id;
       } catch {
-        // Non-fatal â€” continue without DB row
+        // Non-fatal â€" continue without DB row
       }
     }
 
@@ -422,7 +422,7 @@ export default function AuditWizard() {
     }
   }
 
-  // â”€â”€ Layout shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Layout shell â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   return (
     <div
@@ -511,7 +511,7 @@ export default function AuditWizard() {
           padding: "2rem 1.5rem 4rem",
         }}
       >
-        {/* â”€â”€ Phase 1: About Your Business â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â"€â"€ Phase 1: About Your Business â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 1 && (
           <div>
             <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
@@ -564,7 +564,7 @@ export default function AuditWizard() {
               </div>
             </div>
 
-            {/* Q3: Team size â€” appears after Q2 is answered */}
+            {/* Q3: Team size â€" appears after Q2 is answered */}
             {showTeamSize && (
               <div>
                 <label style={{ display: "block", color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
@@ -586,7 +586,7 @@ export default function AuditWizard() {
           </div>
         )}
 
-        {/* â”€â”€ Phase 2: Departments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â"€â"€ Phase 2: Departments â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 2 && (
           <div>
             <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
@@ -634,7 +634,7 @@ export default function AuditWizard() {
           </div>
         )}
 
-        {/* â”€â”€ Phase 3: Tools per department â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â"€â"€ Phase 3: Tools per department â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 3 && currentDept && (
           <div>
             <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
@@ -696,7 +696,7 @@ export default function AuditWizard() {
           </div>
         )}
 
-        {/* â”€â”€ Phase 4: AI usage + spend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â"€â"€ Phase 4: AI usage + spend â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 4 && (
           <div>
             <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
@@ -735,7 +735,7 @@ export default function AuditWizard() {
                       onClick={() => toggleAi(tool)}
                       style={pill(!!aiUsage[tool])}
                     >
-                      {aiUsage[tool] ? "✓" : “”}{tool}
+                      {aiUsage[tool] ? "✓" : ""}{tool}
                     </button>
                   ))}
                 </div>
@@ -770,7 +770,7 @@ export default function AuditWizard() {
           </div>
         )}
 
-        {/* â”€â”€ Phase 5: Loading + Report â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â"€â"€ Phase 5: Loading + Report â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 5 && (
           <div>
             {/* Loading state */}
@@ -1059,7 +1059,7 @@ export default function AuditWizard() {
                 >
                   {reportSaved ? (
                     <div style={{ textAlign: "center" }}>
-                      <p style={{ color: “var(--color-teal)”, fontSize: “1.5rem”, marginBottom: “0.5rem” }}>✓</p>
+                      <p style={{ color: "var(--color-teal)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>✓</p>
                       <p style={{ color: "var(--color-offwhite)", fontFamily: "var(--font-dm-sans)", fontWeight: 600, marginBottom: "0.5rem" }}>
                         Your report is saved.
                       </p>
