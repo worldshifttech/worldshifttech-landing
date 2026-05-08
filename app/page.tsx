@@ -1,27 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
-import AuthModal from "./components/AuthModal";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-6 max-w-6xl mx-auto w-full">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
-            alt="World Shift Technologies"
-            width={200}
-            height={48}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <div className="flex items-center gap-4">
+        <Image
+          src="/World_shift_tech_LOGO_PRIMARY.png"
+          alt="World Shift Technologies"
+          width={180}
+          height={45}
+          className="object-contain"
+          priority
+        />
+        <div className="flex items-center gap-3">
           <Link
             href="/audit"
-            className="hidden sm:block text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
+            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
           >
             Get an Audit
           </Link>
@@ -29,22 +25,10 @@ export default function Home() {
             href="https://calendly.com/fractionalbusinesscompanion/wst"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:block text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors duration-200"
+            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
           >
             Book a Call
           </a>
-          <Suspense
-            fallback={
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-[#F4F2EE]/70">Log In</span>
-                <span className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full">
-                  Get Started
-                </span>
-              </div>
-            }
-          >
-            <AuthModal />
-          </Suspense>
         </div>
       </nav>
 
@@ -55,35 +39,37 @@ export default function Home() {
           {/* Left: Text content */}
           <div className="flex-1 text-center lg:text-left">
             <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-7">
-              Built lean. Built green.
+              BUILT LEAN. BUILT GREEN.
             </p>
 
             <h1
               className="text-4xl sm:text-5xl xl:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[#F4F2EE] mb-7"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
-              Finally — <span className="text-[#4B858E]">software that fits.</span>
+              Your AI stack is probably
+              <br className="hidden sm:block" /> 60% waste.
+              <br />
+              <span className="text-[#4B858E]">I can show you which 60%.</span>
             </h1>
 
-            <p className="text-[#F4F2EE] text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
-              Custom integrations, internal apps, and AI agents built to do exactly what your business needs. You own what I build.
+            <p className="text-[#767B7A] text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
+              I audit how SMBs use AI, design the leanest version that works, and build what needs to be built. A portion of every project goes into verified environmental programs. Not offsets. Real work.
             </p>
 
             <Link
               href="/projects/new"
-              className="inline-block bg-[#4B858E] text-[#080C14] text-base font-bold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
+              className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
             >
-              Let&apos;s Scope Out Your Solution
+              Start with the audit
             </Link>
 
-            <p className="mt-4 text-[#F4F2EE] text-sm">
-              Get an estimated scope of work in under 5 minutes.
+            <p className="mt-4 text-[#767B7A] text-sm">
+              See how the audit works
             </p>
           </div>
 
           {/* Right: Headshot */}
           <div className="flex-shrink-0 relative">
-            {/* Subtle glow behind the image */}
             <div className="absolute inset-0 rounded-2xl bg-[#4B858E]/10 blur-2xl scale-110" />
             <div className="relative w-64 h-80 sm:w-72 sm:h-96 lg:w-80 lg:h-[420px] rounded-2xl overflow-hidden border border-[#4B858E]/25 shadow-2xl">
               <Image
@@ -93,7 +79,6 @@ export default function Home() {
                 className="object-cover object-top"
                 priority
               />
-              {/* Name card overlay at bottom */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#080C14]/90 via-[#080C14]/40 to-transparent px-5 py-4">
                 <p className="text-[#F4F2EE] font-semibold text-sm">Drew Griffiths</p>
                 <p className="text-[#4B858E] text-xs">Founder, World Shift Technologies</p>
@@ -102,82 +87,206 @@ export default function Home() {
           </div>
         </div>
 
-        {/* The Problem section */}
+        {/* Problem Section */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
           <h2
-            className="text-3xl font-bold text-[#F4F2EE] mb-6"
+            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8 max-w-3xl"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            You&apos;ve been here before.
+            Two years into the AI wave, most SMBs are in the same place.
           </h2>
-          <p className="text-[#F4F2EE] text-lg leading-relaxed max-w-2xl">
-            The stack ballooned. Half the tools overlap. Two of them don&apos;t talk to each other. You tried to fix it with a no-code automation that worked for a month and then broke. You hired someone who delivered something that almost worked. You&apos;ve been quoted tens of thousands by a dev shop that wouldn&apos;t return calls. You&apos;re paying for subscriptions and still copy-pasting between three of them.
-          </p>
+          <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
+            <p>
+              You adopted tools fast because you were supposed to. You have a ChatGPT subscription, a Make account, maybe Zapier, possibly something your last consultant set up that nobody fully understands. Some of it works. A lot of it runs in the background and nobody is sure why. You are paying for things that overlap. You have automations firing on bad data. You have agents doing jobs that a simpler script could handle for a tenth of the cost.
+            </p>
+            <p>Nobody audited any of it. There was no time.</p>
+            <p>
+              Meanwhile, every one of those tools is running on infrastructure that costs something. In compute, in energy, in actual planetary impact. The waste is not just a line item on your P&amp;L. It adds up.
+            </p>
+            <p>The fix is not ditching AI. It is using it precisely.</p>
+          </div>
         </div>
 
-        {/* Proof strip */}
+        {/* What I Build Strip */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
-          <p className="text-center text-[#4B858E] text-xs tracking-widest uppercase mb-10">
+          <p className="text-center text-[#767B7A] text-xs tracking-widest uppercase mb-10">
             What I Build
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center lg:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
-              <p
-                className="text-3xl font-bold text-[#4B858E] mb-2"
+              <h3
+                className="text-xl font-bold text-[#F4F2EE] mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                Integrations
-              </p>
-              <p className="text-[#F4F2EE] text-sm leading-relaxed">
-                You&apos;re paying for tools that should work together but don&apos;t. I connect them so your business stops losing time to manual handoffs, re-entry, and workflows that break when someone&apos;s out sick.
+                The Audit
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                A 2 to 3 week diagnostic of your entire AI and automation stack. What you are running, what it costs, what it is actually doing, and what is waste. You get a plain-language report. Most clients find 30 to 60 percent of their stack is redundant or running badly.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
-              <p
-                className="text-3xl font-bold text-[#4B858E] mb-2"
+              <h3
+                className="text-xl font-bold text-[#F4F2EE] mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                Custom Apps
-              </p>
-              <p className="text-[#F4F2EE] text-sm leading-relaxed">
-                When no off-the-shelf tool does exactly what you need, I build the one that does. Scoped to your problem, built around your workflow, and yours to own — not rent.
+                The Build
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                After the audit, I design the leaner replacement and build what needs replacing. Custom integrations, AI agents, internal tools. Built once, owned by you, no monthly fee to me.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
-              <p
-                className="text-3xl font-bold text-[#4B858E] mb-2"
+              <h3
+                className="text-xl font-bold text-[#F4F2EE] mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                Precision Tools
-              </p>
-              <p className="text-[#F4F2EE] text-sm leading-relaxed">
-                One focused tool that handles the thing costing you the most time. Not a platform. Not a suite. Just the right solution, built lean and deployed fast.
+                The Redirect
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                A fixed portion of every project goes into verified environmental programs. Not offset schemes. Reforestation, ocean cleanup, renewable infrastructure. Every invoice shows exactly where it went.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Lean/Green section */}
+        {/* Audience Mirrors */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
-          <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-5">
-            Green by design
+          <h2
+            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-10"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            Who this is for
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <div>
+              <h3
+                className="text-lg font-bold text-[#4B858E] mb-3"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                Ops and systems leads
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                You are the one who knows the stack is a mess. You have watched tools get adopted without a plan, automations get built and never cleaned up, and the same data get entered in three places. You do not need a consultant to tell you that. You need someone to map it and fix it.
+              </p>
+            </div>
+            <div>
+              <h3
+                className="text-lg font-bold text-[#4B858E] mb-3"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                Founders
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                You said yes to AI tools because everyone was saying yes. Some of them helped. Most of them just added to the overhead. You would like to know what is actually worth keeping before you add anything else.
+              </p>
+            </div>
+            <div>
+              <h3
+                className="text-lg font-bold text-[#4B858E] mb-3"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                Agencies and consultants
+              </h3>
+              <p className="text-[#767B7A] text-sm leading-relaxed">
+                Your clients are asking about AI. You want to give them a real answer, not a sales pitch. An AI audit is something you can offer as a standalone service, with a builder behind it who will be honest about what they actually need.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Green By Design */}
+        <div className="mt-20 pt-12 border-t border-white/[0.08]">
+          <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
+            GREEN BY DESIGN
           </p>
           <h2
-            className="text-3xl font-bold text-[#F4F2EE] mb-6"
+            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8 max-w-2xl"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Built Lean. Built Green.
           </h2>
-          <p className="text-[#F4F2EE] text-lg leading-relaxed max-w-2xl">
-            I build on lean code — no bloat, no idle infrastructure. Every solution is built to run on what it needs and nothing more, so it doesn&apos;t consume unnecessary or wasted resources. The goal is a smaller footprint by default, and to be ready to build for a future where technology leaves little to no carbon footprint.
+          <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
+            <p>
+              AI has an energy cost. Every tool running, every model inference, every automation firing adds up. I am not going to pretend otherwise.
+            </p>
+            <p>
+              What I can do is design solutions that use as little as they need to, and direct a fixed portion of every project into programs that are actually doing something about the larger problem. It is not a fix. It is a commitment to doing this work honestly.
+            </p>
+            <p>
+              Hosted on infrastructure committed to renewable energy. Lean code by default. No idle infrastructure. No bloat.
+            </p>
+          </div>
+        </div>
+
+        {/* Drew Section */}
+        <div className="mt-20 pt-12 border-t border-white/[0.08]">
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+            <div className="flex-shrink-0 relative">
+              <div className="absolute inset-0 rounded-2xl bg-[#4B858E]/10 blur-2xl scale-110" />
+              <div className="relative w-48 h-60 sm:w-56 sm:h-72 rounded-2xl overflow-hidden border border-[#4B858E]/25 shadow-2xl">
+                <Image
+                  src="/Drew_Headshot.jpg"
+                  alt="Drew Griffiths"
+                  fill
+                  className="object-cover object-top"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#080C14]/90 via-[#080C14]/40 to-transparent px-4 py-3">
+                  <p className="text-[#F4F2EE] font-semibold text-sm">Drew Griffiths</p>
+                  <p className="text-[#4B858E] text-xs">Founder, World Shift Technologies</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2
+                className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-6"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                Hi, I&apos;m Drew.
+              </h2>
+              <div className="space-y-4 text-[#767B7A] text-base leading-relaxed max-w-2xl">
+                <p>I build the tools. I write the code. I deliver it. That is the whole company.</p>
+                <p>
+                  Before WST, I spent years as a fractional COO and ClickUp consultant. I learned what is broken in SMB operations from the inside before I started building things to fix it. When I say your stack is probably over-built, I am not guessing. I have been in the systems.
+                </p>
+                <p>I use AI in my own builds. I am not anti-AI. I am anti-waste. There is a difference.</p>
+                <p>
+                  If the audit says you are mostly fine, I will tell you that. I would rather lose the build than recommend work that does not need to happen.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div className="mt-20 pt-12 border-t border-white/[0.08] text-center">
+          <h2
+            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-4"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            Tell me what you&apos;re running.
+          </h2>
+          <p className="text-[#767B7A] text-base mb-8 max-w-lg mx-auto">
+            The audit is the starting point. $500 to $1,500 depending on stack size. Standalone, no commitment to a build.
           </p>
+          <Link
+            href="/projects/new"
+            className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
+          >
+            Start with the audit
+          </Link>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-white/[0.06] py-8 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-sm">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[#767B7A] text-sm">
           <p>&copy; {new Date().getFullYear()} World Shift Technologies</p>
+          <a
+            href="mailto:drew@worldshifttech.com"
+            className="hover:text-[#4B858E] transition-colors"
+          >
+            drew@worldshifttech.com
+          </a>
         </div>
       </footer>
     </div>
