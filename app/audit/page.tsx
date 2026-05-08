@@ -3,7 +3,7 @@ import AuditWizard from "./AuditWizard";
 export const metadata = {
   title: "AI Audit — World Shift Technologies",
   description:
-    "Find out how much waste is in your AI and software stack. Free estimate in under 5 minutes.",
+    "A 2 to 3 week diagnostic of your AI and automation stack. Most clients find 30 to 60 percent is redundant or running badly. $500 to $1,500. No commitment to a build.",
 };
 
 export default function AuditPage() {

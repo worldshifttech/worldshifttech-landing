@@ -160,6 +160,9 @@ Open [http://localhost:3000](http://localhost:3000).
 - [x] `/api/attach-guest-audit` — links guest audit row to authenticated user after signup (Session 33)
 - [x] `content/tool-registry.json` — ~80 tool knowledge base with waste patterns, leaner alternatives, energy transparency (Session 33)
 - [x] Homepage nav "Get an Audit" link added (Session 33)
+- [x] Slack notification on audit completion (Session 34)
+- [x] Audits tab in admin dashboard (Session 34)
+- [x] `/your-team-and-ai` — static editorial page (Session 35): 6 sections, brand voice, POPin handoff, bottom CTA to /audit
 - [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on the generated page (`/for-you/[industry]/[solution]`)
 - [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
@@ -209,6 +212,93 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 ```
 
 See `/supabase/schema.sql` for the full definitions.
+
+## Recent Changes (Session 36 — May 8, 2026)
+
+**Content rewrite of /your-team-and-ai + SEO metadata export**
+
+`/app/your-team-and-ai/page.tsx`:
+- Added `export const metadata` with new page title (`Your Team & AI — World Shift Technologies`) and new meta description per brand brief.
+- Section 1 eyebrow unchanged. h2 updated: "Two mistakes, stacked." to "These are the two mistakes." Body paragraph rewritten around the "save money / make it easy" framing and team resistance dynamic.
+- Section 2 opening paragraph rewritten to lead with the vision angle ("Vision doesn't come from a system. It comes from people."). New connector sentence added: "Here are the four things AI doesn't replace." Relationships paragraph ending updated to "human interaction." Critical thinking paragraph updated with new example about a long-time partner and explicit statement that "AI doesn't build that."
+- Section 3 h2 updated: "More AI is not the answer." to "More AI isn't the answer." Body rewritten: environmental framing replaced with a precise/general-purpose AI contrast. New final paragraph on what the work requires.
+- Section 4 eyebrow updated: "HOW TO ACTUALLY DO IT" to "HOW TO TAKE THE RIGHT STEPS." h2 updated: "Six steps. No acronyms." to "Take full accountability for your operations and processes." Intermediate "Practical steps..." paragraph removed. All six bold items rewritten: new content on operations inventory, role documentation, role redefinition, institutional knowledge, cutting waste, and measuring outcomes.
+- Section 5 eyebrow updated: "WHEN THE QUESTION IS BIGGER THAN ONE TEAM" to "WHEN YOU'RE OPERATING AT ENTERPRISE SCALE." h2 updated: "If you're past 50 people." to "If you're enterprise." Body rewritten to open with "operating at enterprise scale" framing.
+- Zero em-dashes in user-facing copy. Em-dash in the page title metadata and in code comments only.
+- No layout, styling, component, or structural changes.
+
+**SEO pass (Task 2) applied.** Updated titles and descriptions across three files:
+- `app/layout.tsx` — default title and description (homepage + all pages without their own metadata export)
+- `app/audit/page.tsx` — description updated; title kept
+- `app/fractional/page.tsx` — metadata export added (was inheriting stale default)
+
+---
+
+## Recent Changes (Session 35 — May 8, 2026)
+
+**New page: /your-team-and-ai + nav additions**
+
+`/app/your-team-and-ai/page.tsx` (new file):
+- Static server component. No client interactivity, no `"use client"`.
+- 6 sections: Hero (eyebrow + H1 + subhead, no CTA), The Framing Most Companies Get Wrong, What Your Team Has That AI Doesn't, Less AI Used Precisely, How to Actually Do It, and a closing section with bottom CTA linking to `/audit`.
+- Section 5 includes a POPin handoff: `<a href="https://www.popinrescue.com">POPin</a>` opens in a new tab.
+- All body text on dark background uses `--color-offwhite` (`#F4F2EE`). Eyebrows are teal small caps. Headlines use Playfair Display via inline `style={{ fontFamily: 'var(--font-playfair)' }}`.
+- No em-dashes anywhere. No reassurance language.
+- Footer: centered single line, copyright only, no email link.
+
+`/app/page.tsx` — nav only:
+- Added "Your Team & AI" ghost-style link (matching Book a Call style) between "Book a Call" and the AuthModal block.
+
+`/app/projects/page.tsx` — nav only:
+- Added "Your Team & AI" ghost-style link before the user email + Sign Out cluster. Hidden on mobile (`hidden sm:inline-flex`).
+
+No API routes, Supabase schema, wizard, or admin changes in this session.
+
+---
+
+## Recent Changes (Session 34b — May 8, 2026)
+
+**Nav cleanup and dashboard action buttons**
+
+`/app/page.tsx` — removed "Get an Audit" pill link from the homepage nav. Nav now shows only Book a Call + Log In / Get Started.
+
+`/app/projects/page.tsx` — added "Get an Audit" (teal outlined) and "Start a New Project" (teal filled) as a button pair in the dashboard header, replacing the single "Start a New Project" button. Both links are wrapped in a flex container to keep them inline.
+
+---
+
+## Recent Changes (Session 34 — May 8, 2026)
+
+**Slack notification on audit completion + Admin Audits tab**
+
+`/app/api/notify-slack/route.ts` — extended to handle `type: "audit"`:
+- New condition for `type: "audit"` formats: `🔍 New Audit: *[business_name]* — [business_type], [team_size]`, stack list, spend/waste score, and waste estimate range.
+- Accepts: `business_name`, `business_type`, `team_size`, `monthly_spend_range`, `tools` (flat deduplicated array), `waste_score`, `estimated_monthly_waste_low`, `estimated_monthly_waste_high`.
+- Existing `submission` and `resubmission` handling unchanged.
+
+`/app/audit/AuditWizard.tsx` — fires Slack notification after audit report is confirmed:
+- After `/api/generate-audit` returns successfully and report is set in state, fires fire-and-forget POST to `/api/notify-slack` with `type: "audit"`.
+- Builds flat deduplicated `tools` array from `mergedTools` (all tools across all departments).
+- Uses `data.waste_score`, `data.estimated_monthly_waste_low`, `data.estimated_monthly_waste_high` from the report.
+- Does not await; fails silently; does not block the reveal state.
+
+`/app/admin/AdminDashboard.tsx` — added Audits tab:
+- New types: `AuditFinding`, `AuditReportData`, `AuditEstimate` (exported).
+- New constants: `WASTE_SCORE_STYLES` (low/medium/high/critical badge styles), `IMPACT_TEXT` (finding impact colors).
+- New state: `activeTab` (`'projects' | 'audits'`), `openAuditId` (detail panel toggle for audits).
+- New prop: `auditEstimates: AuditEstimate[]`.
+- Tab buttons (Projects / Audits) added below page title; active tab shows teal underline border.
+- Audits tab renders a table: business name, business type + team size, waste score badge, estimated waste range, monthly spend, relative date, View toggle.
+- Inline detail panel (two-column): left has audit summary (name, score badge, headline, waste estimate card, summary, findings sorted high-to-low, quick wins, environmental note + redirect estimate); right has stack details (departments, tools by department, AI usage flags, monthly spend).
+- "Report not yet generated." muted centered fallback when `report` is null.
+- "No audits yet." empty state matches existing projects empty state style.
+- All existing Projects tab content, Incomplete section, status controls, prompt generation, and README block unchanged.
+
+`/app/admin/page.tsx` — fetches audit estimates:
+- After existing projects fetch, adds service role fetch from `audit_estimates` ordered by `created_at desc`.
+- Maps result to `AuditEstimate[]`; passes as `auditEstimates` prop to `AdminDashboard`.
+- Falls back to empty array if fetch fails or returns null.
+
+---
 
 ## Recent Changes (Session 33 — May 7, 2026)
 
@@ -887,21 +977,15 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
 
 ## Next Tasks
 
-**Session 7 migration — run in Supabase SQL editor**
-```sql
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS green_offset_intent boolean DEFAULT false;
-```
-
-**Visual polish pass on `/for-you/[industry]/[solution]`**
-- Drew's headshot somewhere on the page (trust signal)
-- Animate sections in on load (fade up, subtle)
-- Mobile layout review: use cases stacking, nav padding
-- Consider adding a "Back to start" link for people who want to re-answer
-
-**`/api/ingest-case-study` content pipeline**
-- Zapier webhook hits the route when Drew uploads a doc to Google Drive
-- Route reads the doc, asks Claude to extract and format it into the case study schema
-- Commits the markdown file to `/content/case-studies/` and triggers a Vercel redeploy
+- Merge branch to main and deploy to production at worldshifttech.com
+- Add "attach guest audit" logic to Google OAuth callback (parallel to guest project attach in `/auth/callback/route.ts`)
+- Add audit estimates to the authenticated client dashboard at `/projects` so logged-in users can view their saved audits
+- Build out Client Profile management UI in admin (add, edit, view clients)
+- Build out AI Tools Registry management UI in admin (add, edit, verify tools)
+- Seed more tools into `content/tool-registry.json`
+- Add Slack notification when a guest attaches an audit after account creation
+- Research and select verified environmental program partners for The Redirect
+- Visual polish pass on `/for-you/[industry]/[solution]`
 
 ## Architecture
 
@@ -909,6 +993,7 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS green_offset_intent boolean DEFAUL
 /app
   /page.tsx                          — Home (personal intro, Drew photo, CTA → /meet)
   /fractional/page.tsx               — ClickUp consultant directory landing page (static)
+  /your-team-and-ai/page.tsx         — Static editorial page: team vs AI positioning, 6 sections, POPin handoff
   /meet/page.tsx                     — Question flow (4 Qs, stores wst_visitor cookie)
   /for-you/page.tsx                  — Loading state → POSTs to /api/personalize → redirects
   /for-you/[industry]/[solution]/    — Personalized result (pulled from Supabase)
@@ -925,12 +1010,12 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS green_offset_intent boolean DEFAUL
     /AuthModal.tsx                   — Login/Signup modal + nav trigger buttons (client)
     /SignOutButton.tsx               — Sign out button (client)
   /admin
-    /page.tsx                        — Server component: JWT gate (drew@worldshifttech.com), data fetch
-    /AdminDashboard.tsx              — Client component: project table, inline detail panel, status controls
+    /page.tsx                        — Server component: JWT gate (drew@worldshifttech.com), data fetch (projects + audit_estimates)
+    /AdminDashboard.tsx              — Client component: Projects tab (project table, detail panel, status controls) + Audits tab (audit estimates table, stack breakdown)
   /api
     /personalize/route.ts            — Classify → cache check → generate → save → return
     /generate-scope/route.ts         — Claude scope generation for wizard; updates projects row
-    /notify-slack/route.ts           — Posts Slack notification on project submit
+    /notify-slack/route.ts           — Posts Slack notification on project submit, resubmit, or audit completion (type: "submission" | "resubmission" | "audit")
     /admin-update-status/route.ts    — PATCH: verifies admin session, updates status; on approved: generates demo URL + Claude Code prompt
     /notify-client/route.ts          — POST: sends Resend email to project owner when status → live
     /attach-guest-project/route.ts   — PATCH: attaches a guest project row to a newly created user account

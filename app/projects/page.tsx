@@ -49,6 +49,12 @@ export default async function ProjectsPage() {
           />
         </Link>
         <div className="flex items-center gap-4">
+          <Link
+            href="/your-team-and-ai"
+            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-4 py-2 rounded-full hover:bg-[#4B858E] hover:text-white transition-all duration-200 hidden sm:inline-flex"
+          >
+            Your Team &amp; AI
+          </Link>
           <span className="text-sm text-[#767B7A] hidden sm:block">
             {userEmail}
           </span>
@@ -66,13 +72,22 @@ export default async function ProjectsPage() {
             >
               Your Projects
             </h1>
-            <Link
-              href="/projects/new"
-              className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors flex-shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Start a New Project
-            </Link>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link
+                href="/audit"
+                className="text-sm font-bold px-6 py-3 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Get an Audit
+              </Link>
+              <Link
+                href="/projects/new"
+                className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Start a New Project
+              </Link>
+            </div>
           </div>
 
           <GuestProjectAttacher />

@@ -45,6 +45,40 @@ export type AdminProject = {
   guest: boolean;
 };
 
+type AuditFinding = {
+  tool: string;
+  department: string;
+  issue: string;
+  impact: "low" | "medium" | "high";
+  recommendation: string;
+};
+
+type AuditReportData = {
+  headline: string;
+  waste_score: "low" | "medium" | "high" | "critical";
+  estimated_monthly_waste_low: number;
+  estimated_monthly_waste_high: number;
+  estimated_hours_wasted_per_month: number;
+  summary: string;
+  findings: AuditFinding[];
+  quick_wins: string[];
+  environmental_note: string;
+  redirect_estimate_usd: number;
+};
+
+export type AuditEstimate = {
+  id: string;
+  created_at: string;
+  business_name: string | null;
+  business_type: string;
+  team_size: string;
+  departments: string[];
+  tools_by_department: Record<string, string[]>;
+  ai_usage: Record<string, boolean>;
+  monthly_spend_range: string;
+  report: AuditReportData | null;
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function relativeDate(dateStr: string): string {
@@ -85,6 +119,19 @@ const GREEN_SCORE_STYLES: Record<
   Light: { label: "Energy Footprint: Light", border: "border-green-500/40", text: "text-green-400" },
   Moderate: { label: "Energy Footprint: Moderate", border: "border-yellow-500/40", text: "text-yellow-400" },
   Heavy: { label: "Energy Footprint: Heavy", border: "border-orange-500/40", text: "text-orange-400" },
+};
+
+const WASTE_SCORE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  low: { bg: "bg-green-500/15", text: "text-green-400", border: "border-green-500/30" },
+  medium: { bg: "bg-yellow-500/15", text: "text-yellow-400", border: "border-yellow-500/30" },
+  high: { bg: "bg-orange-500/15", text: "text-orange-400", border: "border-orange-500/30" },
+  critical: { bg: "bg-red-500/15", text: "text-red-400", border: "border-red-500/30" },
+};
+
+const IMPACT_TEXT: Record<string, string> = {
+  low: "text-green-400",
+  medium: "text-yellow-400",
+  high: "text-orange-400",
 };
 
 const Q_LABELS: Record<string, string> = {
@@ -137,11 +184,15 @@ function formatAnswer(value: unknown): string {
 
 export default function AdminDashboard({
   initialProjects,
+  auditEstimates,
 }: {
   initialProjects: AdminProject[];
+  auditEstimates: AuditEstimate[];
 }) {
   const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
+  const [activeTab, setActiveTab] = useState<"projects" | "audits">("projects");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [openAuditId, setOpenAuditId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [backToReviewError, setBackToReviewError] = useState<string | null>(null);
@@ -170,7 +221,6 @@ export default function AdminDashboard({
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
-    // Optimistically show the approved panel with skeleton while API generates prompt
     if (newStatus === "approved") {
       setProjects((prev) =>
         prev.map((p) => (p.id === projectId ? { ...p, status: "approved" } : p))
@@ -208,7 +258,6 @@ export default function AdminDashboard({
         })
       );
 
-      // Fire-and-forget client email when going live
       if (newStatus === "live") {
         fetch("/api/notify-client", {
           method: "POST",
@@ -217,7 +266,6 @@ export default function AdminDashboard({
         }).catch(() => {});
       }
     } catch {
-      // Rollback optimistic status change for approved
       if (newStatus === "approved") {
         setProjects((prev) =>
           prev.map((p) => (p.id === projectId ? { ...p, status: "reviewed" } : p))
@@ -393,496 +441,86 @@ export default function AdminDashboard({
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-5xl mx-auto">
           <h1
-            className="text-4xl sm:text-5xl font-bold text-[#F4F2EE] mb-3"
+            className="text-4xl sm:text-5xl font-bold text-[#F4F2EE] mb-6"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            Project Queue
+            Admin
           </h1>
-          <p
-            className="text-[#767B7A] text-sm mb-10"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
-            {total} project{total !== 1 ? "s" : ""} &mdash; {submittedCount} submitted, {inReviewCount} in review
-          </p>
 
-          {total === 0 ? (
-            <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
-              No projects yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {activeProjects.map((project) => {
-                const isOpen = openId === project.id;
-                const transition = STATUS_TRANSITIONS[project.status];
-                const badgeClass = STATUS_BADGE[project.status] ?? "border border-white/20 text-[#767B7A]";
-                const isPromptLoading = promptLoadingIds.has(project.id);
-                const promptText =
-                  project.claude_code_prompt ??
-                  (project.scope ? buildClaudePrompt(project.scope) : null);
+          {/* Tabs */}
+          <div className="flex items-center gap-1 border-b border-white/[0.06] mb-10">
+            {(["projects", "audits"] as const).map((tab) => {
+              const label =
+                tab === "projects"
+                  ? `Projects (${total})`
+                  : `Audits (${auditEstimates.length})`;
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`text-sm font-semibold px-4 py-3 border-b-2 -mb-px transition-colors ${
+                    isActive
+                      ? "text-[#F4F2EE] border-[#4B858E]"
+                      : "text-[#767B7A] border-transparent hover:text-[#F4F2EE]"
+                  }`}
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
 
-                return (
-                  <div key={project.id} className="border border-white/[0.08] rounded-2xl overflow-hidden">
-                    {/* Row */}
-                    <div className="flex items-center gap-4 px-6 py-5">
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className="text-[#F4F2EE] font-medium truncate"
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                        >
-                          {project.title ?? "Untitled Project"}
-                        </p>
-                        <p
-                          className="text-[#767B7A] text-xs mt-0.5"
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                        >
-                          {project.userEmail}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${badgeClass}`}
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
-                        {project.status}
-                      </span>
-
-                      <span
-                        className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
-                        {relativeDate(project.created_at)}
-                      </span>
-
-                      <button
-                        onClick={() => setOpenId(isOpen ? null : project.id)}
-                        className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
-                        {isOpen ? "Close" : "View"}
-                      </button>
-                    </div>
-
-                    {/* Inline detail panel */}
-                    {isOpen && (
-                      <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                          {/* Left — Scope Doc */}
-                          <div>
-                            {project.scope ? (
-                              <>
-                                <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-                                  <h2
-                                    className="text-2xl font-bold text-[#F4F2EE] leading-snug"
-                                    style={{ fontFamily: "var(--font-playfair)" }}
-                                  >
-                                    {project.scope.title}
-                                  </h2>
-                                  <span
-                                    className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
-                                      GREEN_SCORE_STYLES[project.scope.green_score].border
-                                    } ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                                  >
-                                    {GREEN_SCORE_STYLES[project.scope.green_score].label}
-                                  </span>
-                                </div>
-                                <div className="h-px bg-[#4B858E]/30 my-5" />
-                                <div className="space-y-5">
-                                  {[
-                                    { label: "The Problem", value: project.scope.the_problem },
-                                    { label: "Without It", value: project.scope.without_it },
-                                    { label: "With It", value: project.scope.with_it },
-                                  ].map(({ label, value }) => (
-                                    <div key={label}>
-                                      <span
-                                        className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                                      >
-                                        {label}
-                                      </span>
-                                      <p
-                                        className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                                      >
-                                        {value}
-                                      </p>
-                                    </div>
-                                  ))}
-                                  <div>
-                                    <span
-                                      className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      Investment Estimate
-                                    </span>
-                                    {project.scope.pricing ? (
-                                      <div className="mt-3 space-y-3">
-                                        {(["mvp", "polished", "perfected"] as const).map((tier) => {
-                                          const tierData = project.scope!.pricing![tier];
-                                          const tierLabel = { mvp: "MVP", polished: "Polished", perfected: "Perfected" }[tier];
-                                          return (
-                                            <div key={tier}>
-                                              <div className="flex items-baseline gap-2">
-                                                <span
-                                                  className="text-[#F4F2EE] text-sm font-semibold"
-                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                                                >
-                                                  {tierLabel}
-                                                </span>
-                                                <span
-                                                  className="text-[#F4F2EE]/80 text-sm font-medium"
-                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                                                >
-                                                  ${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}
-                                                </span>
-                                              </div>
-                                              <p
-                                                className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5"
-                                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                                              >
-                                                {tierData.description}
-                                              </p>
-                                            </div>
-                                          );
-                                        })}
-                                        <p
-                                          className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                                        >
-                                          {project.scope.pricing.value_rationale}
-                                        </p>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <p
-                                          className="mt-1.5 text-[#F4F2EE] text-base font-semibold"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                                        >
-                                          ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
-                                        </p>
-                                        <p
-                                          className="mt-1 text-[#F4F2EE] text-xs leading-relaxed"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                                        >
-                                          {project.scope.price_rationale}
-                                        </p>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                                No scope generated yet.
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Right — Raw Answers */}
-                          <div>
-                            <h3
-                              className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
-                            >
-                              Raw Answers
-                            </h3>
-                            <div className="space-y-3">
-                              {Object.entries(Q_LABELS).map(([key, label]) => {
-                                const value = project.answers?.[key];
-                                if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                                const text = formatAnswer(value);
-                                if (!text.trim()) return null;
-                                return (
-                                  <div key={key}>
-                                    <span
-                                      className="text-[#767B7A] text-xs"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {label}
-                                    </span>
-                                    <p
-                                      className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {text}
-                                    </p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Status Controls */}
-                        <div className="border-t border-white/[0.06] pt-6">
-                          <div className="flex flex-wrap items-center gap-4">
-                            <span
-                              className="text-[#767B7A] text-sm"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
-                            >
-                              Status: <span className="text-[#F4F2EE] font-medium">{project.status}</span>
-                            </span>
-
-                            {transition && (
-                              <button
-                                onClick={() => handleStatusUpdate(project.id, transition.next)}
-                                disabled={updatingId === project.id}
-                                className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
-                                  updatingId === project.id
-                                    ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
-                                    : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
-                                }`}
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                              >
-                                {updatingId === project.id ? "Updating..." : transition.label}
-                              </button>
-                            )}
-
-                            {project.status === "approved" && (
-                              <button
-                                onClick={() => handleBackToReview(project.id)}
-                                disabled={updatingId === project.id}
-                                className={`text-xs font-semibold px-4 py-2 rounded-full border border-white/20 text-[#767B7A] transition-colors ${
-                                  updatingId === project.id
-                                    ? "cursor-not-allowed opacity-50"
-                                    : "hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
-                                }`}
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                              >
-                                {updatingId === project.id ? "Updating..." : "← Back to Review"}
-                              </button>
-                            )}
-
-                            {updateError === project.id && (
-                              <span
-                                className="text-red-400 text-xs"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                              >
-                                Update failed. Try again.
-                              </span>
-                            )}
-
-                            {backToReviewError === project.id && (
-                              <span
-                                className="text-red-400 text-xs"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                              >
-                                Status update failed — try again
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Claude Code Prompt */}
-                        {(project.status === "approved" || project.status === "live") && (
-                          <div className="border-t border-white/[0.06] pt-6 mt-6">
-                            <span
-                              className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
-                            >
-                              Claude Code Build Prompt
-                            </span>
-
-                            {isPromptLoading ? (
-                              <div className="space-y-2 animate-pulse">
-                                <div className="h-3 bg-white/[0.06] rounded w-3/4" />
-                                <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                <div className="h-3 bg-white/[0.06] rounded w-5/6" />
-                                <div className="h-3 bg-white/[0.06] rounded w-2/3" />
-                                <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                <div className="h-3 bg-white/[0.06] rounded w-4/5" />
-                              </div>
-                            ) : promptText ? (
-                              <>
-                                <div className="flex items-center justify-between mb-3">
-                                  <span />
-                                  <button
-                                    onClick={() => handleCopy(project.id, promptText)}
-                                    className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                                  >
-                                    {copiedId === project.id ? "Copied ✓" : "Copy Prompt"}
-                                  </button>
-                                </div>
-                                <pre
-                                  className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
-                                  style={{ fontFamily: "monospace", maxHeight: "400px" }}
-                                >
-                                  {promptText}
-                                </pre>
-                                <div className="mt-3">
-                                  <span
-                                    className="text-[#767B7A] text-xs block mb-1.5"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                                  >
-                                    Demo URL
-                                  </span>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="url"
-                                      value={demoUrlDrafts[project.id] ?? project.demo_url ?? ""}
-                                      onChange={(e) =>
-                                        setDemoUrlDrafts((prev) => ({ ...prev, [project.id]: e.target.value }))
-                                      }
-                                      placeholder="https://your-vercel-url.vercel.app"
-                                      className="flex-1 min-w-0 bg-[#080C14] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[#F4F2EE] text-xs placeholder-[#767B7A] focus:outline-none focus:border-[#4B858E]/50"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    />
-                                    <button
-                                      onClick={() =>
-                                        handleSaveDemoUrl(
-                                          project.id,
-                                          demoUrlDrafts[project.id] ?? project.demo_url ?? ""
-                                        )
-                                      }
-                                      disabled={savingDemoUrlIds.has(project.id)}
-                                      className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {savedDemoUrlIds.has(project.id)
-                                        ? "Saved ✓"
-                                        : savingDemoUrlIds.has(project.id)
-                                        ? "Saving..."
-                                        : "Save"}
-                                    </button>
-                                  </div>
-                                  {demoUrlSaveErrors[project.id] && (
-                                    <p
-                                      className="text-red-400 text-xs mt-1.5"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {demoUrlSaveErrors[project.id]}
-                                    </p>
-                                  )}
-                                </div>
-                                {project.status === "approved" && (
-                                  <div className="mt-3">
-                                    <button
-                                      onClick={() => handleRegeneratePrompt(project.id)}
-                                      disabled={regeneratingIds.has(project.id)}
-                                      className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
-                                        regeneratingIds.has(project.id)
-                                          ? "border-white/10 text-[#767B7A] cursor-not-allowed"
-                                          : "border-white/20 text-[#767B7A] hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
-                                      }`}
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {regeneratingIds.has(project.id) ? "Regenerating..." : "Regenerate Prompt"}
-                                    </button>
-                                    {regenerateErrors.has(project.id) && (
-                                      <span
-                                        className="text-red-400 text-xs ml-3"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                                      >
-                                        Regeneration failed — try again
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </>
-                            ) : null}
-
-                            {/* Project README */}
-                            <div className="mt-8">
-                              <span
-                                className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
-                              >
-                                Project README
-                              </span>
-                              {isPromptLoading ? (
-                                <div className="space-y-2 animate-pulse">
-                                  <div className="h-3 bg-white/[0.06] rounded w-3/4" />
-                                  <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                  <div className="h-3 bg-white/[0.06] rounded w-5/6" />
-                                  <div className="h-3 bg-white/[0.06] rounded w-2/3" />
-                                </div>
-                              ) : project.project_readme ? (
-                                <>
-                                  <div className="flex items-center justify-between mb-3">
-                                    <span />
-                                    <button
-                                      onClick={() => handleCopyReadme(project.id, project.project_readme!)}
-                                      className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                                    >
-                                      {copiedReadmeId === project.id ? "Copied ✓" : "Copy README"}
-                                    </button>
-                                  </div>
-                                  <pre
-                                    className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
-                                    style={{ fontFamily: "monospace", maxHeight: "400px" }}
-                                  >
-                                    {project.project_readme}
-                                  </pre>
-                                </>
-                              ) : (
-                                <p
-                                  className="text-[#767B7A] text-xs"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                                >
-                                  README not generated — regenerate the prompt to produce one
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* ─── Incomplete (guest) projects ─────────────────────────────── */}
-          {incompleteProjects.length > 0 && (
-            <div className="mt-10">
-              <button
-                onClick={() => setIncompleteOpen((v) => !v)}
-                className="flex items-center gap-2 text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors mb-4"
+          {/* ─── Projects tab ──────────────────────────────────────────────── */}
+          {activeTab === "projects" && (
+            <>
+              <p
+                className="text-[#767B7A] text-sm mb-8"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  className={`transition-transform ${incompleteOpen ? "rotate-90" : ""}`}
-                >
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Incomplete ({incompleteProjects.length})
-              </button>
+                {total} project{total !== 1 ? "s" : ""} &mdash; {submittedCount} submitted, {inReviewCount} in review
+              </p>
 
-              {incompleteOpen && (
+              {total === 0 ? (
+                <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  No projects yet.
+                </p>
+              ) : (
                 <div className="space-y-3">
-                  {incompleteProjects.map((project) => {
+                  {activeProjects.map((project) => {
                     const isOpen = openId === project.id;
+                    const transition = STATUS_TRANSITIONS[project.status];
+                    const badgeClass = STATUS_BADGE[project.status] ?? "border border-white/20 text-[#767B7A]";
+                    const isPromptLoading = promptLoadingIds.has(project.id);
+                    const promptText =
+                      project.claude_code_prompt ??
+                      (project.scope ? buildClaudePrompt(project.scope) : null);
+
                     return (
-                      <div key={project.id} className="border border-white/[0.06] rounded-2xl overflow-hidden opacity-70">
+                      <div key={project.id} className="border border-white/[0.08] rounded-2xl overflow-hidden">
                         {/* Row */}
                         <div className="flex items-center gap-4 px-6 py-5">
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-[#F4F2EE]/80 font-medium truncate"
+                              className="text-[#F4F2EE] font-medium truncate"
                               style={{ fontFamily: "var(--font-dm-sans)" }}
                             >
-                              {project.title ?? "Untitled"}
+                              {project.title ?? "Untitled Project"}
                             </p>
                             <p
-                              className="text-[#F4F2EE] text-xs mt-0.5"
+                              className="text-[#767B7A] text-xs mt-0.5"
                               style={{ fontFamily: "var(--font-dm-sans)" }}
                             >
-                              No account created
+                              {project.userEmail}
                             </p>
                           </div>
 
                           <span
-                            className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 bg-white/[0.04] text-[#767B7A] border border-white/10"
+                            className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${badgeClass}`}
                             style={{ fontFamily: "var(--font-dm-sans)" }}
                           >
-                            incomplete
+                            {project.status}
                           </span>
 
                           <span
@@ -901,10 +539,10 @@ export default function AdminDashboard({
                           </button>
                         </div>
 
-                        {/* Inline detail panel — scope + answers, no status controls */}
+                        {/* Inline detail panel */}
                         {isOpen && (
                           <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                               {/* Left — Scope Doc */}
                               <div>
                                 {project.scope ? (
@@ -916,14 +554,14 @@ export default function AdminDashboard({
                                       >
                                         {project.scope.title}
                                       </h2>
-                                      {project.scope.green_score && GREEN_SCORE_STYLES[project.scope.green_score] && (
-                                        <span
-                                          className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${GREEN_SCORE_STYLES[project.scope.green_score].border} ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                                        >
-                                          {GREEN_SCORE_STYLES[project.scope.green_score].label}
-                                        </span>
-                                      )}
+                                      <span
+                                        className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
+                                          GREEN_SCORE_STYLES[project.scope.green_score].border
+                                        } ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {GREEN_SCORE_STYLES[project.scope.green_score].label}
+                                      </span>
                                     </div>
                                     <div className="h-px bg-[#4B858E]/30 my-5" />
                                     <div className="space-y-5">
@@ -962,25 +600,58 @@ export default function AdminDashboard({
                                               return (
                                                 <div key={tier}>
                                                   <div className="flex items-baseline gap-2">
-                                                    <span className="text-[#F4F2EE] text-sm font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierLabel}</span>
-                                                    <span className="text-[#F4F2EE]/80 text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}</span>
+                                                    <span
+                                                      className="text-[#F4F2EE] text-sm font-semibold"
+                                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                    >
+                                                      {tierLabel}
+                                                    </span>
+                                                    <span
+                                                      className="text-[#F4F2EE]/80 text-sm font-medium"
+                                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                    >
+                                                      ${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}
+                                                    </span>
                                                   </div>
-                                                  <p className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierData.description}</p>
+                                                  <p
+                                                    className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5"
+                                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                  >
+                                                    {tierData.description}
+                                                  </p>
                                                 </div>
                                               );
                                             })}
-                                            <p className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>{project.scope.pricing.value_rationale}</p>
+                                            <p
+                                              className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2"
+                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            >
+                                              {project.scope.pricing.value_rationale}
+                                            </p>
                                           </div>
                                         ) : (
-                                          <p className="mt-1.5 text-[#F4F2EE] text-base font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                                            ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
-                                          </p>
+                                          <>
+                                            <p
+                                              className="mt-1.5 text-[#F4F2EE] text-base font-semibold"
+                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            >
+                                              ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
+                                            </p>
+                                            <p
+                                              className="mt-1 text-[#F4F2EE] text-xs leading-relaxed"
+                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            >
+                                              {project.scope.price_rationale}
+                                            </p>
+                                          </>
                                         )}
                                       </div>
                                     </div>
                                   </>
                                 ) : (
-                                  <p className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>No scope generated yet.</p>
+                                  <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                                    No scope generated yet.
+                                  </p>
                                 )}
                               </div>
 
@@ -1000,14 +671,239 @@ export default function AdminDashboard({
                                     if (!text.trim()) return null;
                                     return (
                                       <div key={key}>
-                                        <span className="text-[#767B7A] text-xs" style={{ fontFamily: "var(--font-dm-sans)" }}>{label}</span>
-                                        <p className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>{text}</p>
+                                        <span
+                                          className="text-[#767B7A] text-xs"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {label}
+                                        </span>
+                                        <p
+                                          className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {text}
+                                        </p>
                                       </div>
                                     );
                                   })}
                                 </div>
                               </div>
                             </div>
+
+                            {/* Status Controls */}
+                            <div className="border-t border-white/[0.06] pt-6">
+                              <div className="flex flex-wrap items-center gap-4">
+                                <span
+                                  className="text-[#767B7A] text-sm"
+                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                >
+                                  Status: <span className="text-[#F4F2EE] font-medium">{project.status}</span>
+                                </span>
+
+                                {transition && (
+                                  <button
+                                    onClick={() => handleStatusUpdate(project.id, transition.next)}
+                                    disabled={updatingId === project.id}
+                                    className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
+                                      updatingId === project.id
+                                        ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                                        : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
+                                    }`}
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    {updatingId === project.id ? "Updating..." : transition.label}
+                                  </button>
+                                )}
+
+                                {project.status === "approved" && (
+                                  <button
+                                    onClick={() => handleBackToReview(project.id)}
+                                    disabled={updatingId === project.id}
+                                    className={`text-xs font-semibold px-4 py-2 rounded-full border border-white/20 text-[#767B7A] transition-colors ${
+                                      updatingId === project.id
+                                        ? "cursor-not-allowed opacity-50"
+                                        : "hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
+                                    }`}
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    {updatingId === project.id ? "Updating..." : "← Back to Review"}
+                                  </button>
+                                )}
+
+                                {updateError === project.id && (
+                                  <span
+                                    className="text-red-400 text-xs"
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    Update failed. Try again.
+                                  </span>
+                                )}
+
+                                {backToReviewError === project.id && (
+                                  <span
+                                    className="text-red-400 text-xs"
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    Status update failed — try again
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Claude Code Prompt */}
+                            {(project.status === "approved" || project.status === "live") && (
+                              <div className="border-t border-white/[0.06] pt-6 mt-6">
+                                <span
+                                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
+                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                >
+                                  Claude Code Build Prompt
+                                </span>
+
+                                {isPromptLoading ? (
+                                  <div className="space-y-2 animate-pulse">
+                                    <div className="h-3 bg-white/[0.06] rounded w-3/4" />
+                                    <div className="h-3 bg-white/[0.06] rounded w-full" />
+                                    <div className="h-3 bg-white/[0.06] rounded w-5/6" />
+                                    <div className="h-3 bg-white/[0.06] rounded w-2/3" />
+                                    <div className="h-3 bg-white/[0.06] rounded w-full" />
+                                    <div className="h-3 bg-white/[0.06] rounded w-4/5" />
+                                  </div>
+                                ) : promptText ? (
+                                  <>
+                                    <div className="flex items-center justify-between mb-3">
+                                      <span />
+                                      <button
+                                        onClick={() => handleCopy(project.id, promptText)}
+                                        className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {copiedId === project.id ? "Copied ✓" : "Copy Prompt"}
+                                      </button>
+                                    </div>
+                                    <pre
+                                      className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
+                                      style={{ fontFamily: "monospace", maxHeight: "400px" }}
+                                    >
+                                      {promptText}
+                                    </pre>
+                                    <div className="mt-3">
+                                      <span
+                                        className="text-[#767B7A] text-xs block mb-1.5"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Demo URL
+                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="url"
+                                          value={demoUrlDrafts[project.id] ?? project.demo_url ?? ""}
+                                          onChange={(e) =>
+                                            setDemoUrlDrafts((prev) => ({ ...prev, [project.id]: e.target.value }))
+                                          }
+                                          placeholder="https://your-vercel-url.vercel.app"
+                                          className="flex-1 min-w-0 bg-[#080C14] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[#F4F2EE] text-xs placeholder-[#767B7A] focus:outline-none focus:border-[#4B858E]/50"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        />
+                                        <button
+                                          onClick={() =>
+                                            handleSaveDemoUrl(
+                                              project.id,
+                                              demoUrlDrafts[project.id] ?? project.demo_url ?? ""
+                                            )
+                                          }
+                                          disabled={savingDemoUrlIds.has(project.id)}
+                                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {savedDemoUrlIds.has(project.id)
+                                            ? "Saved ✓"
+                                            : savingDemoUrlIds.has(project.id)
+                                            ? "Saving..."
+                                            : "Save"}
+                                        </button>
+                                      </div>
+                                      {demoUrlSaveErrors[project.id] && (
+                                        <p
+                                          className="text-red-400 text-xs mt-1.5"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {demoUrlSaveErrors[project.id]}
+                                        </p>
+                                      )}
+                                    </div>
+                                    {project.status === "approved" && (
+                                      <div className="mt-3">
+                                        <button
+                                          onClick={() => handleRegeneratePrompt(project.id)}
+                                          disabled={regeneratingIds.has(project.id)}
+                                          className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
+                                            regeneratingIds.has(project.id)
+                                              ? "border-white/10 text-[#767B7A] cursor-not-allowed"
+                                              : "border-white/20 text-[#767B7A] hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
+                                          }`}
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {regeneratingIds.has(project.id) ? "Regenerating..." : "Regenerate Prompt"}
+                                        </button>
+                                        {regenerateErrors.has(project.id) && (
+                                          <span
+                                            className="text-red-400 text-xs ml-3"
+                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          >
+                                            Regeneration failed — try again
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : null}
+
+                                {/* Project README */}
+                                <div className="mt-8">
+                                  <span
+                                    className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    Project README
+                                  </span>
+                                  {isPromptLoading ? (
+                                    <div className="space-y-2 animate-pulse">
+                                      <div className="h-3 bg-white/[0.06] rounded w-3/4" />
+                                      <div className="h-3 bg-white/[0.06] rounded w-full" />
+                                      <div className="h-3 bg-white/[0.06] rounded w-5/6" />
+                                      <div className="h-3 bg-white/[0.06] rounded w-2/3" />
+                                    </div>
+                                  ) : project.project_readme ? (
+                                    <>
+                                      <div className="flex items-center justify-between mb-3">
+                                        <span />
+                                        <button
+                                          onClick={() => handleCopyReadme(project.id, project.project_readme!)}
+                                          className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {copiedReadmeId === project.id ? "Copied ✓" : "Copy README"}
+                                        </button>
+                                      </div>
+                                      <pre
+                                        className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
+                                        style={{ fontFamily: "monospace", maxHeight: "400px" }}
+                                      >
+                                        {project.project_readme}
+                                      </pre>
+                                    </>
+                                  ) : (
+                                    <p
+                                      className="text-[#767B7A] text-xs"
+                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    >
+                                      README not generated — regenerate the prompt to produce one
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1015,7 +911,533 @@ export default function AdminDashboard({
                   })}
                 </div>
               )}
-            </div>
+
+              {/* ─── Incomplete (guest) projects ─────────────────────────── */}
+              {incompleteProjects.length > 0 && (
+                <div className="mt-10">
+                  <button
+                    onClick={() => setIncompleteOpen((v) => !v)}
+                    className="flex items-center gap-2 text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors mb-4"
+                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      className={`transition-transform ${incompleteOpen ? "rotate-90" : ""}`}
+                    >
+                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Incomplete ({incompleteProjects.length})
+                  </button>
+
+                  {incompleteOpen && (
+                    <div className="space-y-3">
+                      {incompleteProjects.map((project) => {
+                        const isOpen = openId === project.id;
+                        return (
+                          <div key={project.id} className="border border-white/[0.06] rounded-2xl overflow-hidden opacity-70">
+                            {/* Row */}
+                            <div className="flex items-center gap-4 px-6 py-5">
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className="text-[#F4F2EE]/80 font-medium truncate"
+                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                >
+                                  {project.title ?? "Untitled"}
+                                </p>
+                                <p
+                                  className="text-[#F4F2EE] text-xs mt-0.5"
+                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                >
+                                  No account created
+                                </p>
+                              </div>
+
+                              <span
+                                className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 bg-white/[0.04] text-[#767B7A] border border-white/10"
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                incomplete
+                              </span>
+
+                              <span
+                                className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                {relativeDate(project.created_at)}
+                              </span>
+
+                              <button
+                                onClick={() => setOpenId(isOpen ? null : project.id)}
+                                className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                {isOpen ? "Close" : "View"}
+                              </button>
+                            </div>
+
+                            {/* Inline detail panel */}
+                            {isOpen && (
+                              <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                  {/* Left — Scope Doc */}
+                                  <div>
+                                    {project.scope ? (
+                                      <>
+                                        <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                                          <h2
+                                            className="text-2xl font-bold text-[#F4F2EE] leading-snug"
+                                            style={{ fontFamily: "var(--font-playfair)" }}
+                                          >
+                                            {project.scope.title}
+                                          </h2>
+                                          {project.scope.green_score && GREEN_SCORE_STYLES[project.scope.green_score] && (
+                                            <span
+                                              className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${GREEN_SCORE_STYLES[project.scope.green_score].border} ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
+                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            >
+                                              {GREEN_SCORE_STYLES[project.scope.green_score].label}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="h-px bg-[#4B858E]/30 my-5" />
+                                        <div className="space-y-5">
+                                          {[
+                                            { label: "The Problem", value: project.scope.the_problem },
+                                            { label: "Without It", value: project.scope.without_it },
+                                            { label: "With It", value: project.scope.with_it },
+                                          ].map(({ label, value }) => (
+                                            <div key={label}>
+                                              <span
+                                                className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
+                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              >
+                                                {label}
+                                              </span>
+                                              <p
+                                                className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
+                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              >
+                                                {value}
+                                              </p>
+                                            </div>
+                                          ))}
+                                          <div>
+                                            <span
+                                              className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
+                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            >
+                                              Investment Estimate
+                                            </span>
+                                            {project.scope.pricing ? (
+                                              <div className="mt-3 space-y-3">
+                                                {(["mvp", "polished", "perfected"] as const).map((tier) => {
+                                                  const tierData = project.scope!.pricing![tier];
+                                                  const tierLabel = { mvp: "MVP", polished: "Polished", perfected: "Perfected" }[tier];
+                                                  return (
+                                                    <div key={tier}>
+                                                      <div className="flex items-baseline gap-2">
+                                                        <span className="text-[#F4F2EE] text-sm font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierLabel}</span>
+                                                        <span className="text-[#F4F2EE]/80 text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}</span>
+                                                      </div>
+                                                      <p className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierData.description}</p>
+                                                    </div>
+                                                  );
+                                                })}
+                                                <p className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>{project.scope.pricing.value_rationale}</p>
+                                              </div>
+                                            ) : (
+                                              <p className="mt-1.5 text-[#F4F2EE] text-base font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                                                ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <p className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>No scope generated yet.</p>
+                                    )}
+                                  </div>
+
+                                  {/* Right — Raw Answers */}
+                                  <div>
+                                    <h3
+                                      className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
+                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    >
+                                      Raw Answers
+                                    </h3>
+                                    <div className="space-y-3">
+                                      {Object.entries(Q_LABELS).map(([key, label]) => {
+                                        const value = project.answers?.[key];
+                                        if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                                        const text = formatAnswer(value);
+                                        if (!text.trim()) return null;
+                                        return (
+                                          <div key={key}>
+                                            <span className="text-[#767B7A] text-xs" style={{ fontFamily: "var(--font-dm-sans)" }}>{label}</span>
+                                            <p className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>{text}</p>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ─── Audits tab ────────────────────────────────────────────────── */}
+          {activeTab === "audits" && (
+            <>
+              {auditEstimates.length === 0 ? (
+                <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  No audits yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {auditEstimates.map((audit) => {
+                    const isOpen = openAuditId === audit.id;
+                    const score = audit.report?.waste_score ?? null;
+                    const scoreStyle = score ? (WASTE_SCORE_STYLES[score] ?? WASTE_SCORE_STYLES.low) : null;
+                    const aiTools = Object.entries(audit.ai_usage ?? {})
+                      .filter(([, v]) => v)
+                      .map(([k]) => k);
+
+                    return (
+                      <div key={audit.id} className="border border-white/[0.08] rounded-2xl overflow-hidden">
+                        {/* Row */}
+                        <div className="flex items-center gap-4 px-6 py-5">
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-[#F4F2EE] font-medium truncate"
+                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                            >
+                              {audit.business_name ?? "Anonymous"}
+                            </p>
+                            <p
+                              className="text-[#767B7A] text-xs mt-0.5"
+                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                            >
+                              {audit.business_type} &middot; {audit.team_size}
+                            </p>
+                          </div>
+
+                          {scoreStyle && score ? (
+                            <span
+                              className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 border uppercase tracking-wide ${scoreStyle.bg} ${scoreStyle.text} ${scoreStyle.border}`}
+                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                            >
+                              {score}
+                            </span>
+                          ) : (
+                            <span
+                              className="text-xs px-2.5 py-1 rounded-full flex-shrink-0 border border-white/10 text-[#767B7A]"
+                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                            >
+                              pending
+                            </span>
+                          )}
+
+                          {audit.report ? (
+                            <span
+                              className="hidden sm:block text-[#F4F2EE] text-xs flex-shrink-0 font-medium"
+                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                            >
+                              ${audit.report.estimated_monthly_waste_low.toLocaleString()}–${audit.report.estimated_monthly_waste_high.toLocaleString()}/mo
+                            </span>
+                          ) : null}
+
+                          <span
+                            className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          >
+                            {audit.monthly_spend_range}
+                          </span>
+
+                          <span
+                            className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          >
+                            {relativeDate(audit.created_at)}
+                          </span>
+
+                          <button
+                            onClick={() => setOpenAuditId(isOpen ? null : audit.id)}
+                            className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          >
+                            {isOpen ? "Close" : "View"}
+                          </button>
+                        </div>
+
+                        {/* Detail panel */}
+                        {isOpen && (
+                          <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
+                            {!audit.report ? (
+                              <p
+                                className="text-[#767B7A] text-sm text-center"
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                Report not yet generated.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Left — Audit Summary */}
+                                <div>
+                                  <div className="flex flex-wrap items-start gap-3 mb-4">
+                                    <h2
+                                      className="text-2xl font-bold text-[#F4F2EE] leading-snug"
+                                      style={{ fontFamily: "var(--font-playfair)" }}
+                                    >
+                                      {audit.business_name ?? "Anonymous"}
+                                    </h2>
+                                    {scoreStyle && score && (
+                                      <span
+                                        className={`text-xs font-bold px-3 py-1.5 rounded-full border uppercase tracking-wide ${scoreStyle.bg} ${scoreStyle.text} ${scoreStyle.border}`}
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {score} waste
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <p
+                                    className="text-[#F4F2EE] text-base leading-relaxed mb-5"
+                                    style={{ fontFamily: "var(--font-playfair)" }}
+                                  >
+                                    {audit.report.headline}
+                                  </p>
+
+                                  {/* Waste estimate card */}
+                                  <div className="border border-[#4B858E]/40 rounded-xl p-4 mb-5 bg-[#4B858E]/05">
+                                    <p
+                                      className="text-[#767B7A] text-xs uppercase tracking-widest mb-1"
+                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    >
+                                      Estimated monthly waste
+                                    </p>
+                                    <p
+                                      className="text-[#4B858E] text-2xl font-bold mb-1"
+                                      style={{ fontFamily: "var(--font-playfair)" }}
+                                    >
+                                      ${audit.report.estimated_monthly_waste_low.toLocaleString()} – ${audit.report.estimated_monthly_waste_high.toLocaleString()}
+                                    </p>
+                                    <p
+                                      className="text-[#767B7A] text-xs"
+                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    >
+                                      {audit.report.estimated_hours_wasted_per_month} hours wasted per month
+                                    </p>
+                                  </div>
+
+                                  <p
+                                    className="text-[#F4F2EE]/70 text-sm leading-relaxed mb-5"
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    {audit.report.summary}
+                                  </p>
+
+                                  {/* Findings */}
+                                  {audit.report.findings?.length > 0 && (
+                                    <div className="mb-5">
+                                      <span
+                                        className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Findings
+                                      </span>
+                                      <div className="space-y-2">
+                                        {audit.report.findings
+                                          .sort((a, b) => {
+                                            const order = { high: 0, medium: 1, low: 2 };
+                                            return order[a.impact] - order[b.impact];
+                                          })
+                                          .map((f, i) => (
+                                            <div
+                                              key={i}
+                                              className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3"
+                                            >
+                                              <div className="flex flex-wrap gap-2 items-center mb-1.5">
+                                                <span
+                                                  className="text-[#F4F2EE] text-xs font-semibold"
+                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                >
+                                                  {f.tool}
+                                                </span>
+                                                <span
+                                                  className="text-[#767B7A] text-xs bg-white/[0.06] px-2 py-0.5 rounded-full"
+                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                >
+                                                  {f.department}
+                                                </span>
+                                                <span
+                                                  className={`text-xs font-bold uppercase tracking-wide ${IMPACT_TEXT[f.impact] ?? "text-[#767B7A]"}`}
+                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                >
+                                                  {f.impact} impact
+                                                </span>
+                                              </div>
+                                              <p
+                                                className="text-[#767B7A] text-xs leading-relaxed mb-1"
+                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              >
+                                                {f.issue}
+                                              </p>
+                                              <p
+                                                className="text-[#4B858E] text-xs leading-relaxed"
+                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              >
+                                                {f.recommendation}
+                                              </p>
+                                            </div>
+                                          ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Quick wins */}
+                                  {audit.report.quick_wins?.length > 0 && (
+                                    <div className="mb-5">
+                                      <span
+                                        className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Quick Wins
+                                      </span>
+                                      <ul className="space-y-1.5">
+                                        {audit.report.quick_wins.map((win, i) => (
+                                          <li
+                                            key={i}
+                                            className="flex gap-2 text-[#F4F2EE]/70 text-xs leading-relaxed"
+                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          >
+                                            <span className="text-[#4B858E] flex-shrink-0">&rarr;</span>
+                                            {win}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                  {/* Environmental note */}
+                                  {audit.report.environmental_note && (
+                                    <div className="border-l-2 border-[#4B858E]/50 pl-4 mb-4">
+                                      <p
+                                        className="text-[#767B7A] text-xs leading-relaxed mb-1"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {audit.report.environmental_note}
+                                      </p>
+                                      <p
+                                        className="text-[#4B858E] text-xs font-semibold"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Redirect estimate: ${audit.report.redirect_estimate_usd?.toLocaleString()}/month
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Right — Stack Details */}
+                                <div>
+                                  <h3
+                                    className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
+                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  >
+                                    Stack Details
+                                  </h3>
+
+                                  <div className="space-y-4">
+                                    {/* Departments */}
+                                    <div>
+                                      <span
+                                        className="text-[#767B7A] text-xs block mb-1"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Departments
+                                      </span>
+                                      <p
+                                        className="text-[#F4F2EE] text-sm"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {(audit.departments ?? []).join(", ")}
+                                      </p>
+                                    </div>
+
+                                    {/* Tools by department */}
+                                    {Object.entries(audit.tools_by_department ?? {}).map(([dept, tools]) => (
+                                      <div key={dept}>
+                                        <span
+                                          className="text-[#767B7A] text-xs block mb-1"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {dept}
+                                        </span>
+                                        <p
+                                          className="text-[#F4F2EE] text-sm leading-relaxed"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {(tools as string[]).join(", ")}
+                                        </p>
+                                      </div>
+                                    ))}
+
+                                    {/* AI usage */}
+                                    {aiTools.length > 0 && (
+                                      <div>
+                                        <span
+                                          className="text-[#767B7A] text-xs block mb-1"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          Using AI features
+                                        </span>
+                                        <p
+                                          className="text-[#F4F2EE] text-sm"
+                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        >
+                                          {aiTools.join(", ")}
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {/* Monthly spend */}
+                                    <div>
+                                      <span
+                                        className="text-[#767B7A] text-xs block mb-1"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        Monthly spend range
+                                      </span>
+                                      <p
+                                        className="text-[#F4F2EE] text-sm"
+                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      >
+                                        {audit.monthly_spend_range}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

@@ -1,6 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "Fractional COO + ClickUp — World Shift Technologies",
+  description:
+    "I embed as your Fractional COO and rebuild your ClickUp as an intelligent system: custom workspace, AI agents, automations, and dashboards that surface what matters.",
+};
+
 const CALENDLY = "https://calendly.com/fractionalbusinesscompanion/wst";
 
 export default function FractionalPage() {

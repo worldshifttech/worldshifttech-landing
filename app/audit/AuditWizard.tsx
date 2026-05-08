@@ -416,6 +416,24 @@ export default function AuditWizard() {
       const data = await res.json();
       setReport(data as AuditReport);
       setApiDone(true);
+
+      // Fire-and-forget Slack notification
+      const flatTools = [...new Set(Object.values(mergedTools).flat())];
+      fetch("/api/notify-slack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "audit",
+          business_name: businessName,
+          business_type: businessType,
+          team_size: teamSize,
+          monthly_spend_range: monthlySpend,
+          tools: flatTools,
+          waste_score: data.waste_score,
+          estimated_monthly_waste_low: data.estimated_monthly_waste_low,
+          estimated_monthly_waste_high: data.estimated_monthly_waste_high,
+        }),
+      }).catch(() => {});
     } catch {
       setApiError("Network error. Please try again.");
       setApiDone(true);

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabase } from "@/lib/supabase";
-import AdminDashboard, { type AdminProject, type ScopeData } from "./AdminDashboard";
+import AdminDashboard, { type AdminProject, type AuditEstimate, type ScopeData } from "./AdminDashboard";
 
 const ADMIN_EMAIL = "drew@worldshifttech.com";
 
@@ -70,5 +70,23 @@ export default async function AdminPage() {
     guest: (p.guest as boolean) ?? false,
   }));
 
-  return <AdminDashboard initialProjects={adminProjects} />;
+  const { data: auditData } = await serviceClient
+    .from("audit_estimates")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const auditEstimates: AuditEstimate[] = (auditData ?? []).map((a) => ({
+    id: a.id as string,
+    created_at: a.created_at as string,
+    business_name: (a.business_name as string | null) ?? null,
+    business_type: (a.business_type as string) ?? "",
+    team_size: (a.team_size as string) ?? "",
+    departments: (a.departments as string[]) ?? [],
+    tools_by_department: (a.tools_by_department as Record<string, string[]>) ?? {},
+    ai_usage: (a.ai_usage as Record<string, boolean>) ?? {},
+    monthly_spend_range: (a.monthly_spend_range as string) ?? "",
+    report: (a.report as AuditEstimate["report"]) ?? null,
+  }));
+
+  return <AdminDashboard initialProjects={adminProjects} auditEstimates={auditEstimates} />;
 }

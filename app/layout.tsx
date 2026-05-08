@@ -15,9 +15,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "World Shift Technologies: AI Super Agents for Growing Businesses",
+  title: "World Shift Technologies — AI Audit and Precision Builds for SMBs",
   description:
-    "Drew Griffiths builds custom AI automations that handle your operational work. AI Super Agents built and managed inside your ClickUp workspace.",
+    "I audit how SMBs use AI, design the leanest version that works, and build what needs to be built. A portion of every project goes into verified environmental programs.",
   icons: {
     icon: "/wst-icon.svg",
   },
