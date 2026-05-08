@@ -155,6 +155,12 @@ Open [http://localhost:3000](http://localhost:3000).
   - HTML email (navy/teal brand) with first name greeting, project title, teal "View Your Demo →" button linking to `demo_url`
   - Safe for local dev: no-ops silently when `RESEND_API_KEY` is not set
 - [x] `/projects` — "View Demo →" teal link on live projects with demo_url
+- [x] `/audit` — 5-phase AI waste estimate wizard (Session 33)
+- [x] `/api/generate-audit` — Claude-powered audit report generation; reads `content/tool-registry.json`; persists to `audit_estimates` (Session 33)
+- [x] `/api/attach-guest-audit` — links guest audit row to authenticated user after signup (Session 33)
+- [x] `content/tool-registry.json` — ~80 tool knowledge base with waste patterns, leaner alternatives, energy transparency (Session 33)
+- [x] Homepage nav "Get an Audit" link added (Session 33)
+- [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on the generated page (`/for-you/[industry]/[solution]`)
 - [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
 
@@ -203,6 +209,71 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 ```
 
 See `/supabase/schema.sql` for the full definitions.
+
+## Recent Changes (Session 33 — May 7, 2026)
+
+**AI waste estimate wizard at `/audit`**
+
+`/app/audit/page.tsx` — server component, renders `AuditWizard`.
+
+`/app/audit/AuditWizard.tsx` — 5-phase client wizard:
+- Phase 1: business name, business type (pill select), team size (pill select, auto-advances)
+- Phase 2: department checkbox grid (Operations, Sales, Marketing, Customer Support, Finance, HR, Product/Dev, Creative, Legal, Executive)
+- Phase 3: per-department tool checkbox grid + free-text "other tools" field; loops through each selected dept
+- Phase 4: AI usage toggles (deduplicated tool list) + monthly spend range pills
+- Phase 5: 3s animated teal progress bar + cycling loading lines; reveals report card when both bar and API resolve
+- Report card: waste score badge (low/medium/high/critical), waste estimate card (monthly $ range + hours), findings sorted high to low impact (max 6), quick wins list, environmental note with redirect estimate, CTA (Save My Report / Book a Call)
+- Guest insert to `audit_estimates` (non-fatal if Supabase not configured); `auditId` threaded through to auth modal
+
+`/app/audit/AuthModal.tsx` — signup/signin modal scoped to audit save:
+- Props: `auditId`, `onSuccess`, `onClose`
+- Mode toggle signup/signin; handles email confirmation state
+- On session: calls `/api/attach-guest-audit` then fires `onSuccess`
+
+`/app/api/generate-audit/route.ts` — POST handler:
+- Reads `content/tool-registry.json` at request time; matches tools case-insensitively
+- Builds per-tool context string (AI features, energy transparency, waste patterns, alternatives)
+- Calls `claude-sonnet-4-6` with system prompt: "respond only with valid JSON, no preamble"
+- Strips markdown fences before `JSON.parse`
+- Updates `audit_estimates` row via service role (non-fatal if env vars missing)
+- Returns parsed report JSON
+
+`/app/api/attach-guest-audit/route.ts` — POST `{ auditId, userId }`:
+- Service role UPDATE where `id = auditId AND guest = true AND user_id IS NULL`
+- Returns 400 if row not found or already claimed
+
+`/content/tool-registry.json` — ~80 tool entries:
+- Shape: `{ id, name, vendor, category, department[], uses_ai, ai_features, pricing_model, typical_monthly_cost_usd, energy_transparency, environmental_notes, waste_patterns[], leaner_alternatives[] }`
+- Covers: project management, automation, AI tools, CRM/sales, communication, Google Workspace, Microsoft, meeting intelligence, email marketing, social media, HR/payroll, finance/accounting, storage, dev/hosting, customer support, legal
+
+**Supabase migration — run in SQL editor:**
+```sql
+-- Session 33 — audit_estimates table (see supabase/schema.sql for full definition)
+CREATE TABLE IF NOT EXISTS audit_estimates ( ... );
+ALTER TABLE audit_estimates ENABLE ROW LEVEL SECURITY;
+-- + 3 RLS policies (see schema.sql)
+```
+
+**Homepage nav:** "Get an Audit" pill link added before "Book a Call" in `/app/page.tsx`.
+
+---
+
+## Recent Changes (Session 32 — May 7, 2026)
+
+**Admin dashboard, Supabase schema, and homepage brand refresh**
+
+`/app/admin/AdminDashboard.tsx` — client component (full project queue):
+- Active projects: status badge, relative date, inline detail panel (scope doc + raw answers), status transitions (submitted → reviewed → approved → building → live), Claude Code prompt + README block (approved/live), demo URL editable input, Regenerate Prompt, Back to Review
+- Incomplete section: collapsible, guest-only rows, scope + answers but no status controls
+- `AdminProject` type with `claude_code_prompt`, `project_readme`, `demo_url`, `guest`, `scope` (3-tier pricing), `answers`
+
+`/app/admin/page.tsx` — server component: JWT gate (drew@worldshifttech.com), service role fetch, email batch lookup, renders `AdminDashboard`.
+
+`/supabase/schema.sql` — full schema file committed:
+- `generated_pages`, `projects` (with all column migrations through project_readme), RLS policies
+- Session 33 `audit_estimates` table and policies appended
+
+---
 
 ## Recent Changes (Session 31 — May 4, 2026)
 
