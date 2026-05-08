@@ -1,0 +1,2132 @@
+[
+  {
+    "id": "clickup",
+    "name": "ClickUp",
+    "vendor": "ClickUp",
+    "category": "project-management",
+    "department": ["Operations", "Product or Development", "HR and People"],
+    "uses_ai": true,
+    "ai_features": "ClickUp Brain: AI writing assistant, task summarization, automated standup reports, AI agent task management",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 12,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid for and underused by teams that only need simple kanban",
+      "ClickUp Brain enabled without measuring actual usage against its cost",
+      "Multiple workspaces created and abandoned over time",
+      "Automations set up then broken and left running silently",
+      "Duplicate of Asana, Monday.com, or Notion in the same stack"
+    ],
+    "leaner_alternatives": [
+      "Notion for teams that primarily need docs with lightweight tasks",
+      "Trello for simple kanban-only workflows",
+      "Linear for product and engineering teams",
+      "Basecamp for simple team communication and project tracking"
+    ]
+  },
+  {
+    "id": "asana",
+    "name": "Asana",
+    "vendor": "Asana",
+    "category": "project-management",
+    "department": ["Operations", "Marketing", "Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Asana AI: smart summaries, project status drafts, goal suggestions",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 13,
+    "energy_transparency": "medium",
+    "environmental_notes": "Asana publishes a sustainability report and has stated net-zero commitments",
+    "waste_patterns": [
+      "Paid Business or Enterprise tier for features only a small subset of users access",
+      "Duplicate of ClickUp or Monday.com in same stack",
+      "Projects created and abandoned, no archiving habit",
+      "Workflow builder automations running on stale project data"
+    ],
+    "leaner_alternatives": [
+      "Trello for teams using only basic task tracking",
+      "Notion for smaller teams wanting tasks plus docs in one place",
+      "ClickUp if already using it elsewhere in the business"
+    ]
+  },
+  {
+    "id": "mondaydotcom",
+    "name": "Monday.com",
+    "vendor": "monday.com",
+    "category": "project-management",
+    "department": ["Operations", "Marketing", "Sales"],
+    "uses_ai": true,
+    "ai_features": "Monday AI: column formula generation, text analysis, automated updates",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 12,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Enterprise tier paid for when Standard covers actual usage",
+      "Multiple boards duplicating CRM data already in HubSpot or Salesforce",
+      "Integrations set up and broken, no one maintains them",
+      "Duplicate of ClickUp or Asana in same organization"
+    ],
+    "leaner_alternatives": [
+      "Airtable for teams that need database-style project views",
+      "ClickUp if already used elsewhere",
+      "Notion for lightweight projects plus knowledge base"
+    ]
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "vendor": "Notion Labs",
+    "category": "knowledge-base",
+    "department": ["Operations", "Product or Development", "HR and People", "Marketing", "Legal and Compliance", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Notion AI: writing assistant, summarization, action item extraction, Q&A over workspace content",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 10,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Notion AI add-on enabled for all seats when only a few people use it",
+      "Multiple competing knowledge bases (Notion + Confluence + Google Drive) with overlapping content",
+      "Databases built as CRM replacements that are never properly maintained",
+      "Large media files stored in Notion inflating storage costs"
+    ],
+    "leaner_alternatives": [
+      "Google Docs and Sheets for teams already in Google Workspace",
+      "Confluence if already on Atlassian stack",
+      "Obsidian for solo operators who want local-first knowledge management"
+    ]
+  },
+  {
+    "id": "basecamp",
+    "name": "Basecamp",
+    "vendor": "37signals",
+    "category": "project-management",
+    "department": ["Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "flat",
+    "typical_monthly_cost_usd": 99,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid alongside Slack for communication, creating message fragmentation",
+      "Used only for client-facing projects while internal work lives elsewhere",
+      "Team reverted to email but subscription continues"
+    ],
+    "leaner_alternatives": [
+      "Notion for teams wanting tasks plus docs",
+      "ClickUp for teams needing more feature depth",
+      "Simple shared Google Drive plus calendar for very small teams"
+    ]
+  },
+  {
+    "id": "trello",
+    "name": "Trello",
+    "vendor": "Atlassian",
+    "category": "project-management",
+    "department": ["Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 5,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid tiers for Power-Ups that replicate features of tools already in the stack",
+      "Duplicate of Asana or ClickUp for the same team",
+      "Boards abandoned mid-project with no archiving"
+    ],
+    "leaner_alternatives": [
+      "Free Trello tier for teams with simple kanban needs",
+      "GitHub Projects for development teams already on GitHub",
+      "Notion kanban view for teams already in Notion"
+    ]
+  },
+  {
+    "id": "airtable",
+    "name": "Airtable",
+    "vendor": "Airtable",
+    "category": "database",
+    "department": ["Operations", "Marketing"],
+    "uses_ai": true,
+    "ai_features": "Airtable AI: field summarization, record classification, content generation in fields",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro tier paid for record and attachment limits that are never approached",
+      "Used as CRM when HubSpot or Pipedrive already in stack",
+      "Complex automations built and abandoned",
+      "Duplicate of Google Sheets for teams without complex relational needs"
+    ],
+    "leaner_alternatives": [
+      "Google Sheets for flat data without relational needs",
+      "Notion databases for teams already in Notion",
+      "Supabase for technical teams wanting a real database"
+    ]
+  },
+  {
+    "id": "smartsheet",
+    "name": "Smartsheet",
+    "vendor": "Smartsheet",
+    "category": "project-management",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Smartsheet AI: formula generation, text summarization, risk identification",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 14,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Enterprise pricing paid for spreadsheet-style PM that Excel or Google Sheets can handle",
+      "Duplicate of Monday.com or Asana in same organization",
+      "Reports configured but never reviewed"
+    ],
+    "leaner_alternatives": [
+      "Google Sheets with Zapier for automation",
+      "Airtable for teams needing more structure than spreadsheets",
+      "Monday.com for teams wanting a visual project tool"
+    ]
+  },
+  {
+    "id": "zapier",
+    "name": "Zapier",
+    "vendor": "Zapier",
+    "category": "automation",
+    "department": ["Operations", "Marketing", "Sales"],
+    "uses_ai": true,
+    "ai_features": "Zapier AI: AI actions in Zaps, natural language Zap builder, AI-powered formatting steps",
+    "pricing_model": "tiered-usage",
+    "typical_monthly_cost_usd": 49,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Zaps running on stale or decommissioned data sources",
+      "Paid plan for task volume never reached",
+      "Overlapping with Make.com in the same stack doing similar work",
+      "Error handling not configured, Zaps failing silently for weeks",
+      "Multi-step Zaps that could be replaced by a single native integration"
+    ],
+    "leaner_alternatives": [
+      "Make (Integromat) for more complex automations at lower cost per operation",
+      "n8n self-hosted for high-volume automations with no per-task pricing",
+      "Native integrations between tools that skip the middleware entirely",
+      "Direct webhooks for simple event-triggered actions"
+    ]
+  },
+  {
+    "id": "make",
+    "name": "Make",
+    "vendor": "Make (formerly Integromat)",
+    "category": "automation",
+    "department": ["Operations", "Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI modules for Claude, OpenAI, and other model providers built into scenarios",
+    "pricing_model": "tiered-usage",
+    "typical_monthly_cost_usd": 29,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Scenarios running thousands of operations on bad or duplicate data",
+      "Overlapping with Zapier in same stack doing equivalent work",
+      "Paid tier for operation volume never reached",
+      "Scenarios with no error routing, failing silently"
+    ],
+    "leaner_alternatives": [
+      "n8n self-hosted for teams with technical capacity and high volume",
+      "Zapier for teams wanting simpler setup at the cost of flexibility",
+      "Direct API integrations for single-purpose webhook tasks"
+    ]
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "vendor": "n8n GmbH",
+    "category": "automation",
+    "department": ["Operations", "Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Built-in AI agent nodes, LangChain integration, vector store nodes for RAG workflows",
+    "pricing_model": "self-hosted-free-or-cloud",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "medium",
+    "environmental_notes": "Self-hosted means energy use depends on your infrastructure choice",
+    "waste_patterns": [
+      "Cloud plan paid when self-hosted would be free for the same workflow volume",
+      "Complex workflows built by a contractor no one on the team understands",
+      "Running alongside Zapier or Make for overlapping automation needs"
+    ],
+    "leaner_alternatives": [
+      "Self-hosted n8n on a small VPS for cost control",
+      "Make for teams without technical capacity to self-host",
+      "Direct API scripts for simple recurring tasks"
+    ]
+  },
+  {
+    "id": "workato",
+    "name": "Workato",
+    "vendor": "Workato",
+    "category": "automation",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Workato Copilot: recipe generation from natural language, AI-powered data mapping",
+    "pricing_model": "enterprise",
+    "typical_monthly_cost_usd": 833,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Enterprise pricing for automation needs that Make or n8n handle at a fraction of the cost",
+      "Recipes built by a consultant that no one internally understands or maintains",
+      "Duplicate of Zapier or Make in same stack"
+    ],
+    "leaner_alternatives": [
+      "Make for SMB-scale automation at 10-20x lower cost",
+      "n8n self-hosted for technical teams with high volume",
+      "Zapier for simple multi-tool workflows"
+    ]
+  },
+  {
+    "id": "claude",
+    "name": "Claude",
+    "vendor": "Anthropic",
+    "category": "ai",
+    "department": ["Product or Development", "Operations", "Marketing", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Large language model for writing, analysis, coding, research, and agent workflows",
+    "pricing_model": "per-user-or-api",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "medium",
+    "environmental_notes": "Anthropic publishes model cards and has stated sustainability commitments; API inference energy use not publicly disclosed at task level",
+    "waste_patterns": [
+      "Multiple team members paying separately for Pro plans when API access would serve everyone cheaper",
+      "Used for tasks a simpler prompt or a $0/month tier would handle",
+      "Duplicate of ChatGPT subscription in the same team without clear differentiation"
+    ],
+    "leaner_alternatives": [
+      "Claude.ai free tier for occasional use",
+      "Shared API credits with internal tooling for teams with technical capacity",
+      "Consolidate with ChatGPT if only one LLM is needed"
+    ]
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "vendor": "Anthropic",
+    "category": "ai",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Agentic coding assistant: writes, edits, and executes code across full repositories",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 100,
+    "energy_transparency": "medium",
+    "environmental_notes": "Agentic usage can generate significantly more tokens than conversational AI; cost per task compounds with agent loops",
+    "waste_patterns": [
+      "Seat paid for developers who rarely use it",
+      "Running agent loops on tasks that a single prompt would resolve",
+      "Duplicate of GitHub Copilot or Cursor for the same developer"
+    ],
+    "leaner_alternatives": [
+      "GitHub Copilot for inline autocomplete needs at lower cost",
+      "Cursor for developers wanting an AI-native IDE at lower cost",
+      "Claude API with a lightweight CLI wrapper for teams with scripting capacity"
+    ]
+  },
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "vendor": "OpenAI",
+    "category": "ai",
+    "department": ["Operations", "Marketing", "Sales", "Product or Development", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "GPT-4o: writing, analysis, coding, image generation via DALL-E, web search, data analysis",
+    "pricing_model": "per-user-or-api",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "low",
+    "environmental_notes": "OpenAI has not published detailed per-inference energy figures; data centers reported to be high-water-use",
+    "waste_patterns": [
+      "Multiple team members on separate Plus subscriptions with no shared output or prompt library",
+      "Duplicate of Claude or Gemini in same team without differentiated use cases",
+      "GPT-4 API calls for tasks that GPT-3.5 or a fine-tuned smaller model handles equally well",
+      "Team subscription paid but most users active fewer than 5 days a month"
+    ],
+    "leaner_alternatives": [
+      "Claude for writing and analysis with better instruction-following",
+      "Consolidated team API usage with an internal prompt tool",
+      "Free ChatGPT tier for occasional users"
+    ]
+  },
+  {
+    "id": "github-copilot",
+    "name": "GitHub Copilot",
+    "vendor": "GitHub (Microsoft)",
+    "category": "ai",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Inline code completion, chat in IDE, PR description generation, code review suggestions",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 10,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid for developers who disabled the inline suggestions after the first week",
+      "Duplicate of Cursor for the same developer",
+      "Business tier paid for features only relevant to large enterprise security requirements"
+    ],
+    "leaner_alternatives": [
+      "Cursor for developers wanting full AI-native IDE experience",
+      "Claude Code for developers doing complex multi-file agentic work",
+      "Free Copilot tier for individual developers"
+    ]
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "vendor": "Anysphere",
+    "category": "ai",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "AI-native IDE: multi-file edits, codebase-aware chat, automatic error fixing, custom AI rules",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid alongside GitHub Copilot for the same developer with overlapping functionality",
+      "Pro plan for developers using only basic autocomplete that the free tier covers",
+      "Seat paid for developers who reverted to VS Code"
+    ],
+    "leaner_alternatives": [
+      "GitHub Copilot for teams already paying for GitHub Enterprise",
+      "Free Cursor tier for limited-use developers",
+      "VS Code with Copilot for teams wanting a lighter footprint"
+    ]
+  },
+  {
+    "id": "midjourney",
+    "name": "Midjourney",
+    "vendor": "Midjourney",
+    "category": "ai",
+    "department": ["Creative and Design", "Marketing"],
+    "uses_ai": true,
+    "ai_features": "Text-to-image generation with high aesthetic quality; variation and upscaling",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 30,
+    "energy_transparency": "low",
+    "environmental_notes": "Image generation is compute-intensive; no public energy transparency from Midjourney",
+    "waste_patterns": [
+      "Pro plan for GPU hours that go unused most months",
+      "Duplicate of DALL-E already in ChatGPT Plus subscription",
+      "Turbo mode left on by default, consuming GPU hours faster than necessary"
+    ],
+    "leaner_alternatives": [
+      "DALL-E 3 via ChatGPT Plus (already paid) for occasional image needs",
+      "Canva AI image generation for marketing teams already on Canva",
+      "Adobe Firefly for teams with Adobe Creative Cloud"
+    ]
+  },
+  {
+    "id": "dalle",
+    "name": "DALL-E",
+    "vendor": "OpenAI",
+    "category": "ai",
+    "department": ["Creative and Design", "Marketing"],
+    "uses_ai": true,
+    "ai_features": "Text-to-image generation; included in ChatGPT Plus, available via API",
+    "pricing_model": "api-usage",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "API calls made at highest resolution when standard resolution fits the use case",
+      "Duplicate of Midjourney in same team"
+    ],
+    "leaner_alternatives": [
+      "Included in ChatGPT Plus — no extra cost if team already pays for Plus",
+      "Canva AI generation for marketing teams",
+      "Midjourney for higher aesthetic quality needs"
+    ]
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "vendor": "Perplexity AI",
+    "category": "ai",
+    "department": ["Operations", "Marketing", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "AI-powered search with cited sources; Pro Search with deeper reasoning; Spaces for shared research",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of ChatGPT browsing feature in the same workflow",
+      "Pro plan for research tasks the free tier handles adequately",
+      "Multiple seats when most research is done by one person"
+    ],
+    "leaner_alternatives": [
+      "ChatGPT with web browsing for teams already on OpenAI",
+      "Claude with web search tool for research-heavy workflows",
+      "Free Perplexity tier for occasional research needs"
+    ]
+  },
+  {
+    "id": "grammarly",
+    "name": "Grammarly",
+    "vendor": "Grammarly",
+    "category": "ai",
+    "department": ["Marketing", "Sales", "Operations"],
+    "uses_ai": true,
+    "ai_features": "AI writing suggestions, tone adjustment, full rewrites, Grammarly Go generative features",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Business seats paid for users who only use spellcheck (free tier covers that)",
+      "Grammarly Go generative features overlapping with ChatGPT or Claude already in the stack",
+      "Browser extension installed but disabled by most users"
+    ],
+    "leaner_alternatives": [
+      "Free Grammarly tier for basic grammar and spelling",
+      "Claude or ChatGPT for rewriting and tone work without a separate subscription",
+      "Native browser spellcheck for simple error correction"
+    ]
+  },
+  {
+    "id": "jasper",
+    "name": "Jasper",
+    "vendor": "Jasper",
+    "category": "ai",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI marketing copy generation, brand voice training, campaign templates, SEO integration",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 49,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of ChatGPT or Claude for the same writing tasks at 2x the cost",
+      "Brand voice features set up once and never refined",
+      "Team seats paid for users who write fewer than 5 pieces of content per month"
+    ],
+    "leaner_alternatives": [
+      "Claude with a saved brand voice system prompt at a fraction of the cost",
+      "ChatGPT with custom instructions for marketing copy",
+      "Copy.ai for lower-cost AI marketing copy"
+    ]
+  },
+  {
+    "id": "copyai",
+    "name": "Copy.ai",
+    "vendor": "Copy.ai",
+    "category": "ai",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI copy generation for ads, emails, landing pages; sales workflows; multi-step content pipelines",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 36,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Jasper or ChatGPT for content generation in same team",
+      "Team plan paid when one seat covers actual usage",
+      "Workflows built and abandoned after initial setup"
+    ],
+    "leaner_alternatives": [
+      "Claude with saved prompts for brand-consistent copy",
+      "ChatGPT with custom GPT for structured content pipelines",
+      "Jasper for teams wanting more marketing-specific templates"
+    ]
+  },
+  {
+    "id": "hubspot",
+    "name": "HubSpot",
+    "vendor": "HubSpot",
+    "category": "crm",
+    "department": ["Sales", "Marketing", "Customer Support"],
+    "uses_ai": true,
+    "ai_features": "HubSpot AI: content generation, ChatSpot assistant, predictive lead scoring, conversation intelligence",
+    "pricing_model": "tiered",
+    "typical_monthly_cost_usd": 800,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Marketing Hub paid for when only basic email campaigns are sent (Mailchimp would cost 90% less)",
+      "CRM contacts never cleaned — paying for a seat count inflated by dead leads",
+      "Sales sequences set up and abandoned",
+      "Pro or Enterprise tier paid for reporting features used by one person",
+      "Overlapping with a separate email marketing tool in the same stack",
+      "Service Hub paid for customer support when Intercom or Crisp handle it cheaper"
+    ],
+    "leaner_alternatives": [
+      "HubSpot CRM free tier for contact management only",
+      "Pipedrive for sales-only CRM needs",
+      "Mailchimp or ConvertKit for email-only marketing",
+      "Close.com for outbound-heavy sales teams"
+    ]
+  },
+  {
+    "id": "salesforce",
+    "name": "Salesforce",
+    "vendor": "Salesforce",
+    "category": "crm",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "Einstein AI: predictive scoring, next best action, opportunity insights, automated data entry",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 150,
+    "energy_transparency": "high",
+    "environmental_notes": "Salesforce publishes detailed sustainability reports and has Net Zero cloud product",
+    "waste_patterns": [
+      "Enterprise edition paid when Professional covers actual sales process needs",
+      "Einstein AI purchased but not configured or trained on actual data",
+      "Custom objects and fields created by consultants that no one uses",
+      "Over-licensed seats for users who only check leads weekly"
+    ],
+    "leaner_alternatives": [
+      "HubSpot CRM for SMBs with fewer than 50 sales users",
+      "Pipedrive for teams needing pipeline management without CRM complexity",
+      "Close.com for outbound-heavy sales teams"
+    ]
+  },
+  {
+    "id": "pipedrive",
+    "name": "Pipedrive",
+    "vendor": "Pipedrive",
+    "category": "crm",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "Pipedrive AI: email summarization, deal insights, activity suggestions",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 25,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Advanced tier paid for email sync and workflows that a lower tier handles",
+      "Duplicate of HubSpot CRM in same team",
+      "Custom fields created for data that is never populated"
+    ],
+    "leaner_alternatives": [
+      "HubSpot CRM free tier for simple pipeline tracking",
+      "Close.com for outbound-heavy teams who also need calling",
+      "Notion CRM template for very small teams with simple needs"
+    ]
+  },
+  {
+    "id": "close",
+    "name": "Close.com",
+    "vendor": "Close",
+    "category": "crm",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "AI email and SMS sending, conversation intelligence, automated follow-up sequences",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 49,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Calling features paid for when team makes fewer than 10 calls per week",
+      "Sequences running on cold lists that should be cleaned first",
+      "Duplicate of HubSpot or Pipedrive in same org"
+    ],
+    "leaner_alternatives": [
+      "Pipedrive for teams not doing high-volume outbound calling",
+      "HubSpot Sales Starter for teams wanting CRM plus basic email sequences",
+      "Apollo.io for teams needing prospecting plus CRM in one tool"
+    ]
+  },
+  {
+    "id": "zoho-crm",
+    "name": "Zoho CRM",
+    "vendor": "Zoho",
+    "category": "crm",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "Zia AI: lead scoring, sales predictions, anomaly detection, email intelligence",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of HubSpot or Pipedrive in same stack",
+      "Enterprise edition for features available in Standard",
+      "Zia AI enabled but not providing actionable insights due to data quality issues"
+    ],
+    "leaner_alternatives": [
+      "HubSpot CRM free tier for basic pipeline management",
+      "Pipedrive for a cleaner sales-focused interface"
+    ]
+  },
+  {
+    "id": "linkedin-sales-navigator",
+    "name": "LinkedIn Sales Navigator",
+    "vendor": "LinkedIn (Microsoft)",
+    "category": "sales",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "AI-powered lead recommendations, account insights, relationship intelligence, InMail generation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 99,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Team edition paid for reps who log in fewer than 5 times per month",
+      "InMail credits unused each month with no rollover",
+      "Lead lists built but never worked through"
+    ],
+    "leaner_alternatives": [
+      "LinkedIn Premium Business for occasional prospecting needs",
+      "Apollo.io for prospecting plus email sequence in one tool at lower cost",
+      "Manual LinkedIn search plus a CRM for teams with low outbound volume"
+    ]
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "vendor": "Salesforce (Slack)",
+    "category": "communication",
+    "department": ["Operations", "Sales", "Marketing", "Product or Development", "HR and People", "Customer Support", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Slack AI: channel summaries, thread recaps, search answers, workflow automation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 8,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro or Business+ tier for message history when the free tier's 90-day limit is sufficient",
+      "Slack AI purchased at $10/user/month without measuring actual usage",
+      "Hundreds of stale channels never archived",
+      "Duplicate of Microsoft Teams in hybrid organizations",
+      "Workflow Builder automations duplicating Zapier or Make work"
+    ],
+    "leaner_alternatives": [
+      "Free Slack tier for teams with under 90 days of relevant message history",
+      "Microsoft Teams if already on Microsoft 365",
+      "Discord for informal team communication at no cost"
+    ]
+  },
+  {
+    "id": "microsoft-teams",
+    "name": "Microsoft Teams",
+    "vendor": "Microsoft",
+    "category": "communication",
+    "department": ["Operations", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Microsoft Copilot in Teams: meeting transcription, action items, meeting chat summaries",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "medium",
+    "environmental_notes": "Microsoft has published 2030 carbon negative commitments and data center sustainability reports",
+    "waste_patterns": [
+      "Teams paid for and running alongside Slack in the same organization",
+      "Copilot for Teams add-on purchased for users who don't attend enough meetings to justify the cost",
+      "Video calls defaulting to Teams but Zoom also paid for simultaneously"
+    ],
+    "leaner_alternatives": [
+      "Included in Microsoft 365 — no extra cost if already on that plan",
+      "Slack if team prefers async-first culture",
+      "Google Meet if already in Google Workspace"
+    ]
+  },
+  {
+    "id": "whatsapp-business",
+    "name": "WhatsApp Business",
+    "vendor": "Meta",
+    "category": "communication",
+    "department": ["Sales", "Customer Support"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-conversation",
+    "typical_monthly_cost_usd": 30,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "API costs for conversation templates never optimized",
+      "Marketing conversations sent to cold lists with low open rates and high cost",
+      "Duplicate of Intercom or Crisp for customer support"
+    ],
+    "leaner_alternatives": [
+      "Crisp for customer chat at flat monthly pricing",
+      "Email for non-urgent customer communication",
+      "SMS via Twilio for markets where WhatsApp penetration is lower"
+    ]
+  },
+  {
+    "id": "zoom",
+    "name": "Zoom",
+    "vendor": "Zoom",
+    "category": "communication",
+    "department": ["Sales", "HR and People", "Customer Support", "Executive or Leadership", "Operations"],
+    "uses_ai": true,
+    "ai_features": "Zoom AI Companion: meeting summaries, action item extraction, chat compose, whiteboard generation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro plan paid for hosts who run fewer than 2 meetings per week",
+      "Webinar or Events add-on paid for quarterly use",
+      "Running alongside Google Meet or Teams in the same organization",
+      "AI Companion add-on purchased without being enabled or configured"
+    ],
+    "leaner_alternatives": [
+      "Google Meet for teams already in Google Workspace",
+      "Microsoft Teams for teams on Microsoft 365",
+      "Free Zoom tier for meetings under 40 minutes"
+    ]
+  },
+  {
+    "id": "google-meet",
+    "name": "Google Meet",
+    "vendor": "Google",
+    "category": "communication",
+    "department": ["Sales", "Operations", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Gemini in Meet: meeting notes, live captions, background noise cancellation",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": "Google runs on 100% renewable energy matched and publishes detailed sustainability data",
+    "waste_patterns": [
+      "Zoom or Teams paid for alongside Google Meet in same organization",
+      "Gemini add-on purchased for Meet but Google Workspace already includes notes features"
+    ],
+    "leaner_alternatives": [
+      "Already included in Google Workspace — no extra cost",
+      "Replace Zoom with Meet if team is already in Google Workspace"
+    ]
+  },
+  {
+    "id": "loom",
+    "name": "Loom",
+    "vendor": "Loom (Atlassian)",
+    "category": "communication",
+    "department": ["Operations", "Creative and Design", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "AI video summaries, transcript generation, filler word removal, auto-generated titles",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 10,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Business plan for teams who record fewer than 5 videos per month per person",
+      "Videos recorded and never viewed",
+      "Duplicate of Loom-like features in HubSpot, Slack, or Notion"
+    ],
+    "leaner_alternatives": [
+      "Free Loom tier for teams with low recording volume",
+      "Notion video embed for documentation-focused use cases",
+      "Slack audio/video clips for quick internal updates"
+    ]
+  },
+  {
+    "id": "discord",
+    "name": "Discord",
+    "vendor": "Discord",
+    "category": "communication",
+    "department": ["Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "free-or-nitro",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Used alongside Slack for the same team with message fragmentation as a result",
+      "Server created and abandoned after team migrated to Slack"
+    ],
+    "leaner_alternatives": [
+      "Slack for professional team communication",
+      "Free Discord if team prefers it and Slack is not used"
+    ]
+  },
+  {
+    "id": "gmail",
+    "name": "Gmail",
+    "vendor": "Google",
+    "category": "email",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Gemini in Gmail: email drafts, smart reply, summarization, action item extraction",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": "Included in Google Workspace; Google operates on matched renewable energy",
+    "waste_patterns": [
+      "Gemini for Workspace add-on purchased when basic Gmail features cover actual need",
+      "Third-party email tools (Mixmax, Streak) layered on top creating complexity"
+    ],
+    "leaner_alternatives": [
+      "Included in Google Workspace — optimize existing plan tier before adding tools"
+    ]
+  },
+  {
+    "id": "google-drive",
+    "name": "Google Drive",
+    "vendor": "Google",
+    "category": "storage",
+    "department": ["Operations", "Legal and Compliance"],
+    "uses_ai": true,
+    "ai_features": "Gemini in Drive: document summarization, Q&A over files, suggested actions",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": "Google Workspace storage runs on matched renewable energy infrastructure",
+    "waste_patterns": [
+      "Large video files stored in Drive when YouTube (unlisted) or Loom would be cheaper",
+      "Duplicate of Dropbox or OneDrive in same organization",
+      "Shared drives with no ownership structure, full of outdated files"
+    ],
+    "leaner_alternatives": [
+      "Included in Google Workspace — audit storage use before paying for additional tiers",
+      "Dropbox for teams not in Google ecosystem"
+    ]
+  },
+  {
+    "id": "google-docs",
+    "name": "Google Docs",
+    "vendor": "Google",
+    "category": "documents",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Gemini in Docs: writing assistance, summarization, draft generation",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Notion or Confluence for documentation in same team",
+      "Documents created but never organized, functioning as a file dumping ground"
+    ],
+    "leaner_alternatives": [
+      "Included in Google Workspace — consolidate Notion usage if Docs covers the need"
+    ]
+  },
+  {
+    "id": "google-sheets",
+    "name": "Google Sheets",
+    "vendor": "Google",
+    "category": "spreadsheets",
+    "department": ["Operations", "Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "Gemini in Sheets: formula generation, data analysis, insights",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Used as a CRM when HubSpot free tier would serve better",
+      "Duplicate of Airtable in same team for the same data",
+      "Sheets-based reporting that runs hours of manual work monthly that Airtable or a BI tool would automate"
+    ],
+    "leaner_alternatives": [
+      "Included in Google Workspace — good default for most SMB spreadsheet needs"
+    ]
+  },
+  {
+    "id": "google-calendar",
+    "name": "Google Calendar",
+    "vendor": "Google",
+    "category": "scheduling",
+    "department": ["Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Calendly paid alongside Google Calendar with no integration keeping them in sync",
+      "Multiple calendar apps for the same team (Google + Outlook) causing double-booking"
+    ],
+    "leaner_alternatives": [
+      "Included in Google Workspace — consolidate scheduling tools"
+    ]
+  },
+  {
+    "id": "google-workspace",
+    "name": "Google Workspace",
+    "vendor": "Google",
+    "category": "productivity-suite",
+    "department": ["HR and People", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Gemini for Workspace: AI across Gmail, Docs, Sheets, Meet, Drive, and Slides",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 12,
+    "energy_transparency": "high",
+    "environmental_notes": "Google matches 100% of its electricity consumption with renewable energy purchases and publishes annual environmental reports",
+    "waste_patterns": [
+      "Business Plus or Enterprise tier paid when Business Starter covers actual usage",
+      "Gemini for Workspace add-on purchased for all seats when only a few users benefit",
+      "Running alongside Microsoft 365 in the same organization, paying for two productivity suites"
+    ],
+    "leaner_alternatives": [
+      "Downgrade to lower Google Workspace tier if storage and feature limits allow",
+      "Microsoft 365 if team is already Microsoft-native",
+      "Consolidate to one productivity suite to eliminate the overlap"
+    ]
+  },
+  {
+    "id": "microsoft-365",
+    "name": "Microsoft 365",
+    "vendor": "Microsoft",
+    "category": "productivity-suite",
+    "department": ["Operations", "Legal and Compliance", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "Microsoft Copilot: AI across Word, Excel, PowerPoint, Outlook, Teams; $30/user/month add-on",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "medium",
+    "environmental_notes": "Microsoft has stated 2030 carbon negative commitments and publishes sustainability reports",
+    "waste_patterns": [
+      "Business Premium paid when Business Basic covers actual usage",
+      "Microsoft Copilot add-on purchased for all seats when only power users benefit",
+      "Running alongside Google Workspace in the same organization",
+      "OneDrive storage not used because team defaults to Google Drive"
+    ],
+    "leaner_alternatives": [
+      "Downgrade to Microsoft 365 Business Basic if advanced features are unused",
+      "Google Workspace if team already lives in Google tools",
+      "Evaluate Copilot ROI before expanding seats"
+    ]
+  },
+  {
+    "id": "onedrive",
+    "name": "OneDrive",
+    "vendor": "Microsoft",
+    "category": "storage",
+    "department": ["Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "medium",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Google Drive or Dropbox in same organization",
+      "Included in Microsoft 365 but team defaults to Google Drive"
+    ],
+    "leaner_alternatives": [
+      "Already included in Microsoft 365",
+      "Google Drive for teams in Google Workspace"
+    ]
+  },
+  {
+    "id": "sharepoint",
+    "name": "SharePoint",
+    "vendor": "Microsoft",
+    "category": "collaboration",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Copilot for SharePoint: site generation, page summaries, content Q&A",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "medium",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Complex intranet built on SharePoint that nobody navigates — team uses email instead",
+      "Duplicate of Notion or Confluence for internal documentation",
+      "SharePoint sites created and abandoned"
+    ],
+    "leaner_alternatives": [
+      "Notion for smaller teams wanting a simpler intranet",
+      "Google Sites for basic internal reference pages",
+      "Confluence for development-adjacent teams on Atlassian stack"
+    ]
+  },
+  {
+    "id": "outlook",
+    "name": "Outlook",
+    "vendor": "Microsoft",
+    "category": "email",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Copilot in Outlook: email drafting, summarization, coaching, meeting scheduling",
+    "pricing_model": "bundled",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "medium",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Used alongside Gmail in same organization causing email fragmentation",
+      "Copilot in Outlook purchased without measuring adoption or time saved"
+    ],
+    "leaner_alternatives": [
+      "Included in Microsoft 365 — consolidate to one email platform"
+    ]
+  },
+  {
+    "id": "fireflies",
+    "name": "Fireflies.ai",
+    "vendor": "Fireflies",
+    "category": "meeting-intelligence",
+    "department": ["Sales", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "AI meeting transcription, action item extraction, speaker analytics, CRM sync, ask-Fred Q&A",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 18,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Otter.ai, Fathom, or Grain in same organization",
+      "Paid for all meeting attendees when only sales calls need transcription",
+      "Transcripts generated but never reviewed or actioned"
+    ],
+    "leaner_alternatives": [
+      "Fathom (free tier covers most individual use cases)",
+      "Otter.ai for teams wanting shared workspaces",
+      "Zoom AI Companion if already on Zoom Pro (transcription included)"
+    ]
+  },
+  {
+    "id": "otter",
+    "name": "Otter.ai",
+    "vendor": "Otter.ai",
+    "category": "meeting-intelligence",
+    "department": ["Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "AI transcription, live notes, OtterPilot for automated meeting join, summary generation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 16,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Fireflies.ai or Fathom in same organization",
+      "Pro plan for transcription minutes never hit",
+      "Used only for occasional meetings — free tier would cover it"
+    ],
+    "leaner_alternatives": [
+      "Fathom free tier for individual use",
+      "Fireflies.ai for CRM-integrated sales teams",
+      "Zoom AI Companion for teams on Zoom Pro"
+    ]
+  },
+  {
+    "id": "calendly",
+    "name": "Calendly",
+    "vendor": "Calendly",
+    "category": "scheduling",
+    "department": ["Sales", "Operations"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 12,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Team plan paid for teams where only 1-2 people need scheduling links",
+      "Multiple scheduling tools in same org (Calendly plus HubSpot meetings plus Google Calendar appointment slots)",
+      "Paid tier for routing features that aren't used"
+    ],
+    "leaner_alternatives": [
+      "Free Calendly tier for individuals with basic scheduling needs",
+      "Google Calendar appointment scheduling (included in Google Workspace)",
+      "HubSpot meetings (included in HubSpot Free CRM)"
+    ]
+  },
+  {
+    "id": "fathom",
+    "name": "Fathom",
+    "vendor": "Fathom Video",
+    "category": "meeting-intelligence",
+    "department": ["Sales", "Executive or Leadership"],
+    "uses_ai": true,
+    "ai_features": "AI meeting summaries, action items, CRM auto-fill, highlight clips",
+    "pricing_model": "free-or-per-user",
+    "typical_monthly_cost_usd": 19,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Premium plan paid when free tier covers individual recording needs",
+      "Duplicate of Fireflies.ai or Otter.ai in same team"
+    ],
+    "leaner_alternatives": [
+      "Free Fathom tier covers most individual use cases with unlimited recordings"
+    ]
+  },
+  {
+    "id": "grain",
+    "name": "Grain",
+    "vendor": "Grain",
+    "category": "meeting-intelligence",
+    "department": ["Sales"],
+    "uses_ai": true,
+    "ai_features": "AI coaching, CRM sync, meeting highlights, call library with search",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 19,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Fireflies.ai or Fathom in same organization",
+      "Coaching features purchased but not used in any structured review process",
+      "Call library never searched or referenced post-meeting"
+    ],
+    "leaner_alternatives": [
+      "Fathom free tier for individual call recording",
+      "Fireflies.ai for CRM-integrated teams"
+    ]
+  },
+  {
+    "id": "mailchimp",
+    "name": "Mailchimp",
+    "vendor": "Mailchimp (Intuit)",
+    "category": "email-marketing",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "Content optimizer, subject line helper, send-time optimization, predicted demographics",
+    "pricing_model": "contact-based",
+    "typical_monthly_cost_usd": 50,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "List not cleaned — paying for unengaged contacts that inflate tier pricing",
+      "Duplicate of ActiveCampaign or HubSpot email in same stack",
+      "Standard plan for automation features also available at Essentials tier",
+      "Legacy account on Mailchimp while team also uses ConvertKit"
+    ],
+    "leaner_alternatives": [
+      "ConvertKit/Kit for creator or content-led businesses",
+      "Brevo (formerly Sendinblue) for contact-based pricing with lower rate",
+      "HubSpot email (free tier) for teams already in HubSpot CRM"
+    ]
+  },
+  {
+    "id": "activecampaign",
+    "name": "ActiveCampaign",
+    "vendor": "ActiveCampaign",
+    "category": "email-marketing",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "Predictive sending, AI-powered segmentation, predictive content, win probability",
+    "pricing_model": "contact-based",
+    "typical_monthly_cost_usd": 80,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Professional or Enterprise tier for automation complexity that Plus handles",
+      "List not cleaned — contact count inflated by cold or unsubscribed contacts",
+      "CRM features purchased but HubSpot or Pipedrive already in use for sales"
+    ],
+    "leaner_alternatives": [
+      "ConvertKit for creator-led marketing with simpler automation",
+      "Mailchimp for teams needing basic broadcasts without complex sequences",
+      "HubSpot Marketing Starter for teams already in HubSpot CRM"
+    ]
+  },
+  {
+    "id": "klaviyo",
+    "name": "Klaviyo",
+    "vendor": "Klaviyo",
+    "category": "email-marketing",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI-powered segmentation, predictive analytics, product recommendations, churn prediction",
+    "pricing_model": "contact-based",
+    "typical_monthly_cost_usd": 100,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Ecommerce-specific features purchased by non-ecommerce businesses with simpler needs",
+      "List not cleaned — suppressed and inactive contacts inflating the plan cost",
+      "SMS add-on purchased but barely used"
+    ],
+    "leaner_alternatives": [
+      "Mailchimp for teams without deep ecommerce integration needs",
+      "ConvertKit for content-first businesses",
+      "ActiveCampaign for teams needing automation depth without ecommerce features"
+    ]
+  },
+  {
+    "id": "convertkit",
+    "name": "ConvertKit",
+    "vendor": "ConvertKit (Kit)",
+    "category": "email-marketing",
+    "department": ["Marketing"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "subscriber-based",
+    "typical_monthly_cost_usd": 29,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Creator Pro paid for features (newsletter referral, advanced deliverability) rarely used",
+      "Duplicate of Mailchimp in same organization",
+      "List not cleaned — cold subscribers inflating subscriber count and cost"
+    ],
+    "leaner_alternatives": [
+      "Free ConvertKit tier for lists under 1,000 subscribers",
+      "Beehiiv for newsletter-primary creators",
+      "Mailchimp for teams needing more template flexibility"
+    ]
+  },
+  {
+    "id": "beehiiv",
+    "name": "Beehiiv",
+    "vendor": "Beehiiv",
+    "category": "newsletter",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI writing assistant for newsletters, subject line generation, audience insights",
+    "pricing_model": "subscriber-based",
+    "typical_monthly_cost_usd": 39,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Scale or Max tier for newsletter volume that Launch tier covers",
+      "Boosts (paid referral program) active with no strategy to measure ROI",
+      "Duplicate of ConvertKit for the same audience"
+    ],
+    "leaner_alternatives": [
+      "Free Beehiiv tier for newsletters under 2,500 subscribers",
+      "ConvertKit for creators wanting automation alongside newsletters",
+      "Substack for fully free newsletter hosting (with revenue share on paid)"
+    ]
+  },
+  {
+    "id": "buffer",
+    "name": "Buffer",
+    "vendor": "Buffer",
+    "category": "social-media",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI assistant for post idea generation and caption writing",
+    "pricing_model": "per-channel",
+    "typical_monthly_cost_usd": 18,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid channels for platforms that get fewer than 2 posts per month",
+      "Duplicate of Hootsuite or Later in same marketing stack",
+      "Analytics features purchased when free tier analytics cover reporting needs"
+    ],
+    "leaner_alternatives": [
+      "Free Buffer tier for up to 3 channels and 10 posts each",
+      "Native scheduling in each platform for simple posting needs",
+      "Later for visual-first brands (Instagram, TikTok)"
+    ]
+  },
+  {
+    "id": "hootsuite",
+    "name": "Hootsuite",
+    "vendor": "Hootsuite",
+    "category": "social-media",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "OwlyWriter AI: caption and post generation, content repurposing, hashtag suggestions",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 99,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Team plan for teams where one person manages all social accounts",
+      "Expensive relative to Buffer or Later for the same scheduling functionality",
+      "Inbox features paid for but monitored manually instead"
+    ],
+    "leaner_alternatives": [
+      "Buffer for simpler scheduling at lower cost",
+      "Later for visual content planning",
+      "Native platform schedulers for teams posting fewer than 5 times per week"
+    ]
+  },
+  {
+    "id": "later",
+    "name": "Later",
+    "vendor": "Later",
+    "category": "social-media",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI caption writer, hashtag suggestions, best time to post predictions",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 25,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Advanced plan for analytics features used once per quarter",
+      "Duplicate of Buffer or Hootsuite in same team",
+      "LinkedIn scheduling paid for when native LinkedIn scheduling is free"
+    ],
+    "leaner_alternatives": [
+      "Free Later tier for basic Instagram and TikTok scheduling",
+      "Buffer for multi-platform teams",
+      "Native platform scheduling for single-platform focus"
+    ]
+  },
+  {
+    "id": "canva",
+    "name": "Canva",
+    "vendor": "Canva",
+    "category": "design",
+    "department": ["Marketing", "Creative and Design"],
+    "uses_ai": true,
+    "ai_features": "Magic Write, Magic Edit, Magic Eraser, text-to-image, background remover, AI presentation generation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 13,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro plan for teams with 1 active designer — free tier covers the rest",
+      "Duplicate of Adobe Creative Cloud for the same team",
+      "Brand Kit and team features paid for a solo operator"
+    ],
+    "leaner_alternatives": [
+      "Free Canva tier for individual or low-volume design needs",
+      "Adobe Express for teams on Adobe Creative Cloud",
+      "Figma for teams needing collaborative design with dev handoff"
+    ]
+  },
+  {
+    "id": "google-analytics",
+    "name": "Google Analytics",
+    "vendor": "Google",
+    "category": "analytics",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI insights, predictive metrics, anomaly detection, report generation",
+    "pricing_model": "free",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "high",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "GA4 data never reviewed — reports configured but no one checks them",
+      "Google Analytics 360 (paid) for traffic volumes that GA4 free handles",
+      "Duplicate of Semrush analytics or HubSpot traffic reporting in same stack"
+    ],
+    "leaner_alternatives": [
+      "Free GA4 covers the needs of almost all SMBs",
+      "Plausible or Fathom Analytics for privacy-first, simpler analytics at low cost"
+    ]
+  },
+  {
+    "id": "semrush",
+    "name": "Semrush",
+    "vendor": "Semrush",
+    "category": "marketing-analytics",
+    "department": ["Marketing"],
+    "uses_ai": true,
+    "ai_features": "AI writing assistant, ContentShake AI for articles, AI-powered competitive insights",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 120,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Guru or Business tier for SEO needs covered by Pro",
+      "Used by one person but billed as multi-seat",
+      "Purchased for a one-time competitive audit and left active",
+      "Duplicate of Ahrefs in same marketing team"
+    ],
+    "leaner_alternatives": [
+      "Semrush Pro for single-user SEO needs",
+      "Ahrefs for teams prioritizing backlink research",
+      "Google Search Console (free) for core keyword performance data"
+    ]
+  },
+  {
+    "id": "intercom",
+    "name": "Intercom",
+    "vendor": "Intercom",
+    "category": "customer-support",
+    "department": ["Customer Support"],
+    "uses_ai": true,
+    "ai_features": "Fin AI Agent: automated customer query resolution, AI summaries, AI-generated help content",
+    "pricing_model": "per-seat-plus-usage",
+    "typical_monthly_cost_usd": 150,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Fin AI charges per resolution — cost can spike without volume monitoring",
+      "Proactive messages and product tours paid for but never built out",
+      "Team inbox features purchased when only one person handles support",
+      "Duplicate of Zendesk or Freshdesk in same organization"
+    ],
+    "leaner_alternatives": [
+      "Crisp for smaller teams at a flat monthly rate",
+      "Freshdesk free tier for basic ticket management",
+      "HubSpot Service Hub for teams already in HubSpot"
+    ]
+  },
+  {
+    "id": "zendesk",
+    "name": "Zendesk",
+    "vendor": "Zendesk",
+    "category": "customer-support",
+    "department": ["Customer Support"],
+    "uses_ai": true,
+    "ai_features": "Zendesk AI: automated ticket routing, intent detection, agent assist, bot resolution",
+    "pricing_model": "per-agent",
+    "typical_monthly_cost_usd": 55,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Suite Professional or Enterprise for ticket volume that Support Basic handles",
+      "AI add-on purchased without measuring actual deflection rate",
+      "Multiple agents configured for accounts that see fewer than 20 tickets per week",
+      "Duplicate of Intercom or Freshdesk in same organization"
+    ],
+    "leaner_alternatives": [
+      "Freshdesk free tier for teams under 10 agents with low volume",
+      "Crisp for live chat-first support",
+      "HubSpot Service Hub for teams already in HubSpot ecosystem"
+    ]
+  },
+  {
+    "id": "freshdesk",
+    "name": "Freshdesk",
+    "vendor": "Freshworks",
+    "category": "customer-support",
+    "department": ["Customer Support"],
+    "uses_ai": true,
+    "ai_features": "Freddy AI: ticket classification, auto-triage, suggested responses, agent assist",
+    "pricing_model": "per-agent",
+    "typical_monthly_cost_usd": 35,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro or Enterprise tier for teams that the free tier or Growth plan handles",
+      "Duplicate of Zendesk or Intercom in same stack",
+      "Freddy AI purchased but not configured or trained on help center content"
+    ],
+    "leaner_alternatives": [
+      "Free Freshdesk tier for teams under 10 agents",
+      "Crisp for live chat-primary support",
+      "Zendesk for teams needing more complex workflow rules"
+    ]
+  },
+  {
+    "id": "crisp",
+    "name": "Crisp",
+    "vendor": "Crisp",
+    "category": "customer-support",
+    "department": ["Customer Support"],
+    "uses_ai": true,
+    "ai_features": "AI chatbot with custom knowledge base, conversation summaries, suggested replies",
+    "pricing_model": "flat",
+    "typical_monthly_cost_usd": 45,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid plan for teams with fewer than 3 conversations per day",
+      "Duplicate of Intercom for the same support function"
+    ],
+    "leaner_alternatives": [
+      "Free Crisp tier for basic live chat needs",
+      "Intercom for teams needing deeper product-integrated support",
+      "HubSpot chat for teams already in HubSpot"
+    ]
+  },
+  {
+    "id": "quickbooks",
+    "name": "QuickBooks",
+    "vendor": "Intuit",
+    "category": "accounting",
+    "department": ["Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "AI receipt matching, expense categorization, cash flow predictions, Intuit Assist",
+    "pricing_model": "tiered",
+    "typical_monthly_cost_usd": 50,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Plus or Advanced tier for sole proprietors who only need Simple Start",
+      "Inventory features paid for in product tiers when business holds no inventory",
+      "Duplicate of Xero or FreshBooks in same organization",
+      "Payroll add-on paid alongside Gusto for the same employees"
+    ],
+    "leaner_alternatives": [
+      "QuickBooks Simple Start for solo operators",
+      "Wave for very small businesses wanting free bookkeeping",
+      "Xero for businesses wanting stronger bank reconciliation"
+    ]
+  },
+  {
+    "id": "xero",
+    "name": "Xero",
+    "vendor": "Xero",
+    "category": "accounting",
+    "department": ["Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "AI-powered bank reconciliation, invoice matching, expense categorization",
+    "pricing_model": "tiered",
+    "typical_monthly_cost_usd": 37,
+    "energy_transparency": "medium",
+    "environmental_notes": "Xero publishes an environmental impact report and is working toward carbon-neutral operations",
+    "waste_patterns": [
+      "Business plan for organizations with under 5 invoices per month (Starter covers it)",
+      "Duplicate of QuickBooks in same organization",
+      "Payroll add-on purchased alongside Gusto"
+    ],
+    "leaner_alternatives": [
+      "Xero Starter for very small businesses",
+      "Wave for free accounting with fewer integrations",
+      "QuickBooks for teams deeply integrated with US payroll"
+    ]
+  },
+  {
+    "id": "freshbooks",
+    "name": "FreshBooks",
+    "vendor": "FreshBooks",
+    "category": "accounting",
+    "department": ["Finance and Accounting"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "tiered",
+    "typical_monthly_cost_usd": 30,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Premium tier for client count that Lite covers",
+      "Duplicate of QuickBooks or Xero in same organization",
+      "Time tracking features paid for in a business that bills flat fees only"
+    ],
+    "leaner_alternatives": [
+      "FreshBooks Lite for solo freelancers with few clients",
+      "Wave for free invoicing and accounting",
+      "QuickBooks for businesses needing deeper accounting features"
+    ]
+  },
+  {
+    "id": "stripe",
+    "name": "Stripe",
+    "vendor": "Stripe",
+    "category": "payments",
+    "department": ["Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "Stripe Radar: AI fraud detection, smart retries, revenue recovery",
+    "pricing_model": "per-transaction",
+    "typical_monthly_cost_usd": 30,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Stripe Billing or Tax add-ons active for features only needed at higher volume",
+      "Multiple Stripe accounts for the same business entity",
+      "Dispute fees accumulating from weak customer verification"
+    ],
+    "leaner_alternatives": [
+      "Stripe is typically the lean choice — optimize by auditing which Stripe products are actually used"
+    ]
+  },
+  {
+    "id": "wave",
+    "name": "Wave",
+    "vendor": "Wave Financial (H&R Block)",
+    "category": "accounting",
+    "department": ["Finance and Accounting"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "free",
+    "typical_monthly_cost_usd": 0,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Wave Payroll paid alongside Gusto or Rippling for the same employees",
+      "Used alongside QuickBooks for the same entity"
+    ],
+    "leaner_alternatives": [
+      "Wave is already the lean choice for free bookkeeping — consolidate from more expensive tools"
+    ]
+  },
+  {
+    "id": "bill",
+    "name": "Bill.com",
+    "vendor": "BILL",
+    "category": "finance",
+    "department": ["Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "AI-powered invoice capture, payment prediction, duplicate detection",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 45,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "AP and AR modules paid for when only one is used",
+      "Duplicate of QuickBooks Bill Pay for the same AP workflow",
+      "Team seats for approvers who only log in to approve once per month"
+    ],
+    "leaner_alternatives": [
+      "QuickBooks Bill Pay for teams already in QuickBooks",
+      "Direct bank ACH for simple payment workflows without multi-level approval needs"
+    ]
+  },
+  {
+    "id": "expensify",
+    "name": "Expensify",
+    "vendor": "Expensify",
+    "category": "finance",
+    "department": ["Finance and Accounting"],
+    "uses_ai": true,
+    "ai_features": "SmartScan: AI receipt parsing, automatic expense categorization, mileage tracking",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 9,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Paid for all employees when only a subset submits expenses",
+      "Duplicate of Rippling or Gusto expense management in same org",
+      "Control plan for policy features not configured or enforced"
+    ],
+    "leaner_alternatives": [
+      "Ramp or Brex for teams wanting combined corporate card plus expense management",
+      "QuickBooks or Xero expense features if already on those platforms",
+      "Free Expensify tier for very low volume"
+    ]
+  },
+  {
+    "id": "gusto",
+    "name": "Gusto",
+    "vendor": "Gusto",
+    "category": "hr-payroll",
+    "department": ["HR and People", "Finance and Accounting"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 46,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Premium plan for HR features only relevant to teams over 25 people",
+      "Duplicate of Rippling for the same employee base",
+      "Time tracking module paid but team uses a separate time tracker"
+    ],
+    "leaner_alternatives": [
+      "Gusto Simple plan for startups with straightforward payroll",
+      "Rippling for teams wanting payroll plus IT plus HR in one platform",
+      "Wave Payroll for very small teams wanting lower-cost payroll"
+    ]
+  },
+  {
+    "id": "rippling",
+    "name": "Rippling",
+    "vendor": "Rippling",
+    "category": "hr-payroll",
+    "department": ["HR and People", "Finance and Accounting"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 35,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "HR, IT, and Finance modules all purchased when only payroll is actively used",
+      "Duplicate of Gusto for the same team",
+      "Device management module paid for a team that self-manages devices"
+    ],
+    "leaner_alternatives": [
+      "Gusto for teams wanting payroll-only at lower cost",
+      "BambooHR for teams wanting HR-focused tooling without IT management"
+    ]
+  },
+  {
+    "id": "bamboohr",
+    "name": "BambooHR",
+    "vendor": "BambooHR",
+    "category": "hr",
+    "department": ["HR and People"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 8,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Advanced features (applicant tracking, performance reviews) paid for but unused",
+      "Duplicate of Rippling or Gusto HR module in same org",
+      "PTO tracking paid for when Google Calendar or Notion handles it informally"
+    ],
+    "leaner_alternatives": [
+      "Gusto for teams wanting payroll integrated with HR",
+      "Rippling for teams wanting HR plus IT",
+      "Notion HR template for very small teams"
+    ]
+  },
+  {
+    "id": "lattice",
+    "name": "Lattice",
+    "vendor": "Lattice",
+    "category": "hr-performance",
+    "department": ["HR and People"],
+    "uses_ai": true,
+    "ai_features": "AI-assisted performance review writing, goal suggestions, engagement survey analysis",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 11,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Performance review cycle purchased but reviews happen less than twice per year",
+      "OKR and engagement modules paid for alongside the performance module with low adoption",
+      "Paid for the full team when only managers use the review features"
+    ],
+    "leaner_alternatives": [
+      "Notion or Google Forms for lightweight performance check-ins at teams under 15",
+      "15Five for a lower-cost alternative",
+      "BambooHR performance module if already on BambooHR"
+    ]
+  },
+  {
+    "id": "dropbox",
+    "name": "Dropbox",
+    "vendor": "Dropbox",
+    "category": "storage",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Dropbox Dash: AI-powered universal search across connected apps and files",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 16,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Google Drive or OneDrive in same organization",
+      "Business Plus or Professional tier for storage and transfer limits never approached",
+      "Dropbox Dash paid but team defaults to browser search"
+    ],
+    "leaner_alternatives": [
+      "Google Drive if already in Google Workspace",
+      "OneDrive if already on Microsoft 365",
+      "Box for teams with enterprise security requirements"
+    ]
+  },
+  {
+    "id": "box",
+    "name": "Box",
+    "vendor": "Box",
+    "category": "storage",
+    "department": ["Operations"],
+    "uses_ai": true,
+    "ai_features": "Box AI: document summarization, Q&A over files, metadata extraction",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "medium",
+    "environmental_notes": "Box has published sustainability commitments and data center efficiency goals",
+    "waste_patterns": [
+      "Enterprise plan for security features only relevant to regulated industries",
+      "Duplicate of Google Drive or Dropbox in same team",
+      "Box AI purchased but team still searches files manually"
+    ],
+    "leaner_alternatives": [
+      "Google Drive for teams in Google Workspace",
+      "Dropbox for simpler file sync needs",
+      "OneDrive for Microsoft 365 users"
+    ]
+  },
+  {
+    "id": "github",
+    "name": "GitHub",
+    "vendor": "GitHub (Microsoft)",
+    "category": "development",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "GitHub Copilot: inline autocomplete, chat, PR descriptions; GitHub Actions: CI/CD automation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 4,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Enterprise plan for security features only needed at 100+ developers",
+      "Actions minutes overage from poorly optimized CI/CD pipelines",
+      "Multiple organizations for the same team adding complexity and potential seat duplication"
+    ],
+    "leaner_alternatives": [
+      "GitHub Free for open-source or small private teams",
+      "GitLab for teams wanting self-hosted option",
+      "GitHub Team as the lean paid tier for most SMBs"
+    ]
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel",
+    "vendor": "Vercel",
+    "category": "hosting",
+    "department": ["Product or Development"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 20,
+    "energy_transparency": "medium",
+    "environmental_notes": "Vercel uses AWS infrastructure; AWS has stated renewable energy goals but percentage varies by region",
+    "waste_patterns": [
+      "Pro plan for projects with low traffic that Hobby tier handles",
+      "Multiple team seats for solo developers",
+      "Build minutes and serverless function invocations not monitored, leading to surprise overage charges"
+    ],
+    "leaner_alternatives": [
+      "Vercel Hobby (free) for side projects and low-traffic sites",
+      "Netlify as an alternative with similar pricing",
+      "Cloudflare Pages for teams wanting edge-first hosting with a generous free tier"
+    ]
+  },
+  {
+    "id": "supabase",
+    "name": "Supabase",
+    "vendor": "Supabase",
+    "category": "database",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Supabase AI: SQL generation, vector embeddings for RAG, pgvector integration",
+    "pricing_model": "tiered",
+    "typical_monthly_cost_usd": 25,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Multiple projects created for the same product, doubling costs",
+      "Pro plan for read volumes covered by the free tier with proper indexing",
+      "Realtime subscriptions left open for features not actually in production"
+    ],
+    "leaner_alternatives": [
+      "Supabase Free tier for development and low-traffic production apps",
+      "PlanetScale for teams needing MySQL with serverless pricing",
+      "Neon for serverless Postgres with usage-based pricing"
+    ]
+  },
+  {
+    "id": "aws",
+    "name": "AWS",
+    "vendor": "Amazon Web Services",
+    "category": "cloud-infrastructure",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Amazon Bedrock, SageMaker, Rekognition, Comprehend, and other managed AI services",
+    "pricing_model": "usage-based",
+    "typical_monthly_cost_usd": 200,
+    "energy_transparency": "medium",
+    "environmental_notes": "AWS publishes a sustainability pillar and has stated renewable energy goals; actual per-service energy is not user-visible",
+    "waste_patterns": [
+      "EC2 instances running 24/7 for workloads that could use Lambda or Fargate",
+      "Over-provisioned instance types never right-sized after initial launch",
+      "S3 buckets storing data with no lifecycle policies — never deleted",
+      "Dev and staging environments running at production scale",
+      "Reserved instances purchased and not fully utilized"
+    ],
+    "leaner_alternatives": [
+      "Vercel or Netlify for frontend hosting",
+      "Supabase for managed Postgres at lower complexity",
+      "Railway or Render for teams wanting simpler deployment without AWS complexity"
+    ]
+  },
+  {
+    "id": "heroku",
+    "name": "Heroku",
+    "vendor": "Heroku (Salesforce)",
+    "category": "hosting",
+    "department": ["Product or Development"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-dyno",
+    "typical_monthly_cost_usd": 25,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Multiple dynos running for low-traffic apps that a single dyno handles",
+      "Standard dynos paying for apps that could run on Eco tier",
+      "Heroku Postgres add-on for data volumes that free tier handles"
+    ],
+    "leaner_alternatives": [
+      "Railway for modern app hosting at lower cost",
+      "Render as a Heroku-like alternative with a better free tier",
+      "Fly.io for teams wanting more control over deployment regions"
+    ]
+  },
+  {
+    "id": "netlify",
+    "name": "Netlify",
+    "vendor": "Netlify",
+    "category": "hosting",
+    "department": ["Product or Development"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 19,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Pro plan for build minutes and bandwidth limits never reached",
+      "Duplicate of Vercel for the same project",
+      "Team seats for solo developers"
+    ],
+    "leaner_alternatives": [
+      "Free Netlify tier for most static sites",
+      "Vercel for Next.js-specific projects",
+      "Cloudflare Pages for edge-first hosting with a generous free tier"
+    ]
+  },
+  {
+    "id": "linear",
+    "name": "Linear",
+    "vendor": "Linear",
+    "category": "project-management",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Linear AI: issue summarization, commit-to-issue matching, automated triaging",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 8,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Duplicate of Jira or GitHub Projects for the same engineering team",
+      "Business plan for a small team that Plus covers"
+    ],
+    "leaner_alternatives": [
+      "GitHub Projects for teams already on GitHub",
+      "Jira for teams needing enterprise integrations",
+      "Free Linear tier for small engineering teams"
+    ]
+  },
+  {
+    "id": "jira",
+    "name": "Jira",
+    "vendor": "Atlassian",
+    "category": "project-management",
+    "department": ["Product or Development"],
+    "uses_ai": true,
+    "ai_features": "Atlassian Intelligence: issue summarization, JQL generation, sprint retrospective summaries",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 8,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Premium plan for features only relevant to teams over 50 developers",
+      "Duplicate of Linear for the same engineering team",
+      "Backlog with thousands of issues never triaged or closed",
+      "Complex workflows configured by a consultant that the team ignores"
+    ],
+    "leaner_alternatives": [
+      "Linear for product teams wanting a faster, leaner experience",
+      "GitHub Projects for code-adjacent project tracking",
+      "ClickUp for teams wanting PM plus broader operations"
+    ]
+  },
+  {
+    "id": "figma",
+    "name": "Figma",
+    "vendor": "Figma",
+    "category": "design",
+    "department": ["Product or Development", "Creative and Design"],
+    "uses_ai": true,
+    "ai_features": "Figma AI: design generation from text, auto-layout suggestions, variable management",
+    "pricing_model": "per-editor",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Organization plan for security features only needed at enterprise scale",
+      "Editor seats paid for developers who only view files (viewer seats are free)",
+      "FigJam add-on for whiteboarding used once per month"
+    ],
+    "leaner_alternatives": [
+      "Free Figma tier for teams with under 3 Figma files at a time",
+      "Canva for marketing teams not doing product design",
+      "Miro for whiteboarding-primary use cases"
+    ]
+  },
+  {
+    "id": "adobe-creative-cloud",
+    "name": "Adobe Creative Cloud",
+    "vendor": "Adobe",
+    "category": "design",
+    "department": ["Creative and Design"],
+    "uses_ai": true,
+    "ai_features": "Adobe Firefly: generative image creation, generative fill, text effects, video generation",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 55,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "All Apps plan paid when team only uses Photoshop and Illustrator",
+      "Paid for multiple designers on same team when license allows multiple devices",
+      "Duplicate of Canva for designers who only need presentation and marketing assets"
+    ],
+    "leaner_alternatives": [
+      "Adobe single-app plans if only one application is used",
+      "Canva for marketing-focused design without print production needs",
+      "Affinity Suite (one-time purchase) for teams wanting professional tools without subscription"
+    ]
+  },
+  {
+    "id": "frame-io",
+    "name": "Frame.io",
+    "vendor": "Frame.io (Adobe)",
+    "category": "video-review",
+    "department": ["Creative and Design"],
+    "uses_ai": false,
+    "ai_features": null,
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 15,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Team plan for teams with fewer than 5 video reviews per month",
+      "Storage limits never approached — paying for capacity not used",
+      "Duplicate of Loom for internal video feedback"
+    ],
+    "leaner_alternatives": [
+      "Loom for informal video feedback",
+      "Google Drive video sharing for low-volume review needs",
+      "Vimeo Review for teams already on Vimeo"
+    ]
+  },
+  {
+    "id": "docusign",
+    "name": "DocuSign",
+    "vendor": "DocuSign",
+    "category": "esignature",
+    "department": ["Legal and Compliance"],
+    "uses_ai": true,
+    "ai_features": "DocuSign AI: contract analysis, clause detection, risk flagging, negotiation assistance",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 25,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Business Pro plan for envelope volume that Personal tier handles",
+      "Duplicate of PandaDoc for the same contract workflow",
+      "AI features purchased but contracts are too simple to need analysis"
+    ],
+    "leaner_alternatives": [
+      "DocuSign Personal for individual or low-volume signing",
+      "PandaDoc for teams wanting proposals plus signing in one tool",
+      "HelloSign (Dropbox Sign) for teams already on Dropbox"
+    ]
+  },
+  {
+    "id": "pandadoc",
+    "name": "PandaDoc",
+    "vendor": "PandaDoc",
+    "category": "proposals-esignature",
+    "department": ["Sales", "Legal and Compliance"],
+    "uses_ai": true,
+    "ai_features": "AI proposal generation, smart content suggestions, contract redlining assistance",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 35,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Business plan for teams sending fewer than 20 documents per month",
+      "Duplicate of DocuSign for the same signing workflow",
+      "Template library built but rarely used — team creates documents from scratch each time"
+    ],
+    "leaner_alternatives": [
+      "DocuSign for simple e-signature without proposal features",
+      "Free PandaDoc tier for basic proposal and e-signature",
+      "HubSpot quotes if already in HubSpot Sales Hub"
+    ]
+  },
+  {
+    "id": "clio",
+    "name": "Clio",
+    "vendor": "Clio",
+    "category": "legal-practice-management",
+    "department": ["Legal and Compliance"],
+    "uses_ai": true,
+    "ai_features": "Clio Duo: case summarization, document drafting, time entry suggestions, client communication assist",
+    "pricing_model": "per-user",
+    "typical_monthly_cost_usd": 89,
+    "energy_transparency": "low",
+    "environmental_notes": null,
+    "waste_patterns": [
+      "Complete plan for features only needed by litigation-heavy practices",
+      "Clio Duo AI purchased but only a fraction of matters are using AI-assisted drafting",
+      "Billing and time tracking features paid for but team still uses spreadsheets"
+    ],
+    "leaner_alternatives": [
+      "Clio Starter for practices needing basic matter management without billing complexity",
+      "PracticePanther for smaller firms wanting lower per-seat cost"
+    ]
+  }
+]
