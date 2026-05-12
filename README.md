@@ -230,6 +230,10 @@ See `/supabase/schema.sql` for the full definitions.
 
 No API routes, Supabase schema, or other files modified.
 
+**Follow-up: Learn more links added to /impact org cards**
+
+Each of the four org cards now has a teal text "Learn more" link at the bottom opening the org's about page in a new tab. Links: AI Now Institute, DAIR, SELC, Public Citizen Energy Program.
+
 ---
 
 ## Recent Changes (Session 36 — May 8, 2026)
