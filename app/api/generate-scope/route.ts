@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getSupabase } from "@/lib/supabase";
+import { getAuditKnowledge, formatKnowledgeForPrompt } from "@/lib/audit-knowledge";
 import fs from "fs";
 import path from "path";
 
@@ -20,6 +21,10 @@ export async function POST(req: NextRequest) {
   const { projectId, answers } = body;
 
   const pricingIntel = loadPricingIntelligence();
+
+  const q10Tools: string[] = Array.isArray(answers?.q10) ? answers.q10 : [];
+  const knowledgeBlocks = await getAuditKnowledge(q10Tools, answers?.q10_other);
+  const knowledgeSection = formatKnowledgeForPrompt(knowledgeBlocks);
 
   const userPrompt = `Here are the answers from a user who wants to build a custom tool:
 
@@ -101,7 +106,9 @@ For all pricing fields use integers with no dollar sign.`;
       model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
       system:
-        "You are a product scoping assistant for World Shift Technologies. You help founders and operators understand what it would take to build their idea. Be specific, concrete, and founder-friendly. No jargon. No em-dashes. Lead with outcomes.",
+        `You are a product scoping assistant for World Shift Technologies. You help founders and operators understand what it would take to build their idea. Be specific, concrete, and founder-friendly. No jargon. No em-dashes. Lead with outcomes.
+
+${knowledgeSection ? `${knowledgeSection}\n\n` : ''}`,
       messages: [{ role: "user", content: userPrompt }],
     });
 

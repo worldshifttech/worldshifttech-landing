@@ -215,6 +215,67 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 
 See `/supabase/schema.sql` for the full definitions.
 
+## Recent Changes (Session 39 — May 12, 2026)
+
+**Audit knowledge base — Supabase table, content files, lib module, prompt injection, admin viewer**
+
+**Supabase migration (run manually in SQL editor):**
+```sql
+CREATE TABLE IF NOT EXISTS audit_knowledge (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tool_slug text NOT NULL UNIQUE,
+  tool_name text NOT NULL,
+  category text NOT NULL,
+  footprint_summary text NOT NULL,
+  reduction_strategies text NOT NULL,
+  audit_questions text NOT NULL,
+  key_metrics text NOT NULL,
+  wst_positioning text NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+```
+Then run the `INSERT` statement (14 rows — 13 tools + general reference) in the same SQL editor session.
+
+`/content/audit-knowledge/` (new directory, 13 files):
+- `chatgpt-openai.md`, `claude-anthropic.md`, `gemini-google.md` — AI/LLM tools
+- `zapier.md`, `make.md`, `n8n.md` — Automation platforms
+- `clickup.md`, `notion.md`, `airtable.md` — Project management / SaaS
+- `aws.md`, `gcp.md` — Cloud infrastructure
+- `intercom-zendesk.md` — Customer support platforms
+- `general-reference.md` — Universal framework for tools without a dedicated doc
+- Each file: footprint facts, reduction strategies with specific % metrics, audit questions, recommended actions table, WST positioning note, green scoring rubric
+
+`/lib/audit-knowledge.ts` (new file):
+- `AuditKnowledgeBlock` interface
+- `TOOL_SLUG_MAP` — maps Q10 tool display names to database slugs
+- `SLUG_TO_FILE` — maps slugs to markdown filenames
+- `ALL_AUDIT_TOOLS` — ordered list of all 13 tools with slug, name, category, file (used by admin sidebar)
+- `getAuditKnowledge(q10Tools, q10Other)` — fetches matching rows from `audit_knowledge` Supabase table based on Q10 answers; always appends `general` slug
+- `formatKnowledgeForPrompt(blocks)` — formats fetched blocks into a structured section for Claude system prompt injection
+- `getAuditDoc(slug)` — reads the corresponding markdown file from `/content/audit-knowledge/` for server-side rendering in admin viewer
+
+`/app/api/generate-scope/route.ts` (updated):
+- Added `getAuditKnowledge` and `formatKnowledgeForPrompt` imports
+- Before Claude call: extracts Q10 tools from answers, fetches matching knowledge blocks from Supabase, formats into `knowledgeSection` string
+- Knowledge section injected into Claude system prompt immediately before the JSON schema instruction — informs `green_score`, `green_score_reason`, and `green_offset_estimate` fields with tool-specific footprint data
+
+`/app/admin/audit-knowledge/page.tsx` (new file):
+- Drew-only server component (same JWT gate as `/admin` — redirects to `/` if not `drew@worldshifttech.com`)
+- Fixed 260px sidebar: WST white logo, "Audit Knowledge Base" label, client-side search input (filters by name/category), tool list grouped by category (AI/LLM, Automation, Project Management, Cloud Infrastructure, Customer Support, Reference), active tool highlighted with teal left border and teal text
+- Tool selected via `?tool=<slug>` URL search param
+- Main content: reads markdown via `getAuditDoc(slug)`, renders in `<pre>` with `fontFamily: inherit` and `whiteSpace: pre-wrap` (marked not installed — no new package added)
+- Empty state when no tool selected: centered "Select a tool from the sidebar to view its audit reference."
+
+`/app/admin/audit-knowledge/AuditKnowledgeClient.tsx` (new file):
+- Client component for search input + grouped tool list; uses `useState` for query, `useSearchParams` for active slug detection
+
+`/app/admin/AdminDashboard.tsx` (updated):
+- "Audit KB" teal nav link added to the admin header, pointing to `/admin/audit-knowledge`
+
+**Next: test scope generation with Zapier + ClickUp + AWS in Q10 to verify `green_score` reflects the knowledge base; test admin viewer renders all 13 docs correctly.**
+
+---
+
 ## Recent Changes (Session 38 — May 11, 2026)
 
 **Impact tab added to admin dashboard**
@@ -1049,6 +1110,9 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
 
 ## Next Tasks
 
+- Run `audit_knowledge` Supabase migration + INSERT (14 rows) in SQL editor (Session 39)
+- Test scope generation with Zapier + ClickUp + AWS in Q10 — verify green_score reflects knowledge base (Session 39)
+- Test admin viewer at `/admin/audit-knowledge` — verify all 13 docs render correctly (Session 39)
 - Run `wst_usage_snapshots` migration in Supabase SQL editor (Session 38)
 - Add `ANTHROPIC_ADMIN_KEY` to Vercel env vars before testing the Sync button (Session 38)
 - Build public `/impact` page using `wst_usage_snapshots` data alongside `redirect_donations` totals (Session 38)
@@ -1087,7 +1151,10 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
     /SignOutButton.tsx               — Sign out button (client)
   /admin
     /page.tsx                        — Server component: JWT gate (drew@worldshifttech.com), data fetch (projects + audit_estimates)
-    /AdminDashboard.tsx              — Client component: Projects tab (project table, detail panel, status controls) + Audits tab (audit estimates table, stack breakdown)
+    /AdminDashboard.tsx              — Client component: Projects tab (project table, detail panel, status controls) + Audits tab (audit estimates table, stack breakdown) + Audit KB nav link
+    /ImpactTab.tsx                   — Client component: Anthropic usage sync and impact display
+    /audit-knowledge/page.tsx        — Drew-only server component: sidebar + markdown viewer for audit knowledge docs
+    /audit-knowledge/AuditKnowledgeClient.tsx — Client component: search input + grouped tool list
   /api
     /personalize/route.ts            — Classify → cache check → generate → save → return
     /generate-scope/route.ts         — Claude scope generation for wizard; updates projects row
@@ -1100,8 +1167,10 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
     /admin-sync-usage/route.ts       — POST: pulls token data from Anthropic Admin API, inserts snapshot (admin auth)
 /content
   /case-studies/                     — 6 markdown files
+  /audit-knowledge/                  — 13 markdown files (one per tool + general reference)
 /lib
   /case-studies.ts                   — Reads and concatenates case study files
+  /audit-knowledge.ts                — getAuditKnowledge() (Supabase fetch), formatKnowledgeForPrompt() (prompt injection), getAuditDoc() (admin viewer), ALL_AUDIT_TOOLS
   /supabase.ts                       — getSupabase() (service role) + getSupabaseBrowser() (anon)
   /auth.ts                           — getSession, getUser, signIn, signUp, signOut helpers
 /supabase

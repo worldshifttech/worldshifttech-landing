@@ -429,13 +429,22 @@ export default function AdminDashboard({
             priority
           />
         </Link>
-        <Link
-          href="/"
-          className="text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
-          &larr; Back to Site
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/admin/audit-knowledge"
+            className="text-sm text-[#4B858E] hover:text-[#F4F2EE] transition-colors"
+            style={{ fontFamily: "var(--font-dm-sans)" }}
+          >
+            Audit KB
+          </Link>
+          <Link
+            href="/"
+            className="text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors"
+            style={{ fontFamily: "var(--font-dm-sans)" }}
+          >
+            &larr; Back to Site
+          </Link>
+        </div>
       </nav>
 
       {/* Main */}
