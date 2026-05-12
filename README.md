@@ -182,6 +182,7 @@ All set in Vercel dashboard under Settings > Environment Variables:
 | `TURNSTILE_SECRET_KEY` | Set (Cloudflare Turnstile secret key) |
 | `SLACK_WEBHOOK_URL` | Slack incoming webhook URL for project submit notifications |
 | `RESEND_API_KEY` | Resend API key for client email on project go-live |
+| `ANTHROPIC_ADMIN_KEY` | Anthropic Admin API key for usage reporting. Generate at console.anthropic.com under Settings > Admin API Keys. Requires admin role. |
 
 ## Supabase Setup
 
@@ -213,6 +214,54 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 ```
 
 See `/supabase/schema.sql` for the full definitions.
+
+## Recent Changes (Session 38 — May 11, 2026)
+
+**Impact tab added to admin dashboard**
+
+`/app/admin/AdminDashboard.tsx`:
+- Added `ImpactTab` import. Extended `activeTab` type to include `"impact"`. Added "Impact" to the tabs array. Renders `<ImpactTab />` when active.
+
+`/app/admin/ImpactTab.tsx` (new file):
+- Client component. On mount, fetches all rows from `/api/admin-usage-snapshots` (GET) and sums them for cumulative totals.
+- Section A: "Sync from Anthropic" button, loading spinner in flight, inline red error on failure. "Last synced: [date]" or "Never synced" below.
+- Section B: Two cards (desktop columns, stacked mobile). Left card (API Usage): input tokens, cache read tokens, output tokens, energy (Wh), water (ml); gray footer "Source: Anthropic Admin API". Right card (Claude.ai Chats): static estimates (50 sessions, 116 Wh, 17 ml); gray footer explaining subscription usage is not API-accessible, estimated from session count x 0.31 Wh (Epoch AI 2025).
+- Combined Totals bar: total energy (measured + estimated), total water (measured + estimated), shower comparison (water_ml / 33 = seconds).
+- Empty state: "No data yet. Click Sync to pull from Anthropic."
+
+`/app/api/admin-usage-snapshots/route.ts` (new file):
+- GET only. Admin email auth gate (same pattern as existing admin routes). Returns all rows from `wst_usage_snapshots` ordered by `snapshot_date DESC`.
+
+`/app/api/admin-sync-usage/route.ts` (new file):
+- POST only. Admin email auth gate.
+- Returns 400 if `ANTHROPIC_ADMIN_KEY` is not set.
+- Calls Anthropic Admin API: messages usage (30-day window, 1d buckets) and claude_code usage. Returns 502 on API failure.
+- Sums all token counts across buckets and model_breakdown records.
+- Computes `total_energy_wh` and `total_water_ml` using per-token Wh rates. Inserts one row to `wst_usage_snapshots`.
+- Energy formula: (input*200 + cache_read*20 + cache_creation*25 + output*990 [for both api and claude_code]) / 1_000_000. Water: (energy_wh / 1000) * 0.15 * 1000.
+
+**Supabase migration — run in SQL editor before testing:**
+```sql
+CREATE TABLE IF NOT EXISTS wst_usage_snapshots (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  snapshot_date date NOT NULL DEFAULT CURRENT_DATE,
+  api_input_tokens bigint DEFAULT 0,
+  api_cache_read_tokens bigint DEFAULT 0,
+  api_cache_creation_tokens bigint DEFAULT 0,
+  api_output_tokens bigint DEFAULT 0,
+  claude_code_input_tokens bigint DEFAULT 0,
+  claude_code_cache_read_tokens bigint DEFAULT 0,
+  claude_code_output_tokens bigint DEFAULT 0,
+  claude_code_sessions integer DEFAULT 0,
+  total_energy_wh numeric DEFAULT 0,
+  total_water_ml numeric DEFAULT 0,
+  source text DEFAULT 'api',
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+```
+
+---
 
 ## Recent Changes (Session 37 — May 11, 2026)
 
@@ -1000,6 +1049,9 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
 
 ## Next Tasks
 
+- Run `wst_usage_snapshots` migration in Supabase SQL editor (Session 38)
+- Add `ANTHROPIC_ADMIN_KEY` to Vercel env vars before testing the Sync button (Session 38)
+- Build public `/impact` page using `wst_usage_snapshots` data alongside `redirect_donations` totals (Session 38)
 - Merge branch to main and deploy to production at worldshifttech.com
 - Add "attach guest audit" logic to Google OAuth callback (parallel to guest project attach in `/auth/callback/route.ts`)
 - Add audit estimates to the authenticated client dashboard at `/projects` so logged-in users can view their saved audits
@@ -1044,6 +1096,8 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
     /notify-client/route.ts          — POST: sends Resend email to project owner when status → live
     /attach-guest-project/route.ts   — PATCH: attaches a guest project row to a newly created user account
     /ingest-case-study/route.ts      — Zapier webhook for content pipeline
+    /admin-usage-snapshots/route.ts  — GET: returns all wst_usage_snapshots rows (admin auth)
+    /admin-sync-usage/route.ts       — POST: pulls token data from Anthropic Admin API, inserts snapshot (admin auth)
 /content
   /case-studies/                     — 6 markdown files
 /lib

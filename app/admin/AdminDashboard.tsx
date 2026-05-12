@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import ImpactTab from "./ImpactTab";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ export default function AdminDashboard({
   auditEstimates: AuditEstimate[];
 }) {
   const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
-  const [activeTab, setActiveTab] = useState<"projects" | "audits">("projects");
+  const [activeTab, setActiveTab] = useState<"projects" | "audits" | "impact">("projects");
   const [openId, setOpenId] = useState<string | null>(null);
   const [openAuditId, setOpenAuditId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -449,11 +450,13 @@ export default function AdminDashboard({
 
           {/* Tabs */}
           <div className="flex items-center gap-1 border-b border-white/[0.06] mb-10">
-            {(["projects", "audits"] as const).map((tab) => {
+            {(["projects", "audits", "impact"] as const).map((tab) => {
               const label =
                 tab === "projects"
                   ? `Projects (${total})`
-                  : `Audits (${auditEstimates.length})`;
+                  : tab === "audits"
+                  ? `Audits (${auditEstimates.length})`
+                  : "Impact";
               const isActive = activeTab === tab;
               return (
                 <button
@@ -1096,6 +1099,9 @@ export default function AdminDashboard({
               )}
             </>
           )}
+
+          {/* ─── Impact tab ────────────────────────────────────────────────── */}
+          {activeTab === "impact" && <ImpactTab />}
 
           {/* ─── Audits tab ────────────────────────────────────────────────── */}
           {activeTab === "audits" && (
