@@ -163,6 +163,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - [x] Slack notification on audit completion (Session 34)
 - [x] Audits tab in admin dashboard (Session 34)
 - [x] `/your-team-and-ai` — static editorial page (Session 35): 6 sections, brand voice, POPin handoff, bottom CTA to /audit
+- [x] `/impact` — static public page listing the four AI accountability orgs WST donates to (Session 37): AI Now Institute, DAIR, SELC, Public Citizen; no auth, no data fetching
 - [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on the generated page (`/for-you/[industry]/[solution]`)
 - [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
@@ -212,6 +213,24 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 ```
 
 See `/supabase/schema.sql` for the full definitions.
+
+## Recent Changes (Session 37 — May 11, 2026)
+
+**New page: /impact + nav link**
+
+`/app/impact/page.tsx` (new file):
+- Static server component. No `"use client"`, no data fetching, no auth required. Publicly accessible.
+- Dark background (`#080C14`), Playfair Display headlines, DM Sans body, teal and offwhite brand tokens. Matches site layout.
+- Teal small-caps section label ("WHERE THE MONEY GOES"), large Playfair headline, two-paragraph intro at reduced opacity, teal divider.
+- Four org cards (navy `#00205C` background, `2px solid #4B858E` top border): AI Now Institute, Distributed AI Research Institute (DAIR), Southern Environmental Law Center, Public Citizen Energy Program.
+- Each card: org name (Playfair), meta line (location, status, founded year), teal tag pill, body paragraph, "WHAT THEY'VE DONE" label (small caps gray), wins paragraph. Copy verbatim as specified.
+
+`/app/page.tsx` — nav only:
+- Added "Impact" link (`href="/impact"`) after "Your Team & AI", before `AuthModal`. Identical teal ghost-pill style.
+
+No API routes, Supabase schema, or other files modified.
+
+---
 
 ## Recent Changes (Session 36 — May 8, 2026)
 
@@ -994,6 +1013,7 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
   /page.tsx                          — Home (personal intro, Drew photo, CTA → /meet)
   /fractional/page.tsx               — ClickUp consultant directory landing page (static)
   /your-team-and-ai/page.tsx         — Static editorial page: team vs AI positioning, 6 sections, POPin handoff
+  /impact/page.tsx                   — Static public page listing the four AI accountability orgs WST donates to. No auth, no data fetching.
   /meet/page.tsx                     — Question flow (4 Qs, stores wst_visitor cookie)
   /for-you/page.tsx                  — Loading state → POSTs to /api/personalize → redirects
   /for-you/[industry]/[solution]/    — Personalized result (pulled from Supabase)

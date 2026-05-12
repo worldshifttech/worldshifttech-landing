@@ -31,6 +31,12 @@ export default function Home() {
           >
             Your Team &amp; AI
           </Link>
+          <Link
+            href="/impact"
+            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
+          >
+            Impact
+          </Link>
           <Suspense fallback={null}>
             <AuthModal />
           </Suspense>
