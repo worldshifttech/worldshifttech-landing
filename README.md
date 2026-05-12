@@ -215,6 +215,30 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 
 See `/supabase/schema.sql` for the full definitions.
 
+## Recent Changes (Session 40 — May 12, 2026)
+
+**Audit knowledge base expanded with 9 new infrastructure and productivity tool entries**
+
+Audit knowledge base expanded with 9 new infrastructure and productivity tool entries: Vercel, Supabase, GitHub, Resend, Cloudflare, Slack, ClickUp, Calendly, AI Notetaker. Data sourced from AWS 2024 Sustainability Report, SummarizeMeeting Jan 2026 benchmark, and verified infrastructure provider documentation. TOOL_SLUG_MAP and SLUG_TO_FILE updated in lib/audit-knowledge.ts. 9 new .md reference files added to content/audit-knowledge/.
+
+`/lib/audit-knowledge.ts`:
+- TOOL_SLUG_MAP: added `Vercel` → `vercel`, `Supabase` → `supabase`, `GitHub` → `github`, `GitHub Actions` → `github`, `Resend` → `resend`, `Cloudflare` → `cloudflare`, `Calendly` → `calendly`, `Fireflies` / `Fireflies.ai` / `Otter` / `Otter.ai` / `Fathom` / `Read.ai` / `Grain` / `Notta` / `AI Notetaker` / `Meeting Notetaker` → `ai-notetaker`. Updated `Slack` from `general` → `slack`, `Vercel` from `general` → `vercel`.
+- SLUG_TO_FILE: added `vercel`, `supabase`, `github`, `resend`, `cloudflare`, `slack`, `calendly`, `ai-notetaker` → corresponding `.md` filenames.
+
+New files in `/content/audit-knowledge/`:
+- `vercel.md` — AWS infrastructure, serverless/edge, preview deployment cleanup, bundle optimisation
+- `supabase.md` — AWS infrastructure, database right-sizing, unused projects, Realtime subscriptions
+- `github.md` — Azure infrastructure, GitHub Actions efficiency, caching, scheduled workflow audit
+- `resend.md` — AWS infrastructure, transactional email hygiene, bounce suppression, trigger bug detection
+- `cloudflare.md` — Proprietary network, carbon neutral since 2021, cache hit ratio, Worker audit
+- `slack.md` — AWS infrastructure, channel proliferation, bot audit, inactive seat removal
+- `calendly.md` — AWS infrastructure, unused event types, seat audit, integration cleanup
+- `ai-notetaker.md` — Covers Fireflies, Otter.ai, Fathom, Read.ai, Grain, Notta; opt-in recording, retention policy, SummarizeMeeting Jan 2026 accuracy benchmark (76–93%)
+
+Note: `clickup.md` already existed from Session 39 — not recreated.
+
+---
+
 ## Recent Changes (Session 39 — May 12, 2026)
 
 **Audit knowledge base — Supabase table, content files, lib module, prompt injection, admin viewer**
