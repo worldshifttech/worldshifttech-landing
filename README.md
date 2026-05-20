@@ -1,3 +1,5 @@
+Curriculum content files are in /content/curriculum/ — read them directly, do not use subagents.
+
 # World Shift Technologies — Landing App
 
 Next.js marketing site at worldshifttech.com. Personalized front door: visitors answer 4 questions, Claude generates a custom page based on Drew's case study library.
@@ -164,6 +166,12 @@ Open [http://localhost:3000](http://localhost:3000).
 - [x] Audits tab in admin dashboard (Session 34)
 - [x] `/your-team-and-ai` — static editorial page (Session 35): 6 sections, brand voice, POPin handoff, bottom CTA to /audit
 - [x] `/impact` — static public page listing the four AI accountability orgs WST donates to (Session 37): AI Now Institute, DAIR, SELC, Public Citizen; no auth, no data fetching
+- [x] Curriculum platform schema — 6 tables (`curriculum_domains`, `curriculum_modules`, `curriculum_lessons`, `curriculum_assessments`, `curriculum_progress`, `curriculum_responses`) + RLS policies appended to `/supabase/schema.sql` (Session 41)
+- [x] `/lib/curriculum.ts` — query helpers: `getDomains`, `getModulesByDomain`, `getLessonsByModule`, `getLesson`, `getAssessmentByModule`, `getUserProgress` (Session 41)
+- [x] Run curriculum platform migration in Supabase SQL editor (Session 41)
+- [x] `/scripts/seed-curriculum.ts` — seeded 6 domains, 25 modules, 100 lessons, 25 assessments (Session 42)
+- [x] Curriculum learner UI — `/curriculum`, `/curriculum/[domain]`, `/curriculum/[domain]/[module]`, `/curriculum/[domain]/[module]/[lesson]` with progress tracking (Session 42)
+- [x] `/app/api/curriculum/progress/route.ts` — POST endpoint to mark lessons complete/in-progress (Session 42)
 - [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on the generated page (`/for-you/[industry]/[solution]`)
 - [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
@@ -214,6 +222,58 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 ```
 
 See `/supabase/schema.sql` for the full definitions.
+
+## Recent Changes (Session 42 — May 19, 2026)
+
+**Curriculum learner UI — full read/learn/track flow**
+
+`/scripts/seed-curriculum.ts` (run):
+- Seeded 6 domains, 25 modules, 100 lessons, 25 assessments into Supabase. Wipes and reseeds cleanly. Run with: `NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npx ts-node --compiler-options '{"module":"CommonJS","moduleResolution":"node"}' scripts/seed-curriculum.ts`
+
+`/app/curriculum/page.tsx` (new):
+- Auth-protected server component. Fetches all 6 domains via `getDomains()`. Renders domain cards (number, title, subtitle, hours, prerequisites) with links to `/curriculum/[domain]`. Dark brand layout matching the rest of the app.
+
+`/app/curriculum/[domain]/page.tsx` (new):
+- Server component. Fetches domain + modules for the domain. Shows domain overview text, practitioner note (teal left-border callout), and a module list with estimated times linking to `/curriculum/[domain]/[module]`. 404 on unknown domain.
+
+`/app/curriculum/[domain]/[module]/page.tsx` (new):
+- Server component. Fetches module, all lessons, user progress, and the module assessment. Renders learning objectives, a lesson checklist with teal completion circles, and the assessment prompt. Completion state derived from `curriculum_progress` rows cross-referenced by lesson UUID. 404 on unknown module.
+
+`/app/curriculum/[domain]/[module]/[lesson]/page.tsx` (new):
+- Server component. Fetches lesson (with nested module + domain via join), all sibling lessons for prev/next navigation, and user progress. Renders `LessonViewer` client component.
+
+`/app/curriculum/[domain]/[module]/[lesson]/LessonViewer.tsx` (new):
+- Client component. Renders lesson content (core_content, reflection_prompt, ai_prompt_suggestions, key_takeaway) with full markdown-style formatting (bold headers, numbered lists, italic, inline bold). "Mark Complete" button fires POST to `/api/curriculum/progress` and updates local state. Prev/Next navigation bar at the bottom. If no next lesson, shows "Back to Module" link.
+
+`/app/api/curriculum/progress/route.ts` (new):
+- POST `{ lessonId, status }`. Validates session via cookie-based anon client. Upserts into `curriculum_progress` using service role (sets `completed_at` or `started_at` based on status). Returns 401 if unauthenticated.
+
+`/app/projects/page.tsx` (updated):
+- Added "Curriculum" nav link alongside "Your Team & AI" in the authenticated dashboard header.
+
+---
+
+## Recent Changes (Session 41 — May 15, 2026)
+
+**Curriculum platform — database schema + query helpers (Tasks 1 and 3 of Session 1)**
+
+`/supabase/schema.sql` — appended curriculum migration:
+- 6 new tables: `curriculum_domains`, `curriculum_modules`, `curriculum_lessons`, `curriculum_assessments`, `curriculum_progress`, `curriculum_responses`
+- Schema matches build spec exactly: foreign keys, jsonb defaults, denormalized `module_number`/`domain_number` fields, `is_capstone` flag on assessments, `UNIQUE` constraints on all join columns
+- RLS: content tables (`domains`, `modules`, `lessons`, `assessments`) — SELECT for `auth.role() = 'authenticated'`; learner tables (`progress`, `responses`) — SELECT/INSERT/UPDATE scoped to `auth.uid() = user_id`
+- No existing tables touched
+
+`/lib/curriculum.ts` — new file, 6 query helpers using `getSupabase()` (service role):
+- `getDomains()` — all domains ordered by number ascending
+- `getModulesByDomain(domainNumber)` — modules for one domain ordered by module_number
+- `getLessonsByModule(moduleNumber)` — lessons for one module ordered by sort_order
+- `getLesson(lessonNumber)` — single lesson joined with its module and domain via nested select
+- `getAssessmentByModule(moduleNumber)` — single assessment for a module
+- `getUserProgress(userId)` — all curriculum_progress rows for a user
+
+**Next: run curriculum migration in Supabase SQL editor, then write `/scripts/seed-curriculum.ts` (Task 2).**
+
+---
 
 ## Recent Changes (Session 40 — May 12, 2026)
 
@@ -1189,6 +1249,15 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
     /ingest-case-study/route.ts      — Zapier webhook for content pipeline
     /admin-usage-snapshots/route.ts  — GET: returns all wst_usage_snapshots rows (admin auth)
     /admin-sync-usage/route.ts       — POST: pulls token data from Anthropic Admin API, inserts snapshot (admin auth)
+    /curriculum
+      /progress/route.ts             — POST: upsert curriculum_progress row (mark lesson complete/in-progress)
+  /curriculum
+    /page.tsx                        — Domain list (auth-protected server component)
+    /[domain]/page.tsx               — Domain detail + module list
+    /[domain]/[module]/page.tsx      — Module detail + lesson list with completion status
+    /[domain]/[module]/[lesson]
+      /page.tsx                      — Lesson server component: fetches lesson + progress, renders LessonViewer
+      /LessonViewer.tsx              — Client component: content renderer, mark-complete button, prev/next nav
 /content
   /case-studies/                     — 6 markdown files
   /audit-knowledge/                  — 13 markdown files (one per tool + general reference)

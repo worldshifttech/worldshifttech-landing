@@ -92,3 +92,115 @@ WITH CHECK (auth.uid() = user_id OR (guest = true AND user_id IS NULL));
 CREATE POLICY "Admin full access on audit estimates"
 ON audit_estimates FOR ALL
 USING (auth.jwt() ->> 'email' = 'drew@worldshifttech.com');
+
+-- MIGRATION: Curriculum platform (Session 41)
+
+CREATE TABLE curriculum_domains (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  number integer NOT NULL UNIQUE,
+  title text NOT NULL,
+  subtitle text,
+  overview_text text NOT NULL,
+  estimated_hours text,
+  prerequisites text,
+  practitioner_note text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE curriculum_modules (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  domain_id uuid REFERENCES curriculum_domains(id) ON DELETE CASCADE,
+  domain_number integer NOT NULL,
+  module_number text NOT NULL,
+  title text NOT NULL,
+  estimated_time text,
+  learning_objectives jsonb DEFAULT '[]',
+  key_sources jsonb DEFAULT '[]',
+  connections jsonb DEFAULT '{}',
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(domain_id, module_number)
+);
+
+CREATE TABLE curriculum_lessons (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  module_id uuid REFERENCES curriculum_modules(id) ON DELETE CASCADE,
+  module_number text NOT NULL,
+  lesson_number text NOT NULL,
+  title text NOT NULL,
+  estimated_time text,
+  teaching_method text,
+  core_content text NOT NULL,
+  reflection_prompt text,
+  ai_prompt_suggestions jsonb DEFAULT '[]',
+  key_takeaway text,
+  sort_order integer NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(module_id, lesson_number)
+);
+
+CREATE TABLE curriculum_assessments (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  module_id uuid REFERENCES curriculum_modules(id) ON DELETE CASCADE,
+  module_number text NOT NULL,
+  assessment_type text NOT NULL,
+  prompt text NOT NULL,
+  what_it_measures text,
+  is_capstone boolean DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE curriculum_progress (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES curriculum_lessons(id) ON DELETE CASCADE,
+  status text DEFAULT 'not_started',
+  started_at timestamptz,
+  completed_at timestamptz,
+  UNIQUE(user_id, lesson_id)
+);
+
+CREATE TABLE curriculum_responses (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  assessment_id uuid REFERENCES curriculum_assessments(id) ON DELETE CASCADE,
+  response_text text NOT NULL,
+  submitted_at timestamptz DEFAULT now(),
+  reviewer_note text,
+  reviewed_at timestamptz,
+  UNIQUE(user_id, assessment_id)
+);
+
+-- RLS: curriculum content readable by all authenticated users
+ALTER TABLE curriculum_domains ENABLE ROW LEVEL SECURITY;
+ALTER TABLE curriculum_modules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE curriculum_lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE curriculum_assessments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read domains"
+  ON curriculum_domains FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can read modules"
+  ON curriculum_modules FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can read lessons"
+  ON curriculum_lessons FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can read assessments"
+  ON curriculum_assessments FOR SELECT USING (auth.role() = 'authenticated');
+
+-- RLS: progress rows owned by the learner
+ALTER TABLE curriculum_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own progress"
+  ON curriculum_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own progress"
+  ON curriculum_progress FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own progress"
+  ON curriculum_progress FOR UPDATE USING (auth.uid() = user_id);
+
+-- RLS: response rows owned by the learner
+ALTER TABLE curriculum_responses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own responses"
+  ON curriculum_responses FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own responses"
+  ON curriculum_responses FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own responses"
+  ON curriculum_responses FOR UPDATE USING (auth.uid() = user_id);

@@ -50,6 +50,12 @@ export default async function ProjectsPage() {
         </Link>
         <div className="flex items-center gap-4">
           <Link
+            href="/curriculum"
+            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-4 py-2 rounded-full hover:bg-[#4B858E] hover:text-white transition-all duration-200 hidden sm:inline-flex"
+          >
+            Curriculum
+          </Link>
+          <Link
             href="/your-team-and-ai"
             className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-4 py-2 rounded-full hover:bg-[#4B858E] hover:text-white transition-all duration-200 hidden sm:inline-flex"
           >
