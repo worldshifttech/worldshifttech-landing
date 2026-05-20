@@ -223,6 +223,24 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS project_readme text;
 
 See `/supabase/schema.sql` for the full definitions.
 
+## Recent Changes (Session 42 — May 19, 2026 — continued)
+
+**Fix: await params in curriculum dynamic routes**
+
+Next.js 15+ changed `params` to a Promise. Synchronous access returned `undefined`, causing `parseInt(undefined) = NaN` which triggered `notFound()` on every curriculum sub-route (`/curriculum/[domain]`, `/curriculum/[domain]/[module]`, `/curriculum/[domain]/[module]/[lesson]`). Fixed by destructuring after `await params` in all three files.
+
+**Curriculum nav link — authenticated only**
+
+`/app/components/CurriculumNavLink.tsx` (new):
+- Client component. On mount, calls `getSupabaseBrowser().auth.getSession()`. Renders a "Curriculum" pill link only when a session exists. Invisible to logged-out visitors.
+- Wrapped in `<Suspense fallback={null}>` in `/app/page.tsx` alongside `AuthModal`.
+
+**Curriculum access restricted to Drew**
+
+All four curriculum pages (`/curriculum`, `/curriculum/[domain]`, `/curriculum/[domain]/[module]`, `/curriculum/[domain]/[module]/[lesson]`) now redirect to `/` if `session.user.email !== "drew@worldshifttech.com"`. Same gate pattern as `/admin`.
+
+---
+
 ## Recent Changes (Session 42 — May 19, 2026)
 
 **Curriculum learner UI — full read/learn/track flow**
