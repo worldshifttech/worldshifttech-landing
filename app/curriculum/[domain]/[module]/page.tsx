@@ -15,8 +15,9 @@ import {
 export default async function ModulePage({
   params,
 }: {
-  params: { domain: string; module: string };
+  params: Promise<{ domain: string; module: string }>;
 }) {
+  const { domain: domainParam, module: moduleParam } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,9 +35,9 @@ export default async function ModulePage({
   if (!session) redirect("/?login=true");
   if (session.user.email !== "drew@worldshifttech.com") redirect("/");
 
-  const domainNumber = parseInt(params.domain);
+  const domainNumber = parseInt(domainParam);
   if (isNaN(domainNumber)) notFound();
-  const moduleNumber = params.module.toUpperCase();
+  const moduleNumber = moduleParam.toUpperCase();
 
   const [domains, modules, lessons, progress] = await Promise.all([
     getDomains(),

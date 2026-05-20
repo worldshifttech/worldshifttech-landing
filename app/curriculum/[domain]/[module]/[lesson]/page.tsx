@@ -10,8 +10,9 @@ import LessonViewer from "./LessonViewer";
 export default async function LessonPage({
   params,
 }: {
-  params: { domain: string; module: string; lesson: string };
+  params: Promise<{ domain: string; module: string; lesson: string }>;
 }) {
+  const { domain: domainParam, module: moduleParam, lesson: lessonParam } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,10 +30,10 @@ export default async function LessonPage({
   if (!session) redirect("/?login=true");
   if (session.user.email !== "drew@worldshifttech.com") redirect("/");
 
-  const domainNumber = parseInt(params.domain);
+  const domainNumber = parseInt(domainParam);
   if (isNaN(domainNumber)) notFound();
-  const moduleNumber = params.module.toUpperCase();
-  const lessonNumber = params.lesson.toUpperCase();
+  const moduleNumber = moduleParam.toUpperCase();
+  const lessonNumber = lessonParam.toUpperCase();
 
   const [lesson, allLessons, progress] = await Promise.all([
     getLesson(lessonNumber).catch(() => null),

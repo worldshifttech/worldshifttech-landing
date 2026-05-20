@@ -9,8 +9,9 @@ import { getDomains, getModulesByDomain } from "@/lib/curriculum";
 export default async function DomainPage({
   params,
 }: {
-  params: { domain: string };
+  params: Promise<{ domain: string }>;
 }) {
+  const { domain: domainParam } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +29,7 @@ export default async function DomainPage({
   if (!session) redirect("/?login=true");
   if (session.user.email !== "drew@worldshifttech.com") redirect("/");
 
-  const domainNumber = parseInt(params.domain);
+  const domainNumber = parseInt(domainParam);
   if (isNaN(domainNumber)) notFound();
 
   const [domains, modules] = await Promise.all([
