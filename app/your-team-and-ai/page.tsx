@@ -69,17 +69,17 @@ export default function YourTeamAndAIPage() {
             className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            These are the two mistakes.
+            Two mistakes. Same source.
           </h2>
           <div className="max-w-3xl space-y-4 text-[#F4F2EE] text-base leading-relaxed">
             <p>
-              Most businesses approach AI as a &ldquo;save money, make it easy&rdquo; tool. The pitch from the outside sounds the same in every industry: figure out where we can save money, figure out how we can automate things, figure out how we can reduce overhead. Then the team starts wondering why. And what comes next isn&apos;t irrational. It&apos;s resistance. Your team is feeling replaced, and now you&apos;re trying to implement automation and AI on top of a workforce that&apos;s bracing against it. That&apos;s not a foundation anything works on.
+              Most businesses approach AI as a cost-cutting tool. The pitch sounds the same in every industry: find where you can save money, automate what&apos;s slow, reduce overhead. Then the team starts wondering why. And what comes next isn&apos;t irrational. It&apos;s resistance. Your team feels like it&apos;s being replaced, and now you&apos;re trying to layer AI on top of a workforce that&apos;s bracing against it. Nothing works on that foundation.
             </p>
             <p>
-              There&apos;s a second mistake stacked on top of the first. Companies are told that more AI is the answer to whatever&apos;s slow. More tools. More agents. More automation across more processes. So the stack grows. The bill grows. The compute behind it grows. And in most cases, the actual work gets marginally faster while resources are being wasted and the relationships inside your team get strained because of AI, not helped by it.
+              The second mistake compounds the first. Companies are told more AI fixes whatever&apos;s slow. More tools. More agents. More automations across more processes. The stack grows. The bill grows. The compute behind it grows. And in most cases, the actual work gets marginally faster while resources drain and team relationships fray because of AI, not in spite of it.
             </p>
             <p>
-              The correction is the same in both cases. Start with the team. Use the smallest amount of AI that does the job. Stop there.
+              The correction is the same in both cases. Start with the team. Use the smallest amount of AI that does the job.
             </p>
           </div>
         </div>
@@ -96,28 +96,25 @@ export default function YourTeamAndAIPage() {
             Four things that don&apos;t get replaced.
           </h2>
           <div className="max-w-3xl">
-            <p className="text-[#F4F2EE] text-base leading-relaxed mb-4">
-              Your team has been with you. They watched the business become what it is. They know which clients pay late and why. They know which products get returned for specific reasons that might have been missed in the data, and what gets said when those returns happen. They understand how the business is growing, where it&apos;s headed, the full vision underneath the day-to-day. Vision doesn&apos;t come from a system. It comes from people.
-            </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed mb-8">
-              Here are the four things AI doesn&apos;t replace.
+              Your team has been with you. They watched the business become what it is. They know which clients pay late and why, which products get returned and what gets said when they do, and the full vision underneath the day-to-day. Vision doesn&apos;t come from a system. It comes from people.
             </p>
             <div className="space-y-6">
               <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Sales.</strong> Trust is built between people, not between a person and an interface. Your team knows your customers&apos; names, their kids&apos; names, what they bought last year, and what they wouldn&apos;t buy again. AI can draft the follow-up. The person sends it.
+                <strong>Sales.</strong> Your team knows your customers&apos; names, what they bought last year, what&apos;s been going on in their life, and the emotional cues they carry into conversations and meetings. AI can&apos;t pick that up. Only human interaction can.
               </p>
               <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Creativity.</strong> AI generates. People decide what&apos;s worth generating. The strategic call about what your business should be making, saying, or building belongs to the people who understand where the business has been and where it should go.
+                <strong>Creativity.</strong> AI doesn&apos;t do well with creativity. It can take direction and surface suggestions, but true creativity comes from people with creative skills built through emotion and years spent learning their craft. The emotional and psychological understanding of what needs to be created will only ever be done properly by humans.
               </p>
               <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Relationships.</strong> Vendors. Partners. Long-term clients. The people who picked up the phone for you in 2022 when something broke. Those relationships were built by human interaction, and they&apos;ll be maintained by it.
+                <strong>Relationships.</strong> Vendors. Partners. Long-term clients. What keeps these people wanting to be a part of your business? Your vision is usually the people and processes they&apos;re interacting with. Most of that is led by humans, not bots.
               </p>
               <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Critical thinking and emotion.</strong> This is the layer underneath everything else. Reading why a customer is upset before they have to say it. Understanding why a deal stalled when the surface reason doesn&apos;t add up. Knowing why a long-time partner is needing to take time off and figuring out how to pivot. Relationships work because people read each other and respond, human connection in real time. Business works because people develop trust with each other, and AI doesn&apos;t build that.
+                <strong>Critical thinking.</strong> Reading why a customer is upset before they say it. Understanding why a deal stalled when the surface reason doesn&apos;t add up. Knowing when a partner needs space and figuring out how to pivot. AI doesn&apos;t do this. People do.
               </p>
             </div>
             <p className="text-[#F4F2EE] text-base leading-relaxed mt-8">
-              These aren&apos;t soft skills. They&apos;re the operational bedrock of your business. AI doesn&apos;t extend them. It frees up the time that was being spent on everything else, so the people who carry these skills can actually use them.
+              These aren&apos;t soft skills. They&apos;re the operational bedrock of your business. AI doesn&apos;t extend them. It frees up time so the people who carry these skills can actually use them.
             </p>
           </div>
         </div>
@@ -135,16 +132,16 @@ export default function YourTeamAndAIPage() {
           </h2>
           <div className="max-w-3xl space-y-4 text-[#F4F2EE] text-base leading-relaxed">
             <p>
-              This is the part most consultants won&apos;t tell you. You probably don&apos;t need a lot of AI to do what you need to accomplish. You need the right AI in the right places, and not much else.
+              This is the part most consultants won&apos;t tell you. You probably don&apos;t need a lot of AI to accomplish what you&apos;re after. You need the right AI in the right places, and not much else.
             </p>
             <p>
-              Start with a general-purpose AI tool deployed across every team, every workflow, every process, running constantly. Most of what it does is busywork. Some of it is actively wasteful, generating information no one reads, reports no one uses, automations firing on operations that aren&apos;t even relevant anymore.
+              A general-purpose AI tool deployed across every team, every workflow, every process runs constantly. Most of what it produces is busywork. Some of it is actively wasteful: reports nobody reads, automations firing on operations that aren&apos;t relevant anymore.
             </p>
             <p>
-              A precise AI deployment looks different. It&apos;s identifying acute, specific processes and connecting a lean system to that process. The smallest model. The smallest tool. The exact right output. And then it stops when the job is done.
+              A precise deployment looks different. It&apos;s identifying specific, acute processes and connecting a lean system to each one. The smallest model. The smallest tool. The exact right output. And then it stops when the job is done.
             </p>
             <p>
-              The work I do requires being genuinely informed about the AI industry: what it can do, what it&apos;s good at, where it&apos;s heading. It also requires being honest about the harm in the AI industry, and finding alternatives. Narrower solutions. Leaner builds. Tools that earn their keep instead of running in the background draining money and compute on work nobody asked for.
+              I stay genuinely informed about what AI can do, where it&apos;s heading, and where it causes harm. Finding narrower solutions, leaner builds, tools that earn their keep. That&apos;s the work. Not running things in the background that nobody asked for.
             </p>
           </div>
         </div>
@@ -158,26 +155,26 @@ export default function YourTeamAndAIPage() {
             className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            Take full accountability for your operations and processes.
+            Start with full accountability for your operations.
           </h2>
           <div className="max-w-3xl space-y-6">
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Start with identifying all of your operations.</strong> What tools you&apos;re using, who runs them, what pricing and subscription models you&apos;re on, everything you&apos;re paying for.
+              <strong>Inventory everything you&apos;re running.</strong> Every tool, every automation, every subscription. Who runs it, what it costs, what it actually produces.
             </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Make sure you have role documentation for all your team members.</strong> Understand where their strengths are and what they&apos;re good at, including outside their formal roles. Personality assessments can back this up.
+              <strong>Document your team&apos;s real roles.</strong> Not just the formal ones. Where their strengths are, including outside their job descriptions. Personality assessments can back this up.
             </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Define the new role before you remove the old one.</strong> If automation is going to free up 10 hours a week for someone, name what those 10 hours go toward. Customer relationships. Quality control. The strategic work that&apos;s been on the back burner for two years. Make the upgrade explicit.
+              <strong>Name the new role before you remove the old one.</strong> If automation frees up 10 hours a week for someone, say what those 10 hours go toward. Customer relationships. Quality control. The strategic work that&apos;s been waiting. Make the upgrade explicit.
             </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Keep the institutional knowledge.</strong> Even though you can document this in a knowledge base, it&apos;s still important for a person to champion that knowledge, understand when it needs to change, and keep it aligned with where the business is going.
+              <strong>Keep the institutional knowledge anchored to a person.</strong> You can document it in a knowledge base. But someone still needs to champion it, know when it needs to change, and keep it aligned with where the business is going.
             </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Cut what isn&apos;t pulling weight.</strong> Most companies just keep adding AI and never actually use it because it feels &ldquo;cheap&rdquo; against the bottom line. But it&apos;s not about using the most tokens or having the most connected tools. It&apos;s about getting what you need done with the right amount.
+              <strong>Cut what isn&apos;t pulling weight.</strong> Most companies keep adding AI because it feels cheap against the bottom line. But it&apos;s not about tokens or connected tools. It&apos;s about getting what you need done with the right amount.
             </p>
             <p className="text-[#F4F2EE] text-base leading-relaxed">
-              <strong>Measure the right thing.</strong> Hours saved is a vanity metric. Track what the saved time produces. New revenue. Better customer outcomes. Reduced error rate in places where errors used to cost real money. That&apos;s the number that justifies the investment.
+              <strong>Measure what the saved time produces.</strong> Hours saved is a vanity metric. Track what those hours generate: new revenue, better customer outcomes, fewer errors in places where errors cost real money. That&apos;s the number that justifies the investment.
             </p>
           </div>
         </div>
