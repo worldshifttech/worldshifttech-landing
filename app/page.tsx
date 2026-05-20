@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AuthModal from "@/app/components/AuthModal";
+import CurriculumNavLink from "@/app/components/CurriculumNavLink";
 
 export default function Home() {
   return (
@@ -37,6 +38,9 @@ export default function Home() {
           >
             Impact
           </Link>
+          <Suspense fallback={null}>
+            <CurriculumNavLink />
+          </Suspense>
           <Suspense fallback={null}>
             <AuthModal />
           </Suspense>
