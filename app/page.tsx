@@ -61,25 +61,24 @@ export default function Home() {
               className="text-4xl sm:text-5xl xl:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[#F4F2EE] mb-7"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
-              Your AI stack is probably
-              <br className="hidden sm:block" /> 60% waste.
+              AI is not going anywhere.
               <br />
-              <span className="text-[#4B858E]">I can show you which 60%.</span>
+              <span className="text-[#4B858E]">That doesn&apos;t mean you need it everywhere.</span>
             </h1>
 
             <p className="text-[#767B7A] text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
-              I audit how SMBs use AI, design the leanest version that works, and build what needs to be built. A portion of every project goes into verified environmental programs. Not offsets. Real work.
+              I audit how SMBs use AI, their tech stack, and their teams. I build the leaner version that works and protects the people doing the work.
             </p>
 
             <Link
-              href="/projects/new"
+              href="/audit"
               className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
             >
               Start with the audit
             </Link>
 
             <p className="mt-4 text-[#767B7A] text-sm">
-              See how the audit works
+              See how it works
             </p>
           </div>
 
@@ -104,28 +103,25 @@ export default function Home() {
 
         {/* Problem Section */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
-          <h2
-            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8 max-w-3xl"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            Two years into the AI wave, most SMBs are in the same place.
-          </h2>
           <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
             <p>
-              You adopted tools fast because you were supposed to. You have a ChatGPT subscription, a Make account, maybe Zapier, possibly something your last consultant set up that nobody fully understands. Some of it works. A lot of it runs in the background and nobody is sure why. You are paying for things that overlap. You have automations firing on bad data. You have agents doing jobs that a simpler script could handle for a tenth of the cost.
+              Most businesses said yes to AI because that is where things were going. Now you have a ChatGPT subscription. Your CRM has AI features you did not ask for. Your project manager added an AI notetaker. Someone set up an automation that nobody fully understands anymore.
             </p>
-            <p>Nobody audited any of it. There was no time.</p>
+            <p>Some of it helps. A lot of it just runs.</p>
             <p>
-              Meanwhile, every one of those tools is running on infrastructure that costs something. In compute, in energy, in actual planetary impact. The waste is not just a line item on your P&amp;L. It adds up.
+              Every tool running is using compute. Every automation firing is using energy. Every AI credit spent is costing something, in money, in carbon, in the attention of people on your team who were hired to do work that is quietly shifting under them.
             </p>
-            <p>The fix is not ditching AI. It is using it precisely.</p>
+            <p>
+              You have agents doing jobs a simpler script could handle for a tenth of the cost. Overlapping subscriptions nobody has looked at. And nobody tracking what any of it is doing to your footprint, or to the people who showed up for a vision that is now running on autopilot.
+            </p>
+            <p>The fix is not ditching AI. It is running only what is necessary.</p>
           </div>
         </div>
 
-        {/* What I Build Strip */}
+        {/* What I Do Strip */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
           <p className="text-center text-[#767B7A] text-xs tracking-widest uppercase mb-10">
-            What I Build
+            What I Do
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
@@ -136,7 +132,7 @@ export default function Home() {
                 The Audit
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                A 2 to 3 week diagnostic of your entire AI and automation stack. What you are running, what it costs, what it is actually doing, and what is waste. You get a plain-language report. Most clients find 30 to 60 percent of their stack is redundant or running badly.
+                A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. You get a plain-language report.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
@@ -147,7 +143,7 @@ export default function Home() {
                 The Build
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                After the audit, I design the leaner replacement and build what needs replacing. Custom integrations, AI agents, internal tools. Built once, owned by you, no monthly fee to me.
+                After the audit, I design the system that fits: people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five things and building nothing. Whatever the audit says you actually need. Built lean. Owned by you. No monthly fee to me.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
@@ -155,10 +151,10 @@ export default function Home() {
                 className="text-xl font-bold text-[#F4F2EE] mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                The Redirect
+                The Impact
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                A fixed portion of every project goes into verified environmental programs. Not offset schemes. Reforestation, ocean cleanup, renewable infrastructure. Every invoice shows exactly where it went.
+                AI has a real energy cost. Every model inference, every automation running, every tool idling adds up. A fixed portion of every project goes into verified programs doing real work on that problem. Reforestation. Ocean cleanup. Renewable infrastructure in underserved areas. Not offset schemes. Programs chosen for transparency and accountability. Every invoice shows the line item and a link to the program.
               </p>
             </div>
           </div>
@@ -181,7 +177,7 @@ export default function Home() {
                 Ops and systems leads
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                You are the one who knows the stack is a mess. You have watched tools get adopted without a plan, automations get built and never cleaned up, and the same data get entered in three places. You do not need a consultant to tell you that. You need someone to map it and fix it.
+                You know the stack is a mess. You have watched tools get adopted without a plan, automations get built and never cleaned up, and the same data entered in three places. You do not need someone to tell you that. You need someone to map it and fix it.
               </p>
             </div>
             <div>
@@ -192,7 +188,7 @@ export default function Home() {
                 Founders
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                You said yes to AI tools because everyone was saying yes. Some of them helped. Most of them just added to the overhead. You would like to know what is actually worth keeping before you add anything else.
+                You said yes to AI tools because everyone was saying yes. Some of them helped. Most just added overhead. You want to know what is worth keeping, and what it is doing to the people you hired.
               </p>
             </div>
             <div>
@@ -203,7 +199,7 @@ export default function Home() {
                 Agencies and consultants
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                Your clients are asking about AI. You want to give them a real answer, not a sales pitch. An AI audit is something you can offer as a standalone service, with a builder behind it who will be honest about what they actually need.
+                Your clients are asking about AI. You want to give them a real answer, not a sales pitch. The audit is something you can offer as a standalone service, with a builder behind it who will be honest about what they actually need.
               </p>
             </div>
           </div>
@@ -212,24 +208,16 @@ export default function Home() {
         {/* Green By Design */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
           <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
-            GREEN BY DESIGN
+            BUILT LEAN. BUILT GREEN.
           </p>
-          <h2
-            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-8 max-w-2xl"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            Built Lean. Built Green.
-          </h2>
           <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
             <p>
-              AI has an energy cost. Every tool running, every model inference, every automation firing adds up. I am not going to pretend otherwise.
+              My goal is simple: help organizations understand the real cost of the systems they are running and make sure they are using as little AI as it takes to do the most good for their team.
             </p>
             <p>
-              What I can do is design solutions that use as little as they need to, and direct a fixed portion of every project into programs that are actually doing something about the larger problem. It is not a fix. It is a commitment to doing this work honestly.
+              That means operations running on infrastructure committed to renewable energy. Lean code by default. No idle processes, no bloated workflows, no systems running just because nobody turned them off.
             </p>
-            <p>
-              Hosted on infrastructure committed to renewable energy. Lean code by default. No idle infrastructure. No bloat.
-            </p>
+            <p>AI is not going away. That does not mean it has to cost more than it should.</p>
           </div>
         </div>
 
@@ -259,13 +247,20 @@ export default function Home() {
                 Hi, I&apos;m Drew.
               </h2>
               <div className="space-y-4 text-[#767B7A] text-base leading-relaxed max-w-2xl">
-                <p>I build the tools. I write the code. I deliver it. That is the whole company.</p>
                 <p>
-                  Before WST, I spent years as a fractional COO and ClickUp consultant. I learned what is broken in SMB operations from the inside before I started building things to fix it. When I say your stack is probably over-built, I am not guessing. I have been in the systems.
+                  I have been consulting in operations for over nine years. I have been part of many teams, seen many systems built, helped set up automations and documentation, defined roles, and trained people across organizations of all sizes.
                 </p>
-                <p>I use AI in my own builds. I am not anti-AI. I am anti-waste. There is a difference.</p>
                 <p>
-                  If the audit says you are mostly fine, I will tell you that. I would rather lose the build than recommend work that does not need to happen.
+                  Most of the time, what I find is the same across all of them: underdocumented operations, overautomated systems, overcomplicated processes, and team members whose roles have never been fully scoped or talked through. When something changes, the change management piece is where teams fall apart. It always has been.
+                </p>
+                <p>
+                  AI has not fixed that. It has sped it up. It moves fast enough now that most organizations have no time to make sure anything is actually being handled before the next thing arrives.
+                </p>
+                <p>
+                  I have been working in and around AI for four years. I am not anti-AI. I understand there are real use cases that actually help. What I am against is waste: tools running that earn nothing, automations firing on bad data, and teams being reshaped around technology before anyone asked whether they should be.
+                </p>
+                <p>
+                  My job is to help organizations understand where AI actually earns its place, and to make sure they do not fall into the trap of thinking AI will fix what was already broken before it arrived.
                 </p>
               </div>
             </div>
@@ -281,10 +276,10 @@ export default function Home() {
             Tell me what you&apos;re running.
           </h2>
           <p className="text-[#767B7A] text-base mb-8 max-w-lg mx-auto">
-            The audit is the starting point. $500 to $1,500 depending on stack size. Standalone, no commitment to a build.
+            The initial audit is free. Start there.
           </p>
           <Link
-            href="/projects/new"
+            href="/audit"
             className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
           >
             Start with the audit
