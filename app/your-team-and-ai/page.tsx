@@ -100,18 +100,22 @@ export default function YourTeamAndAIPage() {
               Your team has been with you. They watched the business become what it is. They know which clients pay late and why, which products get returned and what gets said when they do, and the full vision underneath the day-to-day. Vision doesn&apos;t come from a system. It comes from people.
             </p>
             <div className="space-y-6">
-              <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Sales.</strong> Your team knows your customers&apos; names, what they bought last year, what&apos;s been going on in their life, and the emotional cues they carry into conversations and meetings. AI can&apos;t pick that up. Only human interaction can.
-              </p>
-              <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Creativity.</strong> AI doesn&apos;t do well with creativity. It can take direction and surface suggestions, but true creativity comes from people with creative skills built through emotion and years spent learning their craft. The emotional and psychological understanding of what needs to be created will only ever be done properly by humans.
-              </p>
-              <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Relationships.</strong> Vendors. Partners. Long-term clients. What keeps these people wanting to be a part of your business? Your vision is usually the people and processes they&apos;re interacting with. Most of that is led by humans, not bots.
-              </p>
-              <p className="text-[#F4F2EE] text-base leading-relaxed">
-                <strong>Critical thinking.</strong> Reading why a customer is upset before they say it. Understanding why a deal stalled when the surface reason doesn&apos;t add up. Knowing when a partner needs space and figuring out how to pivot. AI doesn&apos;t do this. People do.
-              </p>
+              <div>
+                <strong className="block text-[#F4F2EE] text-base mb-1">Sales.</strong>
+                <p className="text-[#F4F2EE] text-base leading-relaxed">Your team knows your customers&apos; names, what they bought last year, what&apos;s been going on in their life, and the emotional cues they carry into conversations and meetings. AI can&apos;t pick that up. Only human interaction can.</p>
+              </div>
+              <div>
+                <strong className="block text-[#F4F2EE] text-base mb-1">Creativity.</strong>
+                <p className="text-[#F4F2EE] text-base leading-relaxed">AI doesn&apos;t do well with creativity. It can take direction and surface suggestions, but true creativity comes from people with creative skills built through emotion and years spent learning their craft. The emotional and psychological understanding of what needs to be created will only ever be done properly by humans.</p>
+              </div>
+              <div>
+                <strong className="block text-[#F4F2EE] text-base mb-1">Relationships.</strong>
+                <p className="text-[#F4F2EE] text-base leading-relaxed">Vendors. Partners. Long-term clients. What keeps these people wanting to be a part of your business? Your vision is usually the people and processes they&apos;re interacting with. Most of that is led by humans, not bots.</p>
+              </div>
+              <div>
+                <strong className="block text-[#F4F2EE] text-base mb-1">Critical thinking.</strong>
+                <p className="text-[#F4F2EE] text-base leading-relaxed">Reading why a customer is upset before they say it. Understanding why a deal stalled when the surface reason doesn&apos;t add up. Knowing when a partner needs space and figuring out how to pivot. AI doesn&apos;t do this. People do.</p>
+              </div>
             </div>
             <p className="text-[#F4F2EE] text-base leading-relaxed mt-8">
               These aren&apos;t soft skills. They&apos;re the operational bedrock of your business. AI doesn&apos;t extend them. It frees up time so the people who carry these skills can actually use them.
