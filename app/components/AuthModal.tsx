@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { signIn, signUp } from "@/lib/auth";
 import { getSupabaseBrowser } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 type Tab = "login" | "signup";
 
@@ -28,6 +30,16 @@ export default function AuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    supabase.auth.getUser().then(({ data }) => setCurrentUser(data.user ?? null));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("login") === "true") {
@@ -120,18 +132,34 @@ export default function AuthModal({
       {/* Nav buttons — hidden when used as a standalone modal trigger */}
       {!hideTriggers && (
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => openModal("login")}
-            className="text-sm font-medium text-[#F4F2EE]/70 hover:text-[#F4F2EE] transition-colors duration-200"
-          >
-            Log In
-          </button>
-          <button
-            onClick={() => openModal("signup")}
-            className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
-          >
-            Get Started
-          </button>
+          {currentUser ? (
+            <>
+              <span className="text-sm text-[#767B7A] hidden sm:inline truncate max-w-[180px]">
+                {currentUser.email}
+              </span>
+              <Link
+                href="/projects"
+                className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+              >
+                View Profile
+              </Link>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => openModal("login")}
+                className="text-sm font-medium text-[#F4F2EE]/70 hover:text-[#F4F2EE] transition-colors duration-200"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => openModal("signup")}
+                className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+              >
+                Get Started
+              </button>
+            </>
+          )}
         </div>
       )}
 

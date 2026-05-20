@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AuthModal from "@/app/components/AuthModal";
-import CurriculumNavLink from "@/app/components/CurriculumNavLink";
 
 export default function Home() {
   return (
@@ -26,21 +25,6 @@ export default function Home() {
           >
             Book a Call
           </a>
-          <Link
-            href="/your-team-and-ai"
-            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
-          >
-            Your Team &amp; AI
-          </Link>
-          <Link
-            href="/impact"
-            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
-          >
-            Impact
-          </Link>
-          <Suspense fallback={null}>
-            <CurriculumNavLink />
-          </Suspense>
           <Suspense fallback={null}>
             <AuthModal />
           </Suspense>
