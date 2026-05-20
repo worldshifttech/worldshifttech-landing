@@ -22,6 +22,7 @@ export default async function CurriculumPage() {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) redirect("/?login=true");
+  if (session.user.email !== "drew@worldshifttech.com") redirect("/");
 
   const domains = await getDomains();
 

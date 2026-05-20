@@ -26,6 +26,7 @@ export default async function DomainPage({
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) redirect("/?login=true");
+  if (session.user.email !== "drew@worldshifttech.com") redirect("/");
 
   const domainNumber = parseInt(params.domain);
   if (isNaN(domainNumber)) notFound();
