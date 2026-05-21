@@ -173,6 +173,11 @@ Open [http://localhost:3000](http://localhost:3000).
 - [x] Curriculum learner UI — `/curriculum`, `/curriculum/[domain]`, `/curriculum/[domain]/[module]`, `/curriculum/[domain]/[module]/[lesson]` with progress tracking (Session 42)
 - [x] `/app/api/curriculum/progress/route.ts` — POST endpoint to mark lessons complete/in-progress (Session 42)
 - [x] Homepage V4 copy — new hero headline/subhead, updated problem section, "What I Do" (renamed from "What I Build"), "The Impact" card (renamed from "The Redirect"), updated audience mirrors, green section, Drew bio, final CTA; all CTAs now route to `/audit` (Session 43)
+- [x] `/ai-agent-setup` — static campaign landing page for ClickUp AI agent prospects (Session 44)
+  - Hardcoded content: eyebrow, Playfair headline, The Problem / What I'd Build sections, 4 use case cards (2x2 grid, stacks on mobile), CTA with body text and Calendly button
+  - Matches layout and component structure of dynamic `/for-you/[industry]/[solution]` pages exactly
+  - Metadata export: title "ClickUp AI Agent Setup | World Shift Technologies", plain-text description
+  - Indexable static route; suitable for direct link in outreach, social posts, and landing campaigns
 - [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on the generated page (`/for-you/[industry]/[solution]`)
 - [ ] `/api/ingest-case-study` — Zapier webhook to auto-commit new case studies
