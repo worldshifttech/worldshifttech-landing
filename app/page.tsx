@@ -54,12 +54,14 @@ export default function Home() {
               I audit how SMBs use AI and technology, ensuring team members feel seen and understood in their operations. Focused on lean software and responsible AI solutions.
             </p>
 
-            <Link
-              href="/audit"
+            <a
+              href="https://calendly.com/fractionalbusinesscompanion/wst"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
             >
               Start with the audit
-            </Link>
+            </a>
 
             <p className="mt-4 text-[#767B7A] text-sm">
               See how it works
