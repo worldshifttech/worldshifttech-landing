@@ -38,20 +38,20 @@ export default function Home() {
           {/* Left: Text content */}
           <div className="flex-1 text-center lg:text-left">
             <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-7">
-              BUILT LEAN. BUILT GREEN.
+              BUILT WITH PEOPLE IN MIND.
             </p>
 
             <h1
               className="text-4xl sm:text-5xl xl:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[#F4F2EE] mb-7"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
-              AI is not going anywhere.
+              Building Systems & AI Responsibly.
               <br />
-              <span className="text-[#4B858E]">That doesn&apos;t mean you need it everywhere.</span>
+              <span className="text-[#4B858E]">Putting people first in operations.</span>
             </h1>
 
             <p className="text-[#767B7A] text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
-              I audit how SMBs use AI, their tech stack, and their teams. I build the leaner version that works and protects the people doing the work.
+              I audit how SMBs use AI and technology, ensuring team members feel seen and understood in their operations. Focused on lean software and responsible AI solutions.
             </p>
 
             <Link
@@ -85,20 +85,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Problem Section */}
+        {/* Founder Intro */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
           <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
             <p>
-              Most businesses said yes to AI because that is where things were going. Now you have a ChatGPT subscription. Your CRM has AI features you did not ask for. Your project manager added an AI notetaker. Someone set up an automation that nobody fully understands anymore.
+              I have been an operations consultant since 2018. I saw the rise and potential threat of AI from a mile away. Most businesses said yes to AI because that is where things were going. Now all your tools are using AI, hardly any of it is helpful, and in most cases it is costing more time and energy than before. Now we are experiencing the harm to our environment when no guardrails are in place.
             </p>
-            <p>Some of it helps. A lot of it just runs.</p>
-            <p>
-              Every tool running is using compute. Every automation firing is using energy. Every AI credit spent is costing something, in money, in carbon, in the attention of people on your team who were hired to do work that is quietly shifting under them.
-            </p>
-            <p>
-              You have agents doing jobs a simpler script could handle for a tenth of the cost. Overlapping subscriptions nobody has looked at. And nobody tracking what any of it is doing to your footprint, or to the people who showed up for a vision that is now running on autopilot.
-            </p>
-            <p>The fix is not ditching AI. It is running only what is necessary.</p>
+            <p>Teams are in tool burnout. Your operations are a combination of five or more systems that are barely working together. Add in AI and now you cannot tell if things are better or worse.</p>
+            <p>The fix is not ditching AI, because there are places it can help. It is creating a system that uses only what is necessary and supports the people involved.</p>
           </div>
         </div>
 
@@ -113,10 +107,10 @@ export default function Home() {
                 className="text-xl font-bold text-[#F4F2EE] mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                The Audit
+                Audit the Operations
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. You get a plain-language report.
+                A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. We then evaluate where AI and automation will be effective and shift roles to keep team members doing what they do best.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
@@ -127,7 +121,7 @@ export default function Home() {
                 The Build
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                After the audit, I design the system that fits: people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five things and building nothing. Whatever the audit says you actually need. Built lean. Owned by you. No monthly fee to me.
+                After the audit, I design a system that takes into account the people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five processes and building a precision tool to replace them.
               </p>
             </div>
             <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
@@ -138,7 +132,7 @@ export default function Home() {
                 The Impact
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                AI has a real energy cost. Every model inference, every automation running, every tool idling adds up. A fixed portion of every project goes into verified programs doing real work on that problem. Reforestation. Ocean cleanup. Renewable infrastructure in underserved areas. Not offset schemes. Programs chosen for transparency and accountability. Every invoice shows the line item and a link to the program.
+                AI and automation have a real environmental cost. Every model inference, every automation running, every tool idling adds up. A fixed portion of every project goes into verified programs doing real work on that problem. Reforestation. Ocean cleanup. Renewable infrastructure in underserved areas. Programs specifically chosen for transparency and accountability.
               </p>
             </div>
           </div>
@@ -161,7 +155,7 @@ export default function Home() {
                 Ops and systems leads
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                You know the stack is a mess. You have watched tools get adopted without a plan, automations get built and never cleaned up, and the same data entered in three places. You do not need someone to tell you that. You need someone to map it and fix it.
+                Chief operators and team leads who want to help their team be more efficient in their tools and processes, but do not want to overcomplicate things with additional tools and AI.
               </p>
             </div>
             <div>
@@ -172,7 +166,7 @@ export default function Home() {
                 Founders
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                You said yes to AI tools because everyone was saying yes. Some of them helped. Most just added overhead. You want to know what is worth keeping, and what it is doing to the people you hired.
+                AI and automation promise better visibility into reporting, efficiency, and understanding what is happening across your organization. Oftentimes that visibility is just noise, and you are not seeing the results you want.
               </p>
             </div>
             <div>
@@ -183,25 +177,25 @@ export default function Home() {
                 Agencies and consultants
               </h3>
               <p className="text-[#767B7A] text-sm leading-relaxed">
-                Your clients are asking about AI. You want to give them a real answer, not a sales pitch. The audit is something you can offer as a standalone service, with a builder behind it who will be honest about what they actually need.
+                You take calls, gather information, and collect data about your clients that needs to be aggregated in a way that makes sense to you. Precise AI and the right set of tools can help you provide better services to your clients and teams.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Green By Design */}
+        {/* Sustainability Statement */}
         <div className="mt-20 pt-12 border-t border-white/[0.08]">
           <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
-            BUILT LEAN. BUILT GREEN.
+            BUILT WITH PEOPLE IN MIND.
           </p>
           <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
             <p>
               My goal is simple: help organizations understand the real cost of the systems they are running and make sure they are using as little AI as it takes to do the most good for their team.
             </p>
             <p>
-              That means operations running on infrastructure committed to renewable energy. Lean code by default. No idle processes, no bloated workflows, no systems running just because nobody turned them off.
+              That means consolidating tools, subscriptions, and AI use. Optimizing processes and change management across departments to make sure teams are running efficiently and smoothly. Building lightweight solutions that scale with growth and change within the team.
             </p>
-            <p>AI is not going away. That does not mean it has to cost more than it should.</p>
+            <p>Let&apos;s face it, AI is not going away. That does not mean you are not accountable for the costs it takes to use AI.</p>
           </div>
         </div>
 
@@ -235,16 +229,16 @@ export default function Home() {
                   I have been consulting in operations for over nine years. I have been part of many teams, seen many systems built, helped set up automations and documentation, defined roles, and trained people across organizations of all sizes.
                 </p>
                 <p>
-                  Most of the time, what I find is the same across all of them: underdocumented operations, overautomated systems, overcomplicated processes, and team members whose roles have never been fully scoped or talked through. When something changes, the change management piece is where teams fall apart. It always has been.
+                  Most of the time, what I find is the same across all of them: underdocumented operations, overautomated systems, overcomplicated processes, and team members whose roles have never been fully scoped or talked through. When something changes, the change management piece is where teams fall apart. This has gotten even worse thanks to AI.
                 </p>
                 <p>
-                  AI has not fixed that. It has sped it up. It moves fast enough now that most organizations have no time to make sure anything is actually being handled before the next thing arrives.
+                  AI moves fast enough now that most organizations have no time to make sure anything is actually being handled before the next thing arrives.
                 </p>
                 <p>
-                  I have been working in and around AI for four years. I am not anti-AI. I understand there are real use cases that actually help. What I am against is waste: tools running that earn nothing, automations firing on bad data, and teams being reshaped around technology before anyone asked whether they should be.
+                  I have been working in and around AI for four years with all of my clients. I am not anti-AI. I understand there are real use cases that actually help. What I am against is the wasteful use of AI and organizations not being accountable for their use and impact on their own teams.
                 </p>
                 <p>
-                  My job is to help organizations understand where AI actually earns its place, and to make sure they do not fall into the trap of thinking AI will fix what was already broken before it arrived.
+                  I am passionate about technology and where AI can be used for good within organizations, and I want to help others be aware of their implementations.
                 </p>
               </div>
             </div>
@@ -257,17 +251,19 @@ export default function Home() {
             className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-4"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            Tell me what you&apos;re running.
+            Chat with me.
           </h2>
           <p className="text-[#767B7A] text-base mb-8 max-w-lg mx-auto">
             The initial audit is free. Start there.
           </p>
-          <Link
-            href="/audit"
+          <a
+            href="https://calendly.com/fractionalbusinesscompanion/wst"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
           >
-            Start with the audit
-          </Link>
+            Get to Know Me
+          </a>
         </div>
       </main>
 

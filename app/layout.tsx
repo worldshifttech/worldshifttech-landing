@@ -15,9 +15,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "World Shift Technologies — AI Audit and Precision Builds for SMBs",
+  title: "World Shift Technologies — Responsible AI & Systems Solutions",
   description:
-    "I audit how SMBs use AI, design the leanest version that works, and build what needs to be built. A portion of every project goes into verified environmental programs.",
+    "I audit how SMBs use AI and design lean AI solutions and systems, putting people before technology. A portion of every project goes into verified environmental programs.",
   icons: {
     icon: "/wst-icon.svg",
   },
