@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
               <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                 <tr>
                   <td>
-                    <a href="${demoUrl}" target="_blank" style="display:inline-block;background-color:#4B858E;color:#080C14;font-size:15px;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;">View Your Demo &rarr;</a>
+                    <a href="${demoUrl}" target="_blank" style="display:inline-block;background-color:#4B858E;color:#FFFFFF;font-size:15px;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;">View Your Demo &rarr;</a>
                   </td>
                 </tr>
               </table>

@@ -139,7 +139,7 @@ export default function AuthModal({
               </span>
               <Link
                 href="/projects"
-                className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+                className="text-sm font-bold text-white bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
               >
                 View Profile
               </Link>
@@ -154,7 +154,7 @@ export default function AuthModal({
               </button>
               <button
                 onClick={() => openModal("signup")}
-                className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+                className="text-sm font-bold text-white bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
               >
                 Get Started
               </button>
@@ -281,7 +281,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#4B858E] text-[#080C14] font-bold py-3 rounded-full hover:bg-[#3a6b73] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mt-2"
+                className="w-full bg-[#4B858E] text-white font-bold py-3 rounded-full hover:bg-[#3a6b73] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mt-2"
               >
                 {loading
                   ? "Working..."

@@ -597,7 +597,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
             <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-[#00205C]/[0.08]">
               <button
                 onClick={handleRegenerate}
-                className="text-sm font-bold px-7 py-3 rounded-full bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors"
+                className="text-sm font-bold px-7 py-3 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors"
               >
                 Regenerate Scope
               </button>
@@ -647,7 +647,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
               href={demo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
+              className="inline-block bg-[#4B858E] text-white text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
             >
               View Your Demo &rarr;
             </a>

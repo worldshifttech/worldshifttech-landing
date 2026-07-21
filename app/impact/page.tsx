@@ -49,7 +49,7 @@ export default function ImpactPage() {
             </p>
             <span
               className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-5"
-              style={{ background: "#4B858E", color: "#080C14" }}
+              style={{ background: "#4B858E", color: "#FFFFFF" }}
             >
               AI accountability
             </span>
@@ -92,7 +92,7 @@ export default function ImpactPage() {
             </p>
             <span
               className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-5"
-              style={{ background: "#4B858E", color: "#080C14" }}
+              style={{ background: "#4B858E", color: "#FFFFFF" }}
             >
               AI accountability
             </span>
@@ -135,7 +135,7 @@ export default function ImpactPage() {
             </p>
             <span
               className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-5"
-              style={{ background: "#4B858E", color: "#080C14" }}
+              style={{ background: "#4B858E", color: "#FFFFFF" }}
             >
               Legal / litigation
             </span>
@@ -178,7 +178,7 @@ export default function ImpactPage() {
             </p>
             <span
               className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-5"
-              style={{ background: "#4B858E", color: "#080C14" }}
+              style={{ background: "#4B858E", color: "#FFFFFF" }}
             >
               Policy / regulatory
             </span>

@@ -29,7 +29,7 @@ export default function ClickUpPage() {
           href={CALENDLY}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-bold text-[#080C14] bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+          className="text-sm font-bold text-white bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
         >
           Book a Call
         </a>
@@ -54,7 +54,7 @@ export default function ClickUpPage() {
           href={CALENDLY}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block bg-[#4B858E] text-[#080C14] text-base font-bold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
+          className="inline-block bg-[#4B858E] text-white text-base font-bold px-8 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
         >
           Book a Strategy Call &rarr;
         </a>
@@ -241,7 +241,7 @@ export default function ClickUpPage() {
             href={CALENDLY}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-[#4B858E] text-[#080C14] text-base font-bold px-10 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
+            className="inline-block bg-[#4B858E] text-white text-base font-bold px-10 py-4 rounded-full hover:bg-[#3a6b73] transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
           >
             Book Your Strategy Call &rarr;
           </a>

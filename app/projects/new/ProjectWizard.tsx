@@ -263,7 +263,7 @@ export default function ProjectWizard({
             disabled={!nextEnabled()}
             className={`text-sm font-bold px-8 py-3 rounded-full transition-all ${
               nextEnabled()
-                ? "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
+                ? "bg-[#4B858E] text-white hover:bg-[#5a9aa4] cursor-pointer"
                 : "bg-[#00205C]/[0.06] text-[#76777A] cursor-not-allowed"
             }`}
           >
@@ -746,7 +746,7 @@ function RevealScreen({
             </p>
             <button
               onClick={() => router.push("/projects")}
-              className="bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
+              className="bg-[#4B858E] text-white text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
             >
               Back to Your Projects
             </button>
@@ -896,7 +896,7 @@ function RevealScreen({
                     <div className="flex flex-col gap-3">
                       <button
                         onClick={() => setGuestModalOpen(true)}
-                        className="w-full bg-[#4B858E] text-[#080C14] font-bold py-3.5 rounded-full text-sm hover:bg-[#5a9aa4] transition-colors cursor-pointer"
+                        className="w-full bg-[#4B858E] text-white font-bold py-3.5 rounded-full text-sm hover:bg-[#5a9aa4] transition-colors cursor-pointer"
                       >
                         Create an Account to Save Your Scope
                       </button>
@@ -923,7 +923,7 @@ function RevealScreen({
                     className={`w-full font-bold py-3.5 rounded-full text-sm transition-colors ${
                       submitting
                         ? "bg-[#00205C]/[0.06] text-[#76777A] cursor-not-allowed"
-                        : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
+                        : "bg-[#4B858E] text-white hover:bg-[#5a9aa4] cursor-pointer"
                     }`}
                   >
                     {submitting ? "Submitting..." : "Submit Your Project"}

@@ -227,7 +227,7 @@ export default function YourTeamAndAIPage() {
           </div>
           <Link
             href="/audit"
-            className="inline-block bg-[#4B858E] text-[#080C14] text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] hover:text-white transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
+            className="inline-block bg-[#4B858E] text-white text-base font-semibold px-8 py-4 rounded-full hover:bg-[#3a6b73] hover:text-white transition-colors duration-200 shadow-lg shadow-[#4B858E]/20"
           >
             Let&apos;s see what your stack actually needs.
           </Link>

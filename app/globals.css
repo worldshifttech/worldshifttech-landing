@@ -18,7 +18,7 @@
   --bg-surface-alt: var(--color-offwhite);
   --text-primary: var(--color-navy);
   --text-secondary: var(--color-gray);
-  --text-on-accent: var(--color-near-black);
+  --text-on-accent: var(--color-white);
   --accent: var(--color-teal);
   --accent-soft: var(--color-teal-soft);
   --accent-hover: var(--color-teal-hover-dark);

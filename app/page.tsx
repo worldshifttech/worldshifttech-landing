@@ -32,7 +32,8 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 pt-12 pb-24">
+      <main className="flex-1 w-full">
+      <div className="max-w-6xl mx-auto w-full px-6 pt-12 pb-20">
         <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-20">
 
           {/* Left: Text content */}
@@ -97,13 +98,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* What I Do Strip */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
-          <p className="text-center text-navy/70 text-xs tracking-widest uppercase mb-10">
+      </div>
+
+      {/* What I Do Strip — dark band for visual rhythm */}
+      <section className="w-full bg-[#00205C] py-20">
+        <div className="max-w-6xl mx-auto w-full px-6">
+          <p className="text-center text-[#91B6BB] text-xs tracking-widest uppercase mb-10">
             What I Do
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
+            <div className="bg-white rounded-xl px-6 py-6">
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -113,7 +117,7 @@ export default function Home() {
                 A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. We then evaluate where AI and automation will be effective and shift roles to keep team members doing what they do best.
               </p>
             </div>
-            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
+            <div className="bg-white rounded-xl px-6 py-6">
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -123,7 +127,7 @@ export default function Home() {
                 After the audit, I design a system that takes into account the people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five processes and building a precision tool to replace them.
               </p>
             </div>
-            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
+            <div className="bg-white rounded-xl px-6 py-6">
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -135,9 +139,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
 
+      <div className="max-w-6xl mx-auto w-full px-6 pt-20 pb-24">
         {/* Audience Mirrors */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+        <div>
           <h2
             className="text-2xl sm:text-3xl font-light text-[#00205C] mb-10"
           >
@@ -257,6 +263,7 @@ export default function Home() {
             Get to Know Me
           </a>
         </div>
+      </div>
       </main>
 
       {/* Footer */}

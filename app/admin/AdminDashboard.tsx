@@ -97,7 +97,7 @@ function relativeDate(dateStr: string): string {
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-[#76777A]/10 text-[#76777A] border border-[#76777A]/30",
   scoped: "border border-[#4B858E] text-[#4B858E]",
-  submitted: "bg-[#4B858E] text-[#080C14]",
+  submitted: "bg-[#4B858E] text-white",
   reviewed: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
   approved: "bg-green-600/20 text-green-400 border border-green-600/30",
   building: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
@@ -719,7 +719,7 @@ export default function AdminDashboard({
                                     className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
                                       updatingId === project.id
                                         ? "bg-[#00205C]/[0.08] text-[#76777A] cursor-not-allowed"
-                                        : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
+                                        : "bg-[#4B858E] text-white hover:bg-[#5a9aa4] cursor-pointer"
                                     }`}
                                     style={{ fontFamily: "var(--font-poppins)" }}
                                   >
@@ -825,7 +825,7 @@ export default function AdminDashboard({
                                             )
                                           }
                                           disabled={savingDemoUrlIds.has(project.id)}
-                                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                           style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {savedDemoUrlIds.has(project.id)

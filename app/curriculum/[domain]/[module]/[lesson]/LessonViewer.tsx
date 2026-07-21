@@ -215,7 +215,7 @@ export default function LessonViewer({
             <button
               onClick={handleMarkComplete}
               disabled={marking}
-              className="bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#4B858E] text-white text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {marking ? "Saving..." : "Mark Complete"}
             </button>

@@ -138,7 +138,7 @@ export default function ImpactTab() {
             className={`text-sm font-semibold px-5 py-2.5 rounded-full transition-colors ${
               syncing
                 ? "bg-[#00205C]/10 text-[#76777A] cursor-not-allowed"
-                : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
+                : "bg-[#4B858E] text-white hover:bg-[#5a9aa4] cursor-pointer"
             }`}
           >
             {syncing ? (

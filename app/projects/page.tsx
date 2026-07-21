@@ -84,7 +84,7 @@ export default async function ProjectsPage() {
               </Link>
               <Link
                 href="/projects/new"
-                className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
+                className="inline-block bg-[#4B858E] text-white text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
               >
                 Start a New Project
               </Link>

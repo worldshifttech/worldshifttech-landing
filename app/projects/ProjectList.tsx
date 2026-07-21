@@ -43,7 +43,7 @@ const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   },
   submitted: {
     label: "Submitted",
-    classes: "bg-[#4B858E] text-[#080C14] border border-[#4B858E]",
+    classes: "bg-[#4B858E] text-white border border-[#4B858E]",
   },
   reviewed: {
     label: "In Review",
@@ -121,7 +121,7 @@ export default function ProjectList({
         </p>
         <Link
           href="/projects/new"
-          className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
+          className="inline-block bg-[#4B858E] text-white text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
         >
           Start a New Project
         </Link>

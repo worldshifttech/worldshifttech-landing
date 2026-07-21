@@ -274,7 +274,7 @@ export default function MeetPage() {
                   background: "var(--color-teal)",
                   border: "none",
                   borderRadius: 8,
-                  color: "var(--color-near-black)",
+                  color: "var(--color-white)",
                   fontFamily: "var(--font-poppins)",
                   fontSize: "0.975rem",
                   fontWeight: 600,
