@@ -134,7 +134,7 @@ export default function AuthModal({
         <div className="flex items-center gap-3">
           {currentUser ? (
             <>
-              <span className="text-sm text-[#767B7A] hidden sm:inline truncate max-w-[180px]">
+              <span className="text-sm text-[#76777A] hidden sm:inline truncate max-w-[180px]">
                 {currentUser.email}
               </span>
               <Link
@@ -148,7 +148,7 @@ export default function AuthModal({
             <>
               <button
                 onClick={() => openModal("login")}
-                className="text-sm font-medium text-[#F4F2EE]/70 hover:text-[#F4F2EE] transition-colors duration-200"
+                className="text-sm font-medium text-[#00205C]/70 hover:text-[#00205C] transition-colors duration-200"
               >
                 Log In
               </button>
@@ -171,11 +171,11 @@ export default function AuthModal({
             onClick={closeModal}
           />
 
-          <div className="relative w-full max-w-md bg-[#0D1420] border border-white/10 rounded-2xl p-8 shadow-2xl">
+          <div className="relative w-full max-w-md bg-white border border-[#00205C]/10 rounded-2xl p-8 shadow-2xl">
             {/* Close */}
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-lg text-[#767B7A] hover:text-[#F4F2EE] hover:bg-white/[0.06] transition-colors"
+              className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-lg text-[#76777A] hover:text-[#00205C] hover:bg-[#00205C]/[0.06] transition-colors"
               aria-label="Close"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -189,7 +189,7 @@ export default function AuthModal({
             </button>
 
             {/* Tabs */}
-            <div className="flex gap-6 mb-8 border-b border-white/10">
+            <div className="flex gap-6 mb-8 border-b border-[#00205C]/[0.08]">
               {(["login", "signup"] as Tab[]).map((t) => (
                 <button
                   key={t}
@@ -197,7 +197,7 @@ export default function AuthModal({
                   className={`pt-3 pb-3 text-sm font-semibold transition-colors ${
                     tab === t
                       ? "text-[#4B858E] border-b-2 border-[#4B858E] -mb-px"
-                      : "text-[#767B7A] hover:text-[#F4F2EE]"
+                      : "text-[#76777A] hover:text-[#00205C]"
                   }`}
                 >
                   {t === "login" ? "Log In" : "Sign Up"}
@@ -222,14 +222,14 @@ export default function AuthModal({
 
             {/* Divider */}
             <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-[#767B7A]">or</span>
-              <div className="flex-1 h-px bg-white/10" />
+              <div className="flex-1 h-px bg-[#00205C]/10" />
+              <span className="text-xs text-[#76777A]">or</span>
+              <div className="flex-1 h-px bg-[#00205C]/10" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#767B7A] mb-1.5">
+                <label className="block text-xs font-medium text-[#76777A] mb-1.5">
                   Email
                 </label>
                 <input
@@ -238,12 +238,12 @@ export default function AuthModal({
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@example.com"
-                  className="w-full bg-[#080C14] border border-white/10 rounded-lg px-4 py-3 text-sm text-[#F4F2EE] placeholder-[#767B7A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
+                  className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-lg px-4 py-3 text-sm text-[#00205C] placeholder-[#76777A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#767B7A] mb-1.5">
+                <label className="block text-xs font-medium text-[#76777A] mb-1.5">
                   Password
                 </label>
                 <input
@@ -252,13 +252,13 @@ export default function AuthModal({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full bg-[#080C14] border border-white/10 rounded-lg px-4 py-3 text-sm text-[#F4F2EE] placeholder-[#767B7A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
+                  className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-lg px-4 py-3 text-sm text-[#00205C] placeholder-[#76777A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
                 />
               </div>
 
               {tab === "signup" && (
                 <div>
-                  <label className="block text-xs font-medium text-[#767B7A] mb-1.5">
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">
                     Confirm Password
                   </label>
                   <input
@@ -267,7 +267,7 @@ export default function AuthModal({
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="w-full bg-[#080C14] border border-white/10 rounded-lg px-4 py-3 text-sm text-[#F4F2EE] placeholder-[#767B7A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-lg px-4 py-3 text-sm text-[#00205C] placeholder-[#76777A]/50 focus:outline-none focus:border-[#4B858E]/60 transition-colors"
                   />
                 </div>
               )}

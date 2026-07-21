@@ -157,10 +157,7 @@ function answersToEdit(raw: Record<string, unknown> | null): EditAnswers {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p
-      className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-3"
-      style={{ fontFamily: "var(--font-dm-sans)" }}
-    >
+    <p className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-3">
       {children}
     </p>
   );
@@ -184,10 +181,9 @@ function RadioGroup({
           onClick={() => onChange(opt)}
           className={`text-left px-4 py-3 rounded-xl border text-sm transition-all ${
             value === opt
-              ? "border-[#4B858E] bg-[#4B858E]/10 text-[#F4F2EE]"
-              : "border-white/[0.08] bg-white/[0.02] text-[#F4F2EE]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
+              ? "border-[#4B858E] bg-[#4B858E]/10 text-[#00205C]"
+              : "border-[#00205C]/[0.1] bg-white text-[#00205C]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
           }`}
-          style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           {opt}
         </button>
@@ -217,14 +213,13 @@ function CheckboxGroup({
           onClick={() => toggle(opt)}
           className={`flex items-center gap-3 text-left px-4 py-3 rounded-xl border text-sm transition-all ${
             values.includes(opt)
-              ? "border-[#4B858E] bg-[#4B858E]/10 text-[#F4F2EE]"
-              : "border-white/[0.08] bg-white/[0.02] text-[#F4F2EE]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
+              ? "border-[#4B858E] bg-[#4B858E]/10 text-[#00205C]"
+              : "border-[#00205C]/[0.1] bg-white text-[#00205C]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
           }`}
-          style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <span
             className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-              values.includes(opt) ? "border-[#4B858E] bg-[#4B858E]" : "border-white/20"
+              values.includes(opt) ? "border-[#4B858E] bg-[#4B858E]" : "border-[#00205C]/20"
             }`}
           >
             {values.includes(opt) && (
@@ -247,48 +242,36 @@ function ScopeCard({ scope }: { scope: Scope }) {
   const greenStyle = gs ? GREEN_SCORE_STYLES[gs] : null;
 
   return (
-    <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8 space-y-6">
+    <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8 space-y-6">
       <div>
-        <span
-          className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
           The Problem
         </span>
-        <p className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+        <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed">
           {scope.the_problem}
         </p>
       </div>
 
       <div>
-        <span
-          className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
           Without It
         </span>
-        <p className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+        <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed">
           {scope.without_it}
         </p>
       </div>
 
       <div>
-        <span
-          className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
           With It
         </span>
-        <p className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+        <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed">
           {scope.with_it}
         </p>
       </div>
 
       <div>
-        <span
-          className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
           Investment Estimate
         </span>
         {scope.pricing ? (
@@ -302,39 +285,38 @@ function ScopeCard({ scope }: { scope: Scope }) {
             ).map(([label, tier]) => (
               <div key={label}>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[#F4F2EE] text-sm font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <span className="text-[#00205C] text-sm font-semibold">
                     {label}
                   </span>
-                  <span className="text-[#F4F2EE]/80 text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <span className="text-[#00205C]/80 text-sm font-medium">
                     {formatPrice(tier.low)} &ndash; {formatPrice(tier.high)}
                   </span>
                 </div>
-                <p className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#00205C]/70 text-xs leading-relaxed mt-0.5">
                   {tier.description}
                 </p>
               </div>
             ))}
-            <p className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="text-[#00205C]/70 text-xs italic leading-relaxed mt-2">
               {scope.pricing.value_rationale}
             </p>
           </div>
         ) : (
-          <p className="mt-1.5 text-[#F4F2EE] text-base font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>
+          <p className="mt-1.5 text-[#00205C] text-base font-semibold">
             {formatPrice(scope.price_low ?? 0)} &ndash; {formatPrice(scope.price_high ?? 0)}
           </p>
         )}
       </div>
 
       {greenStyle && (
-        <div className="pt-2 border-t border-white/[0.06]">
+        <div className="pt-2 border-t border-[#00205C]/[0.08]">
           <span
             className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${greenStyle.border} ${greenStyle.text}`}
-            style={{ fontFamily: "var(--font-dm-sans)" }}
           >
             {greenStyle.label}
           </span>
           {scope.green_score_reason && (
-            <p className="mt-2 text-[#F4F2EE] text-xs leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="mt-2 text-[#00205C]/70 text-xs leading-relaxed">
               {scope.green_score_reason}
             </p>
           )}
@@ -348,28 +330,28 @@ function ScopeCard({ scope }: { scope: Scope }) {
 
 function ScopeSkeleton() {
   return (
-    <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8 space-y-6 animate-pulse">
+    <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8 space-y-6 animate-pulse">
       <div className="space-y-2">
-        <div className="h-2.5 bg-white/[0.06] rounded w-1/4" />
-        <div className="h-3 bg-white/[0.06] rounded w-full" />
-        <div className="h-3 bg-white/[0.06] rounded w-5/6" />
+        <div className="h-2.5 bg-[#00205C]/[0.08] rounded w-1/4" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-5/6" />
       </div>
       <div className="space-y-2">
-        <div className="h-2.5 bg-white/[0.06] rounded w-1/4" />
-        <div className="h-3 bg-white/[0.06] rounded w-full" />
-        <div className="h-3 bg-white/[0.06] rounded w-4/5" />
-        <div className="h-3 bg-white/[0.06] rounded w-3/4" />
+        <div className="h-2.5 bg-[#00205C]/[0.08] rounded w-1/4" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-4/5" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-3/4" />
       </div>
       <div className="space-y-2">
-        <div className="h-2.5 bg-white/[0.06] rounded w-1/4" />
-        <div className="h-3 bg-white/[0.06] rounded w-full" />
-        <div className="h-3 bg-white/[0.06] rounded w-2/3" />
+        <div className="h-2.5 bg-[#00205C]/[0.08] rounded w-1/4" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-2/3" />
       </div>
       <div className="space-y-2">
-        <div className="h-2.5 bg-white/[0.06] rounded w-1/3" />
-        <div className="h-3 bg-white/[0.06] rounded w-1/2" />
-        <div className="h-3 bg-white/[0.06] rounded w-1/2" />
-        <div className="h-3 bg-white/[0.06] rounded w-1/2" />
+        <div className="h-2.5 bg-[#00205C]/[0.08] rounded w-1/3" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-1/2" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-1/2" />
+        <div className="h-3 bg-[#00205C]/[0.08] rounded w-1/2" />
       </div>
     </div>
   );
@@ -452,9 +434,9 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
         {isRegenerating ? (
           <ScopeSkeleton />
         ) : (
-          <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8 space-y-8">
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8 space-y-8">
             {error && (
-              <p className="text-red-400 text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+              <p className="text-red-400 text-sm font-normal">
                 {error}
               </p>
             )}
@@ -479,8 +461,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                   onChange={(e) => setEditAnswers((a) => ({ ...a, custom_build_description: e.target.value }))}
                   placeholder="Describe it in one to two sentences."
                   rows={3}
-                  className="mt-3 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  className="mt-3 w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-5 py-4 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
                 />
               )}
             </div>
@@ -503,8 +484,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                 onChange={(e) => setEditAnswers((a) => ({ ...a, q3: e.target.value }))}
                 placeholder="What is the thing that is eating your time, costing you money, or creating friction right now?"
                 rows={4}
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-5 py-4 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
               />
             </div>
 
@@ -536,8 +516,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                 onChange={(e) => setEditAnswers((a) => ({ ...a, q6: e.target.value }))}
                 placeholder="Paint the picture. What does a good day look like when this is handled?"
                 rows={4}
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-5 py-4 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
               />
             </div>
 
@@ -569,8 +548,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                 onChange={(e) => setEditAnswers((a) => ({ ...a, q9: e.target.value }))}
                 placeholder="What would make you say this was worth it?"
                 rows={4}
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-5 py-4 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
               />
             </div>
 
@@ -588,8 +566,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                   value={editAnswers.q10_other}
                   onChange={(e) => setEditAnswers((a) => ({ ...a, q10_other: e.target.value }))}
                   placeholder="Which other tool?"
-                  className="mt-3 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  className="mt-3 w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-4 py-3 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60"
                 />
               )}
             </div>
@@ -612,24 +589,21 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
                 onChange={(e) => setEditAnswers((a) => ({ ...a, q12: e.target.value }))}
                 placeholder="Constraints, timeline pressure, wild ideas. Anything goes."
                 rows={3}
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="w-full bg-white border border-[#00205C]/[0.12] rounded-xl px-5 py-4 text-[#00205C] text-sm placeholder:text-[#76777A] focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
               />
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-white/[0.06]">
+            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-[#00205C]/[0.08]">
               <button
                 onClick={handleRegenerate}
                 className="text-sm font-bold px-7 py-3 rounded-full bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Regenerate Scope
               </button>
               <button
                 onClick={handleCancel}
-                className="text-sm font-semibold px-7 py-3 rounded-full border border-white/20 text-[#767B7A] hover:border-white/40 hover:text-[#F4F2EE] transition-colors"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="text-sm font-semibold px-7 py-3 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] transition-colors"
               >
                 Cancel
               </button>
@@ -644,19 +618,13 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
   return (
     <div className="mt-8">
       {resubmitted && (
-        <p
-          className="mb-4 text-sm text-[#4B858E]"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <p className="mb-4 text-sm text-[#4B858E]">
           Scope updated and resubmitted.
         </p>
       )}
 
       {!hasScope ? (
-        <div
-          className="py-20 text-center text-[#F4F2EE] text-sm"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <div className="py-20 text-center text-[#00205C] text-sm font-normal">
           Your project scope is being prepared.
         </div>
       ) : (
@@ -666,8 +634,7 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
       {canEdit && hasScope && (
         <button
           onClick={() => setEditMode(true)}
-          className="mt-6 text-sm font-semibold px-6 py-3 rounded-full border border-white/20 text-[#767B7A] hover:border-white/40 hover:text-[#F4F2EE] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
+          className="mt-6 text-sm font-semibold px-6 py-3 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] transition-colors"
         >
           Edit &amp; Resubmit
         </button>
@@ -681,15 +648,11 @@ export default function ProjectDetailClient({ id, title, status, scope: initialS
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               View Your Demo &rarr;
             </a>
           ) : (
-            <p
-              className="text-[#767B7A] text-sm"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <p className="text-[#76777A] text-sm font-normal">
               Demo coming soon
             </p>
           )}

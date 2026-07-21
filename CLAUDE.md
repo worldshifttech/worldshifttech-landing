@@ -36,16 +36,19 @@ Drew uploads a case study doc to a designated Google Drive folder. A Zapier webh
 
 ## Brand
 
-**Colors:**
-- Tech Blue: `#00205C` (primary dark, backgrounds)
-- World Teal: `#4B858E` (accent, CTAs, highlights)
-- Soft Gray: `#767B7A` (body text, secondary)
-- Off-white: `#F4F2EE` (light text on dark)
+**Colors** (per `WST_BRAND_STYLE_SHEET.pdf`, light-theme rebrand 2026):
+- Tech Blue: `#00205C` (primary text/headings, nav/footer brand band)
+- World Teal: `#4B858E` (accent, CTAs, highlights — unchanged)
+- Soft Teal: `#91B6BB` (secondary accent — badges, subtle hover fills)
+- Soft Gray: `#76777A` (secondary/muted text — corrected from prior `#767B7A`)
+- Off-white: `#F4F2EE` (default page background)
+- White: `#FFFFFF` (elevated card/surface background)
+- Near-black: `#080C14` (kept narrowly as text-on-teal in buttons, e.g. `bg-teal text-near-black`; no longer used as a page background)
 
-**Logo files:** `_old-site/World_shift_tech_LOGO_PRIMARY.png`
+**Logo files:** `_old-site/World_shift_tech_LOGO_PRIMARY.png` (navy logo — use everywhere now; the white logo variant is retired since the site is no longer dark)
 **Headshot:** `_old-site/Drew_Headshot.jpg`
 
-**Typography direction:** Premium, editorial, founder-led. Not generic AI agency. Dark backgrounds with teal accents. Personal and human, not corporate.
+**Typography direction:** Premium, professional, founder-led. Not generic AI agency. Light backgrounds with navy text and teal accents — the app now hosts client portals showing project roadmaps, so readability comes first. Personal and human, not corporate.
 
 **Tone:** Direct. Warm. Outcome-focused. No corporate jargon. No em-dashes. Speaks to operators, not executives.
 
@@ -187,10 +190,10 @@ Generate:
 
 ## Design Rules
 
-- Dark backgrounds (`#00205C` or near-black `#080C14`)
-- Teal (`#4B858E`) for accents, CTAs, highlights
-- Off-white (`#F4F2EE`) for body text
-- Premium editorial typography — use Google Fonts (Playfair Display for headlines, DM Sans for body)
+- Light backgrounds (off-white `#F4F2EE` default, white `#FFFFFF` for elevated cards/surfaces)
+- Navy (`#00205C`) for primary text and headings; teal (`#4B858E`) and soft teal (`#91B6BB`) for accents, CTAs, highlights
+- Soft gray (`#76777A`) for secondary/muted text
+- Premium, professional, highly readable typography — single Poppins family (Google Fonts) in two weight roles: Poppins 300 for headlines/section titles, Poppins 400/500 for body — upright only, no italics
 - Drew's headshot is prominent on the home screen — this site is personal and founder-led
 - No generic AI aesthetics (no purple gradients, no Inter font, no cookie-cutter layouts)
 - Mobile responsive — Drew sends people here from his phone

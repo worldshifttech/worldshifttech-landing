@@ -218,10 +218,10 @@ export default function ProjectWizard({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/projects">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={140}
             height={34}
@@ -229,10 +229,7 @@ export default function ProjectWizard({
             priority
           />
         </Link>
-        <span
-          className="text-sm text-[#767B7A] hidden sm:block"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <span className="text-sm text-[#76777A] hidden sm:block font-normal">
           {userEmail}
         </span>
       </nav>
@@ -253,12 +250,11 @@ export default function ProjectWizard({
       </main>
 
       {/* Footer nav */}
-      <div className="border-t border-white/[0.06] px-6 py-5">
+      <div className="border-t border-[#00205C]/[0.08] px-6 py-5">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={back}
-            className="text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors px-4 py-3 rounded-lg"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+            className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors px-4 py-3 rounded-lg font-normal"
           >
             Back
           </button>
@@ -268,9 +264,8 @@ export default function ProjectWizard({
             className={`text-sm font-bold px-8 py-3 rounded-full transition-all ${
               nextEnabled()
                 ? "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
-                : "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                : "bg-[#00205C]/[0.06] text-[#76777A] cursor-not-allowed"
             }`}
-            style={{ fontFamily: "var(--font-dm-sans)" }}
           >
             {q === 6 ? "See Your Scope" : "Next"}
           </button>
@@ -284,7 +279,7 @@ export default function ProjectWizard({
 
 function ChapterProgress({ activeChapterId }: { activeChapterId: number }) {
   return (
-    <div className="border-b border-white/[0.06] px-6 py-4">
+    <div className="border-b border-[#00205C]/[0.08] px-6 py-4">
       <div className="max-w-2xl mx-auto flex gap-2 sm:gap-4">
         {CHAPTERS.map((chapter) => {
           const isActive = chapter.id === activeChapterId;
@@ -297,9 +292,8 @@ function ChapterProgress({ activeChapterId }: { activeChapterId: number }) {
                     ? "text-[#4B858E]"
                     : isCompleted
                     ? "text-[#4B858E]/50"
-                    : "text-[#767B7A]/40"
+                    : "text-[#76777A]/60"
                 }`}
-                style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 {chapter.label}
               </div>
@@ -309,7 +303,7 @@ function ChapterProgress({ activeChapterId }: { activeChapterId: number }) {
                     ? "bg-[#4B858E]"
                     : isCompleted
                     ? "bg-[#4B858E]/40"
-                    : "bg-white/[0.06]"
+                    : "bg-[#00205C]/[0.08]"
                 }`}
               />
             </div>
@@ -427,8 +421,7 @@ function QuestionView({ q, answers, setAnswers, onAutoAdvance }: QProps) {
               setAnswers((a) => ({ ...a, q10Other: e.target.value }))
             }
             placeholder="Which other tool?"
-            className="mt-4 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+            className="mt-4 w-full bg-white border border-[#00205C]/[0.15] rounded-xl px-4 py-3 text-[#00205C] text-sm font-normal placeholder:text-[#76777A]/70 focus:outline-none focus:border-[#4B858E]/60"
           />
         )}
       </QuestionWrapper>
@@ -493,17 +486,11 @@ function QuestionWrapper({
 }) {
   return (
     <div>
-      <h2
-        className="text-3xl sm:text-4xl font-bold text-[#F4F2EE] leading-snug"
-        style={{ fontFamily: "var(--font-playfair)" }}
-      >
+      <h2 className="text-3xl sm:text-4xl font-bold text-[#00205C] leading-snug">
         {text}
       </h2>
       {subtitle && (
-        <p
-          className="mt-2 text-[#F4F2EE] text-sm"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <p className="mt-2 text-[#00205C] text-sm font-normal">
           {subtitle}
         </p>
       )}
@@ -524,12 +511,11 @@ function SelectOption({
   return (
     <button
       onClick={onClick}
-      className={`text-left px-5 py-4 rounded-xl border text-sm transition-all ${
+      className={`text-left px-5 py-4 rounded-xl border text-sm font-normal transition-all ${
         selected
-          ? "border-[#4B858E] bg-[#4B858E]/10 text-[#F4F2EE]"
-          : "border-white/[0.08] bg-white/[0.02] text-[#F4F2EE]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
+          ? "border-[#4B858E] bg-[#4B858E]/10 text-[#00205C]"
+          : "border-[#00205C]/[0.12] bg-white text-[#00205C]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
       }`}
-      style={{ fontFamily: "var(--font-dm-sans)" }}
     >
       {label}
     </button>
@@ -548,16 +534,15 @@ function MultiOption({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 text-left px-5 py-4 rounded-xl border text-sm transition-all ${
+      className={`flex items-center gap-3 text-left px-5 py-4 rounded-xl border text-sm font-normal transition-all ${
         selected
-          ? "border-[#4B858E] bg-[#4B858E]/10 text-[#F4F2EE]"
-          : "border-white/[0.08] bg-white/[0.02] text-[#F4F2EE]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
+          ? "border-[#4B858E] bg-[#4B858E]/10 text-[#00205C]"
+          : "border-[#00205C]/[0.12] bg-white text-[#00205C]/80 hover:border-[#4B858E]/50 hover:bg-[#4B858E]/[0.04]"
       }`}
-      style={{ fontFamily: "var(--font-dm-sans)" }}
     >
       <span
         className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-          selected ? "border-[#4B858E] bg-[#4B858E]" : "border-white/20"
+          selected ? "border-[#4B858E] bg-[#4B858E]" : "border-[#00205C]/20"
         }`}
       >
         {selected && (
@@ -592,8 +577,7 @@ function TextArea({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={5}
-      className="mt-8 w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-5 py-4 text-[#F4F2EE] text-sm placeholder:text-[#767B7A]/60 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
-      style={{ fontFamily: "var(--font-dm-sans)" }}
+      className="mt-8 w-full bg-white border border-[#00205C]/[0.15] rounded-xl px-5 py-4 text-[#00205C] text-sm font-normal placeholder:text-[#76777A]/70 focus:outline-none focus:border-[#4B858E]/60 resize-none leading-relaxed"
     />
   );
 }
@@ -635,32 +619,20 @@ function ThreeTierPricing({ pricing }: { pricing: NonNullable<ScopeData["pricing
         return (
           <div key={tier}>
             <div className="flex items-baseline gap-2">
-              <span
-                className="text-[#F4F2EE] text-sm font-semibold"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <span className="text-[#00205C] text-sm font-semibold">
                 {TIER_LABELS[tier]}
               </span>
-              <span
-                className="text-[#F4F2EE]/80 text-sm font-medium"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <span className="text-[#00205C]/80 text-sm font-medium">
                 {formatPrice(tierData.low)} &ndash; {formatPrice(tierData.high)}
               </span>
             </div>
-            <p
-              className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <p className="text-[#00205C]/70 text-xs leading-relaxed mt-0.5 font-normal">
               {tierData.description}
             </p>
           </div>
         );
       })}
-      <p
-        className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2"
-        style={{ fontFamily: "var(--font-dm-sans)" }}
-      >
+      <p className="text-[#00205C]/70 text-xs italic leading-relaxed mt-2 font-normal">
         {pricing.value_rationale}
       </p>
     </div>
@@ -730,19 +702,13 @@ function RevealScreen({
       {!done ? (
         // Loading state — progress bar
         <div className="text-center max-w-sm w-full">
-          <h1
-            className="text-3xl font-bold text-[#F4F2EE] mb-3 leading-snug"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
+          <h1 className="text-3xl font-bold text-[#00205C] mb-3 leading-snug">
             Your project scope is being assembled.
           </h1>
-          <p
-            className="text-[#F4F2EE] mb-10"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-[#00205C] mb-10 font-normal">
             This will only take a moment.
           </p>
-          <div className="w-full h-0.5 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="w-full h-0.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#4B858E] rounded-full"
               style={{ animation: "wst-progress 3s ease-in-out forwards" }}
@@ -752,10 +718,7 @@ function RevealScreen({
       ) : scopeError ? (
         // Error state
         <div className="text-center max-w-sm w-full">
-          <p
-            className="text-[#F4F2EE]/70 text-sm"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-[#00205C]/70 text-sm font-normal">
             Something went wrong generating your scope. Please refresh and try
             again.
           </p>
@@ -763,7 +726,7 @@ function RevealScreen({
       ) : submitted ? (
         // Confirmation state
         <div className="w-full max-w-xl">
-          <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8 text-center">
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8 text-center">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#4B858E]/10 border border-[#4B858E]/20 mx-auto mb-6">
               <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
                 <path
@@ -775,22 +738,15 @@ function RevealScreen({
                 />
               </svg>
             </div>
-            <h2
-              className="text-3xl font-bold text-[#F4F2EE] mb-3 leading-snug"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h2 className="text-3xl font-bold text-[#00205C] mb-3 leading-snug">
               You&apos;re in the queue.
             </h2>
-            <p
-              className="text-[#F4F2EE] text-sm mb-8"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <p className="text-[#00205C] text-sm mb-8 font-normal">
               Drew will review your scope and be in touch within 1 business day.
             </p>
             <button
               onClick={() => router.push("/projects")}
               className="bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               Back to Your Projects
             </button>
@@ -799,51 +755,38 @@ function RevealScreen({
       ) : scope ? (
         // Real scope card
         <div className="w-full max-w-xl">
-          <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8">
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8">
             <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-              <h2
-                className="text-2xl font-bold text-[#F4F2EE]"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
+              <h2 className="text-2xl font-bold text-[#00205C]">
                 {scope.title}
               </h2>
               <span
                 className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
                   GREEN_SCORE_STYLES[scope.green_score].border
                 } ${GREEN_SCORE_STYLES[scope.green_score].text}`}
-                style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 {GREEN_SCORE_STYLES[scope.green_score].label}
               </span>
             </div>
 
             {scope.green_score_reason && (
-              <p
-                className="text-[#F4F2EE] text-xs mb-4 leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <p className="text-[#00205C]/70 text-xs mb-4 leading-relaxed font-normal">
                 {scope.green_score_reason}
               </p>
             )}
 
             <div className="mb-4 rounded-xl border border-[#4B858E]/40 bg-[#4B858E]/[0.06] px-4 py-3">
-              <p
-                className="text-[#F4F2EE]/80 text-xs leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <p className="text-[#00205C]/80 text-xs leading-relaxed font-normal">
                 This project runs on Vercel, which is powered by renewable energy. Carbon offsets for AI usage are coming soon.
               </p>
             </div>
 
-            <label
-              className="flex items-start gap-3 mb-6 cursor-pointer group"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <label className="flex items-start gap-3 mb-6 cursor-pointer group">
               <span
                 className={`flex-shrink-0 mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                   greenOffsetIntent
                     ? "border-[#4B858E] bg-[#4B858E]"
-                    : "border-white/20 group-hover:border-[#4B858E]/50"
+                    : "border-[#00205C]/20 group-hover:border-[#4B858E]/50"
                 }`}
               >
                 {greenOffsetIntent && (
@@ -864,7 +807,7 @@ function RevealScreen({
                 checked={greenOffsetIntent}
                 onChange={(e) => handleGreenOffsetToggle(e.target.checked)}
               />
-              <span className="text-xs text-[#F4F2EE]/70 leading-relaxed">
+              <span className="text-xs text-[#00205C]/70 leading-relaxed font-normal">
                 I&apos;d like to offset this project&apos;s carbon footprint when that option becomes available.
               </span>
             </label>
@@ -873,72 +816,45 @@ function RevealScreen({
 
             <div className="space-y-6">
               <div>
-                <span
-                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
                   The Problem
                 </span>
-                <p
-                  className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed font-normal">
                   {scope.the_problem}
                 </p>
               </div>
 
               <div>
-                <span
-                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
                   Without It
                 </span>
-                <p
-                  className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed font-normal">
                   {scope.without_it}
                 </p>
               </div>
 
               <div>
-                <span
-                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
                   With It
                 </span>
-                <p
-                  className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed font-normal">
                   {scope.with_it}
                 </p>
               </div>
 
               <div>
-                <span
-                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
                   Investment Estimate
                 </span>
                 {scope.pricing ? (
                   <ThreeTierPricing pricing={scope.pricing} />
                 ) : (
                   <>
-                    <p
-                      className="mt-1.5 text-[#F4F2EE] text-base font-semibold"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
+                    <p className="mt-1.5 text-[#00205C] text-base font-semibold">
                       {formatPrice(scope.price_low)} &ndash;{" "}
                       {formatPrice(scope.price_high)}
                     </p>
-                    <p
-                      className="mt-1 text-[#F4F2EE] text-xs leading-relaxed"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
+                    <p className="mt-1 text-[#00205C]/70 text-xs leading-relaxed font-normal">
                       {scope.price_rationale}
                     </p>
                   </>
@@ -946,7 +862,7 @@ function RevealScreen({
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/[0.06]">
+            <div className="mt-8 pt-6 border-t border-[#00205C]/[0.08]">
               {isGuest ? (
                 guestAttached ? (
                   // Guest confirmation after account created
@@ -956,10 +872,10 @@ function RevealScreen({
                         <path d="M1 9l7 7L21 1" stroke="#4B858E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <p className="text-[#F4F2EE] font-semibold mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    <p className="text-[#00205C] font-semibold mb-1">
                       Your scope is saved.
                     </p>
-                    <p className="text-[#F4F2EE] text-xs leading-relaxed mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    <p className="text-[#00205C]/70 text-xs leading-relaxed mb-5 font-normal">
                       Check your email to verify your account, then sign in to view it.
                     </p>
                     <a
@@ -967,7 +883,6 @@ function RevealScreen({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-block text-sm font-bold px-7 py-3 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
                     >
                       Book a Call
                     </a>
@@ -975,14 +890,13 @@ function RevealScreen({
                 ) : (
                   // Guest CTA — create account or book call
                   <div>
-                    <p className="text-[#F4F2EE]/80 text-sm text-center mb-5 leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    <p className="text-[#00205C]/80 text-sm text-center mb-5 leading-relaxed font-normal">
                       Your scope is ready. Create an account to save it, or book a call to talk it through.
                     </p>
                     <div className="flex flex-col gap-3">
                       <button
                         onClick={() => setGuestModalOpen(true)}
                         className="w-full bg-[#4B858E] text-[#080C14] font-bold py-3.5 rounded-full text-sm hover:bg-[#5a9aa4] transition-colors cursor-pointer"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         Create an Account to Save Your Scope
                       </button>
@@ -991,11 +905,10 @@ function RevealScreen({
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full text-center font-bold py-3.5 rounded-full text-sm border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         Book a Call Instead
                       </a>
-                      <p className="text-[#F4F2EE] text-xs text-center" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <p className="text-[#00205C]/70 text-xs text-center font-normal">
                         No account needed — just pick a time.
                       </p>
                     </div>
@@ -1009,18 +922,14 @@ function RevealScreen({
                     disabled={submitting}
                     className={`w-full font-bold py-3.5 rounded-full text-sm transition-colors ${
                       submitting
-                        ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                        ? "bg-[#00205C]/[0.06] text-[#76777A] cursor-not-allowed"
                         : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
                     }`}
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
                   >
                     {submitting ? "Submitting..." : "Submit Your Project"}
                   </button>
                   {submitError && (
-                    <p
-                      className="mt-3 text-red-400 text-xs text-center"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
+                    <p className="mt-3 text-red-400 text-xs text-center">
                       Something went wrong. Please try again.
                     </p>
                   )}
@@ -1065,18 +974,12 @@ function RevealScreen({
       ) : (
         // Dummy card — loading state after bar completes, scope still pending
         <div className="w-full max-w-xl">
-          <div className="bg-[#00205C]/20 border border-white/[0.08] rounded-2xl p-8">
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-8">
             <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
-              <h2
-                className="text-2xl font-bold text-[#F4F2EE]"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
+              <h2 className="text-2xl font-bold text-[#00205C]">
                 Project Scope
               </h2>
-              <span
-                className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E]/40 text-[#4B858E]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <span className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E]/40 text-[#4B858E]">
                 Energy Footprint: Light
               </span>
             </div>
@@ -1089,26 +992,22 @@ function RevealScreen({
                 { label: "Investment Estimate" },
               ].map((section) => (
                 <div key={section.label}>
-                  <span
-                    className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                  >
+                  <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">
                     {section.label}
                   </span>
                   <div className="mt-2 space-y-1.5">
-                    <div className="h-3 bg-white/[0.06] rounded-full w-full animate-pulse" />
-                    <div className="h-3 bg-white/[0.06] rounded-full w-4/5 animate-pulse" />
-                    <div className="h-3 bg-white/[0.06] rounded-full w-3/5 animate-pulse" />
+                    <div className="h-3 bg-[#00205C]/[0.08] rounded-full w-full animate-pulse" />
+                    <div className="h-3 bg-[#00205C]/[0.08] rounded-full w-4/5 animate-pulse" />
+                    <div className="h-3 bg-[#00205C]/[0.08] rounded-full w-3/5 animate-pulse" />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/[0.06]">
+            <div className="mt-8 pt-6 border-t border-[#00205C]/[0.08]">
               <button
                 disabled
-                className="w-full bg-white/[0.06] text-[#767B7A] font-bold py-3.5 rounded-full text-sm cursor-not-allowed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="w-full bg-[#00205C]/[0.06] text-[#76777A] font-bold py-3.5 rounded-full text-sm cursor-not-allowed"
               >
                 Assembling your scope...
               </button>

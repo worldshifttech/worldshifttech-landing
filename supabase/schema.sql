@@ -204,3 +204,19 @@ CREATE POLICY "Users can insert own responses"
   ON curriculum_responses FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own responses"
   ON curriculum_responses FOR UPDATE USING (auth.uid() = user_id);
+
+-- Build-cost telemetry from wst-build-manager client projects (service-role only, no RLS —
+-- same convention as wst_usage_snapshots; never exposed to end clients)
+CREATE TABLE build_cost_entries (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_slug text NOT NULL,
+  label       text,
+  human_hours numeric DEFAULT 0,
+  ai_hours    numeric DEFAULT 0,
+  ai_tier     text,
+  human_cost  numeric DEFAULT 0,
+  ai_cost     numeric DEFAULT 0,
+  total_cost  numeric DEFAULT 0,
+  logged_at   timestamptz,
+  created_at  timestamptz DEFAULT now()
+);

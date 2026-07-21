@@ -42,15 +42,14 @@ export default function Home() {
             </p>
 
             <h1
-              className="text-4xl sm:text-5xl xl:text-[3.5rem] font-bold leading-[1.15] tracking-tight text-[#F4F2EE] mb-7"
-              style={{ fontFamily: "var(--font-playfair)" }}
+              className="text-4xl sm:text-5xl xl:text-[3.5rem] font-light leading-[1.15] tracking-tight text-[#00205C] mb-7"
             >
               Building Systems & AI Responsibly.
               <br />
               <span className="text-[#4B858E]">Putting people first in operations.</span>
             </h1>
 
-            <p className="text-[#767B7A] text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
+            <p className="text-gray text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 mb-10">
               I audit how SMBs use AI and technology, ensuring team members feel seen and understood in their operations. Focused on lean software and responsible AI solutions.
             </p>
 
@@ -63,7 +62,7 @@ export default function Home() {
               Start with the audit
             </a>
 
-            <p className="mt-4 text-[#767B7A] text-sm">
+            <p className="mt-4 text-navy/70 text-sm">
               See how it works
             </p>
           </div>
@@ -88,8 +87,8 @@ export default function Home() {
         </div>
 
         {/* Founder Intro */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08]">
-          <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+          <div className="max-w-3xl space-y-4 text-gray text-base leading-relaxed">
             <p>
               I have been an operations consultant since 2018. I saw the rise and potential threat of AI from a mile away. Most businesses said yes to AI because that is where things were going. Now all your tools are using AI, hardly any of it is helpful, and in most cases it is costing more time and energy than before. Now we are experiencing the harm to our environment when no guardrails are in place.
             </p>
@@ -99,41 +98,38 @@ export default function Home() {
         </div>
 
         {/* What I Do Strip */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08]">
-          <p className="text-center text-[#767B7A] text-xs tracking-widest uppercase mb-10">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+          <p className="text-center text-navy/70 text-xs tracking-widest uppercase mb-10">
             What I Do
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
+            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
               <h3
-                className="text-xl font-bold text-[#F4F2EE] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-xl font-light text-[#00205C] mb-3"
               >
                 Audit the Operations
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. We then evaluate where AI and automation will be effective and shift roles to keep team members doing what they do best.
               </p>
             </div>
-            <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
+            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
               <h3
-                className="text-xl font-bold text-[#F4F2EE] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-xl font-light text-[#00205C] mb-3"
               >
                 The Build
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 After the audit, I design a system that takes into account the people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five processes and building a precision tool to replace them.
               </p>
             </div>
-            <div className="bg-[#00205C]/20 border border-white/[0.06] rounded-xl px-6 py-6">
+            <div className="bg-white border border-[#00205C]/10 rounded-xl px-6 py-6">
               <h3
-                className="text-xl font-bold text-[#F4F2EE] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-xl font-light text-[#00205C] mb-3"
               >
                 The Impact
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 AI and automation have a real environmental cost. Every model inference, every automation running, every tool idling adds up. A fixed portion of every project goes into verified programs doing real work on that problem. Reforestation. Ocean cleanup. Renewable infrastructure in underserved areas. Programs specifically chosen for transparency and accountability.
               </p>
             </div>
@@ -141,44 +137,40 @@ export default function Home() {
         </div>
 
         {/* Audience Mirrors */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08]">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <h2
-            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-10"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            className="text-2xl sm:text-3xl font-light text-[#00205C] mb-10"
           >
             Who this is for
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <div>
               <h3
-                className="text-lg font-bold text-[#4B858E] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-lg font-light text-[#4B858E] mb-3"
               >
                 Ops and systems leads
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 Chief operators and team leads who want to help their team be more efficient in their tools and processes, but do not want to overcomplicate things with additional tools and AI.
               </p>
             </div>
             <div>
               <h3
-                className="text-lg font-bold text-[#4B858E] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-lg font-light text-[#4B858E] mb-3"
               >
                 Founders
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 AI and automation promise better visibility into reporting, efficiency, and understanding what is happening across your organization. Oftentimes that visibility is just noise, and you are not seeing the results you want.
               </p>
             </div>
             <div>
               <h3
-                className="text-lg font-bold text-[#4B858E] mb-3"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-lg font-light text-[#4B858E] mb-3"
               >
                 Agencies and consultants
               </h3>
-              <p className="text-[#767B7A] text-sm leading-relaxed">
+              <p className="text-navy/70 text-sm leading-relaxed">
                 You take calls, gather information, and collect data about your clients that needs to be aggregated in a way that makes sense to you. Precise AI and the right set of tools can help you provide better services to your clients and teams.
               </p>
             </div>
@@ -186,11 +178,11 @@ export default function Home() {
         </div>
 
         {/* Sustainability Statement */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08]">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
             BUILT WITH PEOPLE IN MIND.
           </p>
-          <div className="max-w-3xl space-y-4 text-[#767B7A] text-base leading-relaxed">
+          <div className="max-w-3xl space-y-4 text-gray text-base leading-relaxed">
             <p>
               My goal is simple: help organizations understand the real cost of the systems they are running and make sure they are using as little AI as it takes to do the most good for their team.
             </p>
@@ -202,7 +194,7 @@ export default function Home() {
         </div>
 
         {/* Drew Section */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08]">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
             <div className="flex-shrink-0 relative">
               <div className="absolute inset-0 rounded-2xl bg-[#4B858E]/10 blur-2xl scale-110" />
@@ -221,12 +213,11 @@ export default function Home() {
             </div>
             <div className="flex-1">
               <h2
-                className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-6"
-                style={{ fontFamily: "var(--font-playfair)" }}
+                className="text-2xl sm:text-3xl font-light text-[#00205C] mb-6"
               >
                 Hi, I&apos;m Drew.
               </h2>
-              <div className="space-y-4 text-[#767B7A] text-base leading-relaxed max-w-2xl">
+              <div className="space-y-4 text-gray text-base leading-relaxed max-w-2xl">
                 <p>
                   I have been consulting in operations for over nine years. I have been part of many teams, seen many systems built, helped set up automations and documentation, defined roles, and trained people across organizations of all sizes.
                 </p>
@@ -248,14 +239,13 @@ export default function Home() {
         </div>
 
         {/* Final CTA */}
-        <div className="mt-20 pt-12 border-t border-white/[0.08] text-center">
+        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16] text-center">
           <h2
-            className="text-2xl sm:text-3xl font-bold text-[#F4F2EE] mb-4"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            className="text-2xl sm:text-3xl font-light text-[#00205C] mb-4"
           >
             Chat with me.
           </h2>
-          <p className="text-[#767B7A] text-base mb-8 max-w-lg mx-auto">
+          <p className="text-gray text-base mb-8 max-w-lg mx-auto">
             The initial audit is free. Start there.
           </p>
           <a
@@ -270,9 +260,19 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[#767B7A] text-sm">
-          <p>&copy; {new Date().getFullYear()} World Shift Technologies</p>
+      <footer className="border-t border-[#00205C]/[0.12] py-8 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-navy/70 text-sm">
+          <p>
+            &copy; {new Date().getFullYear()} World Shift Technologies
+            <span className="mx-2 opacity-40">·</span>
+            <Link href="/privacy" className="hover:text-[#4B858E] transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="mx-2 opacity-40">·</span>
+            <Link href="/terms" className="hover:text-[#4B858E] transition-colors">
+              Terms
+            </Link>
+          </p>
           <a
             href="mailto:drew@worldshifttech.com"
             className="hover:text-[#4B858E] transition-colors"

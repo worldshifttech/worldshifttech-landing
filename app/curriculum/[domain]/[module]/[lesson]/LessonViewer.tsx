@@ -24,14 +24,14 @@ function renderInline(text: string): React.ReactNode {
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={i} className="text-[#F4F2EE] font-semibold">
+        <strong key={i} className="text-[#00205C] font-semibold">
           {part.slice(2, -2)}
         </strong>
       );
     }
     if (part.startsWith("*") && part.endsWith("*")) {
       return (
-        <em key={i} className="italic text-[#F4F2EE]/90">
+        <em key={i} className="italic text-[#00205C]/90">
           {part.slice(1, -1)}
         </em>
       );
@@ -50,11 +50,7 @@ function renderContent(content: string): React.ReactNode[] {
     const headingMatch = trimmed.match(/^\*\*([^*]+)\*\*$/);
     if (headingMatch) {
       return (
-        <h3
-          key={i}
-          className="text-lg font-bold text-[#F4F2EE] mt-8 mb-3"
-          style={{ fontFamily: "var(--font-playfair)" }}
-        >
+        <h3 key={i} className="text-lg font-bold text-[#00205C] mt-8 mb-3 font-light">
           {headingMatch[1]}
         </h3>
       );
@@ -71,7 +67,7 @@ function renderContent(content: string): React.ReactNode[] {
           {lines.map((line, j) => {
             const text = line.replace(/^\d+\.\s*/, "");
             return (
-              <li key={j} className="flex items-start gap-3 text-[#F4F2EE]/85 text-base leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>
+              <li key={j} className="flex items-start gap-3 text-[#00205C]/85 text-base leading-relaxed font-normal">
                 <span className="text-[#4B858E] font-bold flex-shrink-0 tabular-nums w-5 text-right">
                   {j + 1}.
                 </span>
@@ -91,11 +87,7 @@ function renderContent(content: string): React.ReactNode[] {
       </span>
     ));
     return (
-      <p
-        key={i}
-        className="text-[#F4F2EE]/85 text-base leading-relaxed my-4"
-        style={{ fontFamily: "var(--font-dm-sans)" }}
-      >
+      <p key={i} className="text-[#00205C]/85 text-base leading-relaxed my-4 font-normal">
         {withBreaks}
       </p>
     );
@@ -140,18 +132,15 @@ export default function LessonViewer({
             {lesson.lesson_number}
           </span>
           {lesson.estimated_time && (
-            <span className="text-xs text-[#767B7A]">{lesson.estimated_time}</span>
+            <span className="text-xs text-[#76777A]">{lesson.estimated_time}</span>
           )}
           {lesson.teaching_method && (
-            <span className="text-xs text-[#767B7A] hidden sm:block">
+            <span className="text-xs text-[#76777A] hidden sm:block">
               {lesson.teaching_method}
             </span>
           )}
         </div>
-        <h1
-          className="text-3xl sm:text-4xl font-bold text-[#F4F2EE]"
-          style={{ fontFamily: "var(--font-playfair)" }}
-        >
+        <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] font-light">
           {lesson.title}
         </h1>
       </div>
@@ -168,10 +157,7 @@ export default function LessonViewer({
           <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-3">
             Reflection
           </p>
-          <p
-            className="text-[#F4F2EE]/80 text-sm leading-relaxed whitespace-pre-wrap"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-[#00205C]/80 text-sm leading-relaxed whitespace-pre-wrap font-normal">
             {lesson.reflection_prompt}
           </p>
         </div>
@@ -179,22 +165,18 @@ export default function LessonViewer({
 
       {/* AI prompt suggestions */}
       {aiPrompts.length > 0 && (
-        <div className="bg-[#00205C]/40 border border-white/[0.08] rounded-xl p-5 mb-10">
+        <div className="bg-white border border-[#00205C]/10 rounded-xl p-5 mb-10">
           <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-4">
             AI Prompt Suggestions
           </p>
-          <p
-            className="text-xs text-[#767B7A] mb-4"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-xs text-[#76777A] mb-4 font-normal">
             Copy any of these into Claude to deepen your learning.
           </p>
           <ul className="space-y-3">
             {aiPrompts.map((prompt, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 text-sm text-[#F4F2EE]/75 leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="flex items-start gap-3 text-sm text-[#00205C]/75 leading-relaxed font-normal"
               >
                 <span className="text-[#4B858E] flex-shrink-0 mt-0.5">›</span>
                 {prompt}
@@ -210,17 +192,14 @@ export default function LessonViewer({
           <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-3">
             Key Takeaway
           </p>
-          <p
-            className="text-[#F4F2EE]/90 text-base leading-relaxed font-medium"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-[#00205C]/90 text-base leading-relaxed font-medium">
             {lesson.key_takeaway}
           </p>
         </div>
       )}
 
       {/* Mark complete + navigation */}
-      <div className="border-t border-white/[0.06] pt-8 mt-8">
+      <div className="border-t border-[#00205C]/[0.08] pt-8 mt-8">
         {/* Mark complete button */}
         <div className="mb-8">
           {complete ? (
@@ -228,10 +207,7 @@ export default function LessonViewer({
               <div className="w-6 h-6 rounded-full bg-[#4B858E] flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-xs font-bold">✓</span>
               </div>
-              <span
-                className="text-sm text-[#4B858E]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <span className="text-sm text-[#4B858E] font-normal">
                 Lesson complete
               </span>
             </div>
@@ -240,7 +216,6 @@ export default function LessonViewer({
               onClick={handleMarkComplete}
               disabled={marking}
               className="bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               {marking ? "Saving..." : "Mark Complete"}
             </button>
@@ -252,11 +227,8 @@ export default function LessonViewer({
           <div className="flex-1">
             {prevLesson && (
               <Link href={prevLesson.href} className="group block">
-                <p className="text-xs text-[#767B7A] mb-1">Previous</p>
-                <p
-                  className="text-sm text-[#F4F2EE]/70 group-hover:text-[#4B858E] transition-colors"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="text-xs text-[#76777A] mb-1">Previous</p>
+                <p className="text-sm text-[#00205C]/70 group-hover:text-[#4B858E] transition-colors font-normal">
                   ← {prevLesson.title}
                 </p>
               </Link>
@@ -266,21 +238,15 @@ export default function LessonViewer({
           <div className="flex-1 text-right">
             {nextLesson ? (
               <Link href={nextLesson.href} className="group block">
-                <p className="text-xs text-[#767B7A] mb-1">Next</p>
-                <p
-                  className="text-sm text-[#F4F2EE]/70 group-hover:text-[#4B858E] transition-colors"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="text-xs text-[#76777A] mb-1">Next</p>
+                <p className="text-sm text-[#00205C]/70 group-hover:text-[#4B858E] transition-colors font-normal">
                   {nextLesson.title} →
                 </p>
               </Link>
             ) : (
               <Link href={moduleHref} className="group block">
-                <p className="text-xs text-[#767B7A] mb-1">Done</p>
-                <p
-                  className="text-sm text-[#F4F2EE]/70 group-hover:text-[#4B858E] transition-colors"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="text-xs text-[#76777A] mb-1">Done</p>
+                <p className="text-sm text-[#00205C]/70 group-hover:text-[#4B858E] transition-colors font-normal">
                   Back to Module →
                 </p>
               </Link>

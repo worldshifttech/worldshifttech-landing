@@ -148,10 +148,10 @@ function pill(selected: boolean): React.CSSProperties {
   return {
     padding: "0.6rem 1.1rem",
     borderRadius: 99,
-    border: selected ? "1.5px solid var(--color-teal)" : "1.5px solid rgba(255,255,255,0.12)",
+    border: selected ? "1.5px solid var(--accent)" : "1.5px solid rgba(0,32,92,0.15)",
     background: selected ? "rgba(75,133,142,0.18)" : "transparent",
-    color: selected ? "var(--color-offwhite)" : "var(--color-gray)",
-    fontFamily: "var(--font-dm-sans)",
+    color: selected ? "var(--text-primary)" : "var(--text-secondary)",
+    fontFamily: "var(--font-poppins)",
     fontSize: "0.875rem",
     cursor: "pointer",
     transition: "all 0.15s ease",
@@ -163,10 +163,10 @@ function checkbox(checked: boolean): React.CSSProperties {
   return {
     padding: "0.5rem 0.875rem",
     borderRadius: 8,
-    border: checked ? "1.5px solid var(--color-teal)" : "1.5px solid rgba(255,255,255,0.10)",
+    border: checked ? "1.5px solid var(--accent)" : "1.5px solid rgba(0,32,92,0.13)",
     background: checked ? "rgba(75,133,142,0.15)" : "transparent",
-    color: checked ? "var(--color-offwhite)" : "var(--color-gray)",
-    fontFamily: "var(--font-dm-sans)",
+    color: checked ? "var(--text-primary)" : "var(--text-secondary)",
+    fontFamily: "var(--font-poppins)",
     fontSize: "0.825rem",
     cursor: "pointer",
     transition: "all 0.15s ease",
@@ -177,11 +177,11 @@ function checkbox(checked: boolean): React.CSSProperties {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.75rem 1rem",
-  background: "var(--color-dark)",
-  border: "1.5px solid rgba(255,255,255,0.12)",
+  background: "var(--bg-surface)",
+  border: "1.5px solid rgba(0,32,92,0.15)",
   borderRadius: 8,
-  color: "var(--color-offwhite)",
-  fontFamily: "var(--font-dm-sans)",
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-poppins)",
   fontSize: "0.95rem",
   outline: "none",
   boxSizing: "border-box",
@@ -191,11 +191,11 @@ const inputStyle: React.CSSProperties = {
 const ctaButton: React.CSSProperties = {
   width: "100%",
   padding: "0.9rem 1.25rem",
-  background: "var(--color-teal)",
+  background: "var(--accent)",
   border: "none",
   borderRadius: 8,
-  color: "var(--color-dark)",
-  fontFamily: "var(--font-dm-sans)",
+  color: "var(--text-on-accent)",
+  fontFamily: "var(--font-poppins)",
   fontSize: "0.975rem",
   fontWeight: 600,
   cursor: "pointer",
@@ -205,7 +205,7 @@ const ctaButton: React.CSSProperties = {
 const ctaDisabled: React.CSSProperties = {
   ...ctaButton,
   background: "rgba(75,133,142,0.3)",
-  color: "var(--color-gray)",
+  color: "var(--text-secondary)",
   cursor: "not-allowed",
 };
 
@@ -446,7 +446,7 @@ export default function AuditWizard() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--color-dark)",
+        background: "var(--bg-page)",
         display: "flex",
         flexDirection: "column",
       }}
@@ -474,15 +474,15 @@ export default function AuditWizard() {
                       height: 28,
                       borderRadius: "50%",
                       background: done
-                        ? "var(--color-teal)"
+                        ? "var(--accent)"
                         : active
                         ? "rgba(75,133,142,0.25)"
-                        : "rgba(255,255,255,0.06)",
-                      border: active ? "2px solid var(--color-teal)" : "2px solid transparent",
+                        : "rgba(0,32,92,0.06)",
+                      border: active ? "2px solid var(--accent)" : "2px solid transparent",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: done ? "var(--color-dark)" : active ? "var(--color-teal)" : "var(--color-gray)",
+                      color: done ? "var(--text-on-accent)" : active ? "var(--accent)" : "var(--text-secondary)",
                       fontSize: "0.75rem",
                       fontWeight: 600,
                       flexShrink: 0,
@@ -493,10 +493,10 @@ export default function AuditWizard() {
                   <span
                     style={{
                       fontSize: "0.65rem",
-                      color: active ? "var(--color-teal)" : done ? "var(--color-gray)" : "rgba(255,255,255,0.3)",
+                      color: active ? "var(--accent)" : done ? "var(--text-secondary)" : "rgba(0,32,92,0.35)",
                       whiteSpace: "nowrap",
                       textAlign: "center",
-                      fontFamily: "var(--font-dm-sans)",
+                      fontFamily: "var(--font-poppins)",
                     }}
                   >
                     {label}
@@ -507,7 +507,7 @@ export default function AuditWizard() {
                     style={{
                       flex: 1,
                       height: 2,
-                      background: done ? "var(--color-teal)" : "rgba(255,255,255,0.08)",
+                      background: done ? "var(--accent)" : "rgba(0,32,92,0.1)",
                       marginBottom: "1.2rem",
                       borderRadius: 2,
                     }}
@@ -532,13 +532,13 @@ export default function AuditWizard() {
         {/* â"€â"€ Phase 1: About Your Business â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 1 && (
           <div>
-            <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--accent)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
               About Your Business
             </p>
             <h1
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "clamp(1.6rem, 4vw, 2.1rem)",
                 fontWeight: 700,
                 lineHeight: 1.25,
@@ -550,7 +550,7 @@ export default function AuditWizard() {
 
             {/* Q1: Business name */}
             <div style={{ marginBottom: "1.75rem" }}>
-              <label style={{ display: "block", color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "0.5rem", fontFamily: "var(--font-dm-sans)" }}>
+              <label style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.5rem", fontFamily: "var(--font-poppins)" }}>
                 What is your business name?
               </label>
               <input
@@ -559,14 +559,14 @@ export default function AuditWizard() {
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="e.g. Acme Operations Co."
                 style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,32,92,0.15)")}
               />
             </div>
 
             {/* Q2: Business type */}
             <div style={{ marginBottom: "1.75rem" }}>
-              <label style={{ display: "block", color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+              <label style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
                 What type of business are you?
               </label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -585,7 +585,7 @@ export default function AuditWizard() {
             {/* Q3: Team size â€" appears after Q2 is answered */}
             {showTeamSize && (
               <div>
-                <label style={{ display: "block", color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+                <label style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
                   How big is your team?
                 </label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -607,13 +607,13 @@ export default function AuditWizard() {
         {/* â"€â"€ Phase 2: Departments â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 2 && (
           <div>
-            <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--accent)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
               Your Departments
             </p>
             <h1
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "clamp(1.4rem, 4vw, 1.9rem)",
                 fontWeight: 700,
                 lineHeight: 1.3,
@@ -622,7 +622,7 @@ export default function AuditWizard() {
             >
               Which departments or functions exist in your business?
             </h1>
-            <p style={{ color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "1.5rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "1.5rem", fontFamily: "var(--font-poppins)" }}>
               Select all that apply.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "0.6rem", marginBottom: "2rem" }}>
@@ -655,13 +655,13 @@ export default function AuditWizard() {
         {/* â"€â"€ Phase 3: Tools per department â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 3 && currentDept && (
           <div>
-            <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--accent)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
               Your Tools, {deptIndex + 1} of {selectedDepts.length}
             </p>
             <h1
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "clamp(1.4rem, 4vw, 1.9rem)",
                 fontWeight: 700,
                 lineHeight: 1.3,
@@ -670,7 +670,7 @@ export default function AuditWizard() {
             >
               What tools does your {currentDept} team use?
             </h1>
-            <p style={{ color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "1.5rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "1.5rem", fontFamily: "var(--font-poppins)" }}>
               Check everything that applies. Add anything not listed.
             </p>
 
@@ -687,7 +687,7 @@ export default function AuditWizard() {
             </div>
 
             <div style={{ marginBottom: "1.5rem" }}>
-              <label style={{ display: "block", color: "var(--color-gray)", fontSize: "0.875rem", marginBottom: "0.5rem", fontFamily: "var(--font-dm-sans)" }}>
+              <label style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.5rem", fontFamily: "var(--font-poppins)" }}>
                 Any other tools this team uses?
               </label>
               <input
@@ -701,8 +701,8 @@ export default function AuditWizard() {
                 }
                 placeholder="e.g. Webflow, Stripe, Calendly"
                 style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,32,92,0.15)")}
               />
             </div>
 
@@ -717,13 +717,13 @@ export default function AuditWizard() {
         {/* â"€â"€ Phase 4: AI usage + spend â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {phase === 4 && (
           <div>
-            <p style={{ color: "var(--color-teal)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+            <p style={{ color: "var(--accent)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
               AI and Spend
             </p>
             <h1
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "clamp(1.4rem, 4vw, 1.9rem)",
                 fontWeight: 700,
                 lineHeight: 1.3,
@@ -735,14 +735,14 @@ export default function AuditWizard() {
 
             {/* AI usage toggles */}
             <div style={{ marginBottom: "2.5rem" }}>
-              <label style={{ display: "block", color: "var(--color-offwhite)", fontSize: "0.95rem", fontWeight: 600, marginBottom: "0.4rem", fontFamily: "var(--font-dm-sans)" }}>
+              <label style={{ display: "block", color: "var(--text-primary)", fontSize: "0.95rem", fontWeight: 600, marginBottom: "0.4rem", fontFamily: "var(--font-poppins)" }}>
                 Which tools are you using AI features inside?
               </label>
-              <p style={{ color: "var(--color-gray)", fontSize: "0.825rem", marginBottom: "1rem", fontFamily: "var(--font-dm-sans)" }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.825rem", marginBottom: "1rem", fontFamily: "var(--font-poppins)" }}>
                 We use this to understand where AI is already running in your stack.
               </p>
               {allSelectedTools.length === 0 ? (
-                <p style={{ color: "var(--color-gray)", fontSize: "0.875rem", fontFamily: "var(--font-dm-sans)" }}>
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontFamily: "var(--font-poppins)" }}>
                   No tools selected yet.
                 </p>
               ) : (
@@ -762,7 +762,7 @@ export default function AuditWizard() {
 
             {/* Monthly spend */}
             <div style={{ marginBottom: "2rem" }}>
-              <label style={{ display: "block", color: "var(--color-offwhite)", fontSize: "0.95rem", fontWeight: 600, marginBottom: "0.75rem", fontFamily: "var(--font-dm-sans)" }}>
+              <label style={{ display: "block", color: "var(--text-primary)", fontSize: "0.95rem", fontWeight: 600, marginBottom: "0.75rem", fontFamily: "var(--font-poppins)" }}>
                 Roughly how much does your business spend on software per month?
               </label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -798,7 +798,7 @@ export default function AuditWizard() {
                 <div
                   style={{
                     height: 4,
-                    background: "rgba(255,255,255,0.08)",
+                    background: "rgba(0,32,92,0.1)",
                     borderRadius: 99,
                     overflow: "hidden",
                     marginBottom: "2.5rem",
@@ -808,7 +808,7 @@ export default function AuditWizard() {
                     style={{
                       height: "100%",
                       width: barDone ? "100%" : "0%",
-                      background: "var(--color-teal)",
+                      background: "var(--accent)",
                       borderRadius: 99,
                       transition: barDone ? "none" : "width 3s linear",
                     }}
@@ -824,8 +824,8 @@ export default function AuditWizard() {
 
                 <h2
                   style={{
-                    fontFamily: "var(--font-playfair)",
-                    color: "var(--color-offwhite)",
+                    fontFamily: "var(--font-poppins)",
+                    color: "var(--text-primary)",
                     fontSize: "1.75rem",
                     fontWeight: 700,
                     marginBottom: "1.5rem",
@@ -837,8 +837,8 @@ export default function AuditWizard() {
                 <p
                   key={loadingLineIndex}
                   style={{
-                    color: "var(--color-teal)",
-                    fontFamily: "var(--font-dm-sans)",
+                    color: "var(--accent)",
+                    fontFamily: "var(--font-poppins)",
                     fontSize: "0.95rem",
                     animation: "fadeIn 0.4s ease",
                   }}
@@ -853,7 +853,7 @@ export default function AuditWizard() {
             {/* Error state */}
             {apiError && (
               <div style={{ paddingTop: "2rem" }}>
-                <p style={{ color: "#f87171", fontFamily: "var(--font-dm-sans)", marginBottom: "1rem" }}>
+                <p style={{ color: "#f87171", fontFamily: "var(--font-poppins)", marginBottom: "1rem" }}>
                   {apiError}
                 </p>
                 <button
@@ -877,8 +877,8 @@ export default function AuditWizard() {
                 <div style={{ marginBottom: "2rem" }}>
                   <h1
                     style={{
-                      fontFamily: "var(--font-playfair)",
-                      color: "var(--color-offwhite)",
+                      fontFamily: "var(--font-poppins)",
+                      color: "var(--text-primary)",
                       fontSize: "clamp(1.5rem, 4vw, 2rem)",
                       fontWeight: 700,
                       marginBottom: "0.75rem",
@@ -894,7 +894,7 @@ export default function AuditWizard() {
                       background: WASTE_COLORS[report.waste_score] + "22",
                       border: `1.5px solid ${WASTE_COLORS[report.waste_score]}`,
                       color: WASTE_COLORS[report.waste_score],
-                      fontFamily: "var(--font-dm-sans)",
+                      fontFamily: "var(--font-poppins)",
                       fontSize: "0.75rem",
                       fontWeight: 700,
                       letterSpacing: "0.1em",
@@ -906,8 +906,8 @@ export default function AuditWizard() {
                   </span>
                   <p
                     style={{
-                      fontFamily: "var(--font-playfair)",
-                      color: "var(--color-offwhite)",
+                      fontFamily: "var(--font-poppins)",
+                      color: "var(--text-primary)",
                       fontSize: "1.2rem",
                       lineHeight: 1.45,
                     }}
@@ -919,20 +919,20 @@ export default function AuditWizard() {
                 {/* Waste estimate card */}
                 <div
                   style={{
-                    border: "1.5px solid var(--color-teal)",
+                    border: "1.5px solid var(--accent)",
                     borderRadius: 12,
                     padding: "1.5rem",
                     marginBottom: "2rem",
                     background: "rgba(75,133,142,0.06)",
                   }}
                 >
-                  <p style={{ color: "var(--color-gray)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "var(--font-dm-sans)", marginBottom: "0.5rem" }}>
+                  <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "var(--font-poppins)", marginBottom: "0.5rem" }}>
                     Estimated monthly waste
                   </p>
                   <p
                     style={{
-                      fontFamily: "var(--font-playfair)",
-                      color: "var(--color-teal)",
+                      fontFamily: "var(--font-poppins)",
+                      color: "var(--accent)",
                       fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
                       fontWeight: 700,
                       marginBottom: "0.25rem",
@@ -940,10 +940,10 @@ export default function AuditWizard() {
                   >
                     ${report.estimated_monthly_waste_low.toLocaleString()} to ${report.estimated_monthly_waste_high.toLocaleString()}
                   </p>
-                  <p style={{ color: "var(--color-gray)", fontSize: "0.875rem", fontFamily: "var(--font-dm-sans)", marginBottom: "1rem" }}>
+                  <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontFamily: "var(--font-poppins)", marginBottom: "1rem" }}>
                     {report.estimated_hours_wasted_per_month} hours wasted per month
                   </p>
-                  <p style={{ color: "var(--color-gray)", fontSize: "0.925rem", lineHeight: 1.6, fontFamily: "var(--font-dm-sans)" }}>
+                  <p style={{ color: "var(--text-secondary)", fontSize: "0.925rem", lineHeight: 1.6, fontFamily: "var(--font-poppins)" }}>
                     {report.summary}
                   </p>
                 </div>
@@ -953,8 +953,8 @@ export default function AuditWizard() {
                   <div style={{ marginBottom: "2rem" }}>
                     <h2
                       style={{
-                        fontFamily: "var(--font-playfair)",
-                        color: "var(--color-offwhite)",
+                        fontFamily: "var(--font-poppins)",
+                        color: "var(--text-primary)",
                         fontSize: "1.25rem",
                         fontWeight: 700,
                         marginBottom: "1rem",
@@ -973,17 +973,17 @@ export default function AuditWizard() {
                           <div
                             key={i}
                             style={{
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(255,255,255,0.08)",
+                              background: "rgba(0,32,92,0.04)",
+                              border: "1px solid rgba(0,32,92,0.1)",
                               borderRadius: 10,
                               padding: "1rem 1.25rem",
                             }}
                           >
                             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.5rem", flexWrap: "wrap" }}>
-                              <span style={{ color: "var(--color-offwhite)", fontFamily: "var(--font-dm-sans)", fontWeight: 600, fontSize: "0.9rem" }}>
+                              <span style={{ color: "var(--text-primary)", fontFamily: "var(--font-poppins)", fontWeight: 600, fontSize: "0.9rem" }}>
                                 {finding.tool}
                               </span>
-                              <span style={{ color: "var(--color-gray)", fontSize: "0.775rem", fontFamily: "var(--font-dm-sans)", background: "rgba(255,255,255,0.06)", padding: "0.2rem 0.6rem", borderRadius: 99 }}>
+                              <span style={{ color: "var(--text-secondary)", fontSize: "0.775rem", fontFamily: "var(--font-poppins)", background: "rgba(0,32,92,0.06)", padding: "0.2rem 0.6rem", borderRadius: 99 }}>
                                 {finding.department}
                               </span>
                               <span
@@ -993,16 +993,16 @@ export default function AuditWizard() {
                                   textTransform: "uppercase",
                                   letterSpacing: "0.08em",
                                   color: IMPACT_COLORS[finding.impact],
-                                  fontFamily: "var(--font-dm-sans)",
+                                  fontFamily: "var(--font-poppins)",
                                 }}
                               >
                                 {finding.impact} impact
                               </span>
                             </div>
-                            <p style={{ color: "var(--color-gray)", fontSize: "0.875rem", lineHeight: 1.55, fontFamily: "var(--font-dm-sans)", marginBottom: "0.4rem" }}>
+                            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.55, fontFamily: "var(--font-poppins)", marginBottom: "0.4rem" }}>
                               {finding.issue}
                             </p>
-                            <p style={{ color: "var(--color-teal)", fontSize: "0.85rem", fontFamily: "var(--font-dm-sans)", lineHeight: 1.5 }}>
+                            <p style={{ color: "var(--accent)", fontSize: "0.85rem", fontFamily: "var(--font-poppins)", lineHeight: 1.5 }}>
                               {finding.recommendation}
                             </p>
                           </div>
@@ -1016,8 +1016,8 @@ export default function AuditWizard() {
                   <div style={{ marginBottom: "2rem" }}>
                     <h2
                       style={{
-                        fontFamily: "var(--font-playfair)",
-                        color: "var(--color-offwhite)",
+                        fontFamily: "var(--font-poppins)",
+                        color: "var(--text-primary)",
                         fontSize: "1.25rem",
                         fontWeight: 700,
                         marginBottom: "1rem",
@@ -1033,13 +1033,13 @@ export default function AuditWizard() {
                             display: "flex",
                             gap: "0.75rem",
                             alignItems: "flex-start",
-                            color: "var(--color-gray)",
-                            fontFamily: "var(--font-dm-sans)",
+                            color: "var(--text-secondary)",
+                            fontFamily: "var(--font-poppins)",
                             fontSize: "0.9rem",
                             lineHeight: 1.55,
                           }}
                         >
-                          <span style={{ color: "var(--color-teal)", flexShrink: 0, marginTop: "0.1rem" }}>
+                          <span style={{ color: "var(--accent)", flexShrink: 0, marginTop: "0.1rem" }}>
                             &rarr;
                           </span>
                           {win}
@@ -1053,15 +1053,15 @@ export default function AuditWizard() {
                 {report.environmental_note && (
                   <div
                     style={{
-                      borderLeft: "3px solid var(--color-teal)",
+                      borderLeft: "3px solid var(--accent)",
                       paddingLeft: "1.25rem",
                       marginBottom: "2rem",
                     }}
                   >
-                    <p style={{ color: "var(--color-gray)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-dm-sans)", marginBottom: "0.4rem" }}>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-poppins)", marginBottom: "0.4rem" }}>
                       {report.environmental_note}
                     </p>
-                    <p style={{ color: "var(--color-teal)", fontSize: "0.875rem", fontFamily: "var(--font-dm-sans)", fontWeight: 600 }}>
+                    <p style={{ color: "var(--accent)", fontSize: "0.875rem", fontFamily: "var(--font-poppins)", fontWeight: 600 }}>
                       Estimated redirect potential: ${report.redirect_estimate_usd?.toLocaleString()}/month
                     </p>
                   </div>
@@ -1070,22 +1070,22 @@ export default function AuditWizard() {
                 {/* CTA */}
                 <div
                   style={{
-                    borderTop: "1px solid rgba(255,255,255,0.08)",
+                    borderTop: "1px solid rgba(0,32,92,0.1)",
                     paddingTop: "2rem",
                     marginTop: "1rem",
                   }}
                 >
                   {reportSaved ? (
                     <div style={{ textAlign: "center" }}>
-                      <p style={{ color: "var(--color-teal)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>✓</p>
-                      <p style={{ color: "var(--color-offwhite)", fontFamily: "var(--font-dm-sans)", fontWeight: 600, marginBottom: "0.5rem" }}>
+                      <p style={{ color: "var(--accent)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>✓</p>
+                      <p style={{ color: "var(--text-primary)", fontFamily: "var(--font-poppins)", fontWeight: 600, marginBottom: "0.5rem" }}>
                         Your report is saved.
                       </p>
                       <a
                         href="https://calendly.com/fractionalbusinesscompanion/wst"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: "var(--color-teal)", fontFamily: "var(--font-dm-sans)", fontSize: "0.9rem", textDecoration: "underline" }}
+                        style={{ color: "var(--accent)", fontFamily: "var(--font-poppins)", fontSize: "0.9rem", textDecoration: "underline" }}
                       >
                         Book a call to go deeper
                       </a>
@@ -1094,8 +1094,8 @@ export default function AuditWizard() {
                     <div>
                       <h2
                         style={{
-                          fontFamily: "var(--font-playfair)",
-                          color: "var(--color-offwhite)",
+                          fontFamily: "var(--font-poppins)",
+                          color: "var(--text-primary)",
                           fontSize: "1.25rem",
                           fontWeight: 700,
                           marginBottom: "0.6rem",
@@ -1103,7 +1103,7 @@ export default function AuditWizard() {
                       >
                         Want the full picture?
                       </h2>
-                      <p style={{ color: "var(--color-gray)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-dm-sans)", marginBottom: "1.5rem" }}>
+                      <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-poppins)", marginBottom: "1.5rem" }}>
                         This is an estimate. A full audit goes deeper: line-by-line tool analysis, usage data, team interviews, and a redesign plan. Save your report first, then book a call.
                       </p>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -1121,10 +1121,10 @@ export default function AuditWizard() {
                             display: "block",
                             textAlign: "center",
                             padding: "0.875rem 1.25rem",
-                            border: "1.5px solid var(--color-teal)",
+                            border: "1.5px solid var(--accent)",
                             borderRadius: 8,
-                            color: "var(--color-teal)",
-                            fontFamily: "var(--font-dm-sans)",
+                            color: "var(--accent)",
+                            fontFamily: "var(--font-poppins)",
                             fontSize: "0.975rem",
                             fontWeight: 600,
                             textDecoration: "none",
@@ -1134,11 +1134,11 @@ export default function AuditWizard() {
                           Book a Call
                         </a>
                       </div>
-                      <p style={{ textAlign: "center", color: "var(--color-gray)", fontSize: "0.8rem", marginTop: "1rem", fontFamily: "var(--font-dm-sans)" }}>
+                      <p style={{ textAlign: "center", color: "var(--text-secondary)", fontSize: "0.8rem", marginTop: "1rem", fontFamily: "var(--font-poppins)" }}>
                         Already have an account?{" "}
                         <button
                           onClick={() => setShowAuth(true)}
-                          style={{ background: "none", border: "none", color: "var(--color-teal)", cursor: "pointer", fontSize: "0.8rem", padding: 0, textDecoration: "underline" }}
+                          style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.8rem", padding: 0, textDecoration: "underline" }}
                         >
                           Log in to save.
                         </button>

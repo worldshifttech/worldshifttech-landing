@@ -61,14 +61,11 @@ export default async function LessonPage({
   const domain = mod?.curriculum_domains;
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#080C14" }}
-    >
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+    <div className="min-h-screen flex flex-col bg-offwhite">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -90,7 +87,7 @@ export default async function LessonPage({
       <main className="flex-1 px-6 py-12">
         <div className="w-full max-w-3xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-[#767B7A] mb-8 flex-wrap">
+          <nav className="flex items-center gap-2 text-xs text-[#76777A] mb-8 flex-wrap">
             <Link
               href="/curriculum"
               className="hover:text-[#4B858E] transition-colors"
@@ -112,7 +109,7 @@ export default async function LessonPage({
               {mod?.title ?? `Module ${moduleNumber}`}
             </Link>
             <span>/</span>
-            <span className="text-[#F4F2EE]/40">{lesson.lesson_number}</span>
+            <span className="text-[#00205C]/40">{lesson.lesson_number}</span>
           </nav>
 
           <LessonViewer
@@ -141,8 +138,8 @@ export default async function LessonPage({
         </div>
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

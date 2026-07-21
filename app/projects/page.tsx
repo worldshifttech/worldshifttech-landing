@@ -37,10 +37,10 @@ export default async function ProjectsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -61,7 +61,7 @@ export default async function ProjectsPage() {
           >
             Your Team &amp; AI
           </Link>
-          <span className="text-sm text-[#767B7A] hidden sm:block">
+          <span className="text-sm text-[#76777A] hidden sm:block">
             {userEmail}
           </span>
           <SignOutButton />
@@ -72,24 +72,19 @@ export default async function ProjectsPage() {
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-3xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-y-3 mb-10">
-            <h1
-              className="text-4xl sm:text-5xl font-bold text-[#F4F2EE]"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#00205C]">
               Your Projects
             </h1>
             <div className="flex items-center gap-3 flex-shrink-0">
               <Link
                 href="/audit"
                 className="text-sm font-bold px-6 py-3 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Get an Audit
               </Link>
               <Link
                 href="/projects/new"
                 className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Start a New Project
               </Link>
@@ -102,8 +97,8 @@ export default async function ProjectsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs font-normal">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

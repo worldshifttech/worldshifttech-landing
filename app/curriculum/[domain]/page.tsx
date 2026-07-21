@@ -41,11 +41,11 @@ export default async function DomainPage({
   if (!domain) notFound();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#080C14" }}>
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+    <div className="min-h-screen flex flex-col bg-offwhite">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -74,19 +74,13 @@ export default async function DomainPage({
             <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-3">
               Domain {domain.number}
             </p>
-            <h1
-              className="text-4xl sm:text-5xl font-bold text-[#F4F2EE] mb-3"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#00205C] mb-3 font-light">
               {domain.title}
             </h1>
-            <p
-              className="text-[#F4F2EE]/70 text-lg mb-5"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <p className="text-[#00205C]/70 text-lg mb-5 font-normal">
               {domain.subtitle}
             </p>
-            <div className="flex items-center gap-5 text-sm text-[#767B7A]">
+            <div className="flex items-center gap-5 text-sm text-[#76777A]">
               <span>{domain.estimated_hours}</span>
               {domain.prerequisites && (
                 <span>Prereq: {domain.prerequisites}</span>
@@ -95,14 +89,11 @@ export default async function DomainPage({
           </div>
 
           {/* Overview */}
-          <div className="bg-[#00205C]/30 border border-white/[0.06] rounded-xl p-6 mb-8">
+          <div className="bg-white border border-[#00205C]/10 rounded-xl p-6 mb-8">
             <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-4">
               Overview
             </p>
-            <div
-              className="text-[#F4F2EE]/80 text-sm leading-relaxed whitespace-pre-wrap"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <div className="text-[#00205C]/80 text-sm leading-relaxed whitespace-pre-wrap font-normal">
               {domain.overview_text}
             </div>
           </div>
@@ -113,20 +104,14 @@ export default async function DomainPage({
               <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-3">
                 Practitioner Note
               </p>
-              <div
-                className="text-[#F4F2EE]/70 text-sm leading-relaxed whitespace-pre-wrap"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <div className="text-[#00205C]/70 text-sm leading-relaxed whitespace-pre-wrap font-normal">
                 {domain.practitioner_note}
               </div>
             </div>
           )}
 
           {/* Modules */}
-          <h2
-            className="text-2xl font-bold text-[#F4F2EE] mb-5"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
+          <h2 className="text-2xl font-bold text-[#00205C] mb-5 font-light">
             Modules
           </h2>
           <div className="space-y-3">
@@ -136,21 +121,18 @@ export default async function DomainPage({
                 href={`/curriculum/${domain.number}/${mod.module_number}`}
                 className="block group"
               >
-                <div className="bg-[#00205C]/40 border border-white/[0.08] rounded-xl p-5 hover:border-[#4B858E]/50 hover:bg-[#00205C]/60 transition-all duration-200">
+                <div className="bg-white border border-[#00205C]/10 rounded-xl p-5 hover:border-[#4B858E]/50 hover:bg-[#00205C]/[0.04] transition-all duration-200">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-xs font-bold text-[#4B858E] bg-[#4B858E]/10 px-2 py-0.5 rounded">
                           {mod.module_number}
                         </span>
-                        <span className="text-xs text-[#767B7A]">
+                        <span className="text-xs text-[#76777A]">
                           {mod.estimated_time}
                         </span>
                       </div>
-                      <h3
-                        className="text-base font-semibold text-[#F4F2EE] group-hover:text-white transition-colors"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
+                      <h3 className="text-base font-semibold text-[#00205C] group-hover:text-[#00205C] transition-colors font-medium">
                         {mod.title}
                       </h3>
                     </div>
@@ -165,8 +147,8 @@ export default async function DomainPage({
         </div>
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

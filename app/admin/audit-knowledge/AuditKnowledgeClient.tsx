@@ -51,20 +51,19 @@ export default function AuditKnowledgeClient({
         placeholder="Search tools..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="w-full rounded px-3 py-2 text-sm mb-5 outline-none"
+        className="w-full rounded px-3 py-2 text-sm mb-5 outline-none font-normal"
         style={{
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          color: "#F4F2EE",
-          fontFamily: "var(--font-dm-sans)",
+          background: "#ffffff",
+          border: "1px solid rgba(0,32,92,0.1)",
+          color: "#00205C",
         }}
       />
 
       {Object.entries(grouped).map(([category, catTools]) => (
         <div key={category} className="mb-5">
           <p
-            className="text-xs uppercase tracking-wider mb-2"
-            style={{ color: "#767B7A", fontFamily: "var(--font-dm-sans)" }}
+            className="text-xs uppercase tracking-wider mb-2 font-normal"
+            style={{ color: "#76777A" }}
           >
             {category}
           </p>
@@ -75,11 +74,10 @@ export default function AuditKnowledgeClient({
                 <li key={tool.slug}>
                   <Link
                     href={`/admin/audit-knowledge?tool=${tool.slug}`}
-                    className="block rounded px-3 py-2 text-sm transition-colors"
+                    className="block rounded px-3 py-2 text-sm transition-colors font-normal"
                     style={{
-                      fontFamily: "var(--font-dm-sans)",
                       background: isActive ? "rgba(75,133,142,0.15)" : "transparent",
-                      color: isActive ? "var(--color-teal, #4B858E)" : "#F4F2EE",
+                      color: isActive ? "var(--color-teal, #4B858E)" : "#00205C",
                       borderLeft: isActive ? "2px solid var(--color-teal, #4B858E)" : "2px solid transparent",
                     }}
                   >
@@ -93,7 +91,7 @@ export default function AuditKnowledgeClient({
       ))}
 
       {Object.keys(grouped).length === 0 && (
-        <p className="text-sm" style={{ color: "#767B7A", fontFamily: "var(--font-dm-sans)" }}>
+        <p className="text-sm font-normal" style={{ color: "#76777A" }}>
           No tools match your search.
         </p>
       )}

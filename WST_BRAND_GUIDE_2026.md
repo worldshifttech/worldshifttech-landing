@@ -345,8 +345,8 @@ These rules exist because greenwashing destroys trust faster than almost anythin
 
 ## What Stays the Same
 
-- Brand colors: navy (`#00205C`), teal (`#4B858E`), offwhite (`#F4F2EE`), dark (`#080C14`)
-- Typography: Playfair Display headlines, DM Sans body
+- Brand colors: navy (`#00205C`), teal (`#4B858E`), soft teal (`#91B6BB`), soft gray (`#76777A`), offwhite (`#F4F2EE`) — *updated 2026: site moved from a dark theme (navy/near-black backgrounds) to a light theme (offwhite/white backgrounds, navy text) for readability, since the app now hosts client portals showing project roadmaps. Near-black (`#080C14`) is kept only as text-on-teal in buttons. See `CLAUDE.md`'s Brand/Design Rules sections for the current spec.*
+- Typography: single Poppins family (Google Fonts), upright, in two weight roles — 300 for headlines, 400/500 for body — *updated 2026, replaces Playfair Display + DM Sans*
 - Founder presence: Drew is named, photographed, on the hook
 - Pricing transparency: real numbers, always
 - Ownership model: clients own what gets built

@@ -27,11 +27,11 @@ export default async function CurriculumPage() {
   const domains = await getDomains();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#080C14" }}>
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+    <div className="min-h-screen flex flex-col bg-offwhite">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -55,16 +55,10 @@ export default async function CurriculumPage() {
           <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-4">
             WST PRACTITIONER CURRICULUM
           </p>
-          <h1
-            className="text-4xl sm:text-5xl font-bold text-[#F4F2EE] mb-4"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
+          <h1 className="text-4xl sm:text-5xl font-bold text-[#00205C] mb-4 font-light">
             Six Domains.
           </h1>
-          <p
-            className="text-[#F4F2EE]/70 text-lg mb-12 max-w-2xl"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-[#00205C]/70 text-lg mb-12 max-w-2xl font-normal">
             Work through each domain in order. Take your time with the material.
             This is not a certification — it is formation.
           </p>
@@ -76,35 +70,26 @@ export default async function CurriculumPage() {
                 href={`/curriculum/${domain.number}`}
                 className="block group"
               >
-                <div className="bg-[#00205C]/40 border border-white/[0.08] rounded-xl p-6 hover:border-[#4B858E]/50 hover:bg-[#00205C]/60 transition-all duration-200">
+                <div className="bg-white border border-[#00205C]/10 rounded-xl p-6 hover:border-[#4B858E]/50 hover:bg-[#00205C]/[0.04] transition-all duration-200">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-5">
-                      <span
-                        className="text-3xl font-bold text-[#4B858E]/30 tabular-nums leading-tight flex-shrink-0"
-                        style={{ fontFamily: "var(--font-playfair)" }}
-                      >
+                      <span className="text-3xl font-bold text-[#4B858E]/30 tabular-nums leading-tight flex-shrink-0 font-light">
                         {String(domain.number).padStart(2, "0")}
                       </span>
                       <div>
-                        <h2
-                          className="text-xl font-bold text-[#F4F2EE] mb-1 group-hover:text-white transition-colors"
-                          style={{ fontFamily: "var(--font-playfair)" }}
-                        >
+                        <h2 className="text-xl font-bold text-[#00205C] mb-1 group-hover:text-[#00205C] transition-colors font-light">
                           {domain.title}
                         </h2>
-                        <p
-                          className="text-sm text-[#F4F2EE]/60 mb-3"
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                        >
+                        <p className="text-sm text-[#00205C]/60 mb-3 font-normal">
                           {domain.subtitle}
                         </p>
                         <div className="flex items-center gap-4">
-                          <span className="text-xs text-[#767B7A]">
+                          <span className="text-xs text-[#76777A]">
                             {domain.estimated_hours}
                           </span>
                           {domain.prerequisites &&
                             domain.prerequisites !== "None" && (
-                              <span className="text-xs text-[#767B7A]">
+                              <span className="text-xs text-[#76777A]">
                                 Prereq: {domain.prerequisites}
                               </span>
                             )}
@@ -122,8 +107,8 @@ export default async function CurriculumPage() {
         </div>
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

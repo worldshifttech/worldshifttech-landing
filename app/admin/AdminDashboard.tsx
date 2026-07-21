@@ -95,7 +95,7 @@ function relativeDate(dateStr: string): string {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  draft: "bg-[#767B7A]/20 text-[#767B7A] border border-[#767B7A]/30",
+  draft: "bg-[#76777A]/10 text-[#76777A] border border-[#76777A]/30",
   scoped: "border border-[#4B858E] text-[#4B858E]",
   submitted: "bg-[#4B858E] text-[#080C14]",
   reviewed: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
@@ -418,10 +418,10 @@ export default function AdminDashboard({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.10]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -432,15 +432,15 @@ export default function AdminDashboard({
         <div className="flex items-center gap-6">
           <Link
             href="/admin/audit-knowledge"
-            className="text-sm text-[#4B858E] hover:text-[#F4F2EE] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+            className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
+            style={{ fontFamily: "var(--font-poppins)" }}
           >
             Audit KB
           </Link>
           <Link
             href="/"
-            className="text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+            className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
+            style={{ fontFamily: "var(--font-poppins)" }}
           >
             &larr; Back to Site
           </Link>
@@ -451,14 +451,14 @@ export default function AdminDashboard({
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-5xl mx-auto">
           <h1
-            className="text-4xl sm:text-5xl font-bold text-[#F4F2EE] mb-6"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            className="text-4xl sm:text-5xl font-bold text-[#00205C] mb-6"
+            style={{ fontFamily: "var(--font-poppins)" }}
           >
             Admin
           </h1>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 border-b border-white/[0.06] mb-10">
+          <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10] mb-10">
             {(["projects", "audits", "impact"] as const).map((tab) => {
               const label =
                 tab === "projects"
@@ -473,10 +473,10 @@ export default function AdminDashboard({
                   onClick={() => setActiveTab(tab)}
                   className={`text-sm font-semibold px-4 py-3 border-b-2 -mb-px transition-colors ${
                     isActive
-                      ? "text-[#F4F2EE] border-[#4B858E]"
-                      : "text-[#767B7A] border-transparent hover:text-[#F4F2EE]"
+                      ? "text-[#00205C] border-[#4B858E]"
+                      : "text-[#76777A] border-transparent hover:text-[#00205C]"
                   }`}
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  style={{ fontFamily: "var(--font-poppins)" }}
                 >
                   {label}
                 </button>
@@ -488,14 +488,14 @@ export default function AdminDashboard({
           {activeTab === "projects" && (
             <>
               <p
-                className="text-[#767B7A] text-sm mb-8"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="text-[#76777A] text-sm mb-8"
+                style={{ fontFamily: "var(--font-poppins)" }}
               >
                 {total} project{total !== 1 ? "s" : ""} &mdash; {submittedCount} submitted, {inReviewCount} in review
               </p>
 
               {total === 0 ? (
-                <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
                   No projects yet.
                 </p>
               ) : (
@@ -503,26 +503,26 @@ export default function AdminDashboard({
                   {activeProjects.map((project) => {
                     const isOpen = openId === project.id;
                     const transition = STATUS_TRANSITIONS[project.status];
-                    const badgeClass = STATUS_BADGE[project.status] ?? "border border-white/20 text-[#767B7A]";
+                    const badgeClass = STATUS_BADGE[project.status] ?? "border border-[#00205C]/20 text-[#76777A]";
                     const isPromptLoading = promptLoadingIds.has(project.id);
                     const promptText =
                       project.claude_code_prompt ??
                       (project.scope ? buildClaudePrompt(project.scope) : null);
 
                     return (
-                      <div key={project.id} className="border border-white/[0.08] rounded-2xl overflow-hidden">
+                      <div key={project.id} className="border border-[#00205C]/[0.12] rounded-2xl overflow-hidden bg-white">
                         {/* Row */}
                         <div className="flex items-center gap-4 px-6 py-5">
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-[#F4F2EE] font-medium truncate"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="text-[#00205C] font-medium truncate"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               {project.title ?? "Untitled Project"}
                             </p>
                             <p
-                              className="text-[#767B7A] text-xs mt-0.5"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="text-[#76777A] text-xs mt-0.5"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               {project.userEmail}
                             </p>
@@ -530,14 +530,14 @@ export default function AdminDashboard({
 
                           <span
                             className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${badgeClass}`}
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {project.status}
                           </span>
 
                           <span
-                            className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {relativeDate(project.created_at)}
                           </span>
@@ -545,7 +545,7 @@ export default function AdminDashboard({
                           <button
                             onClick={() => setOpenId(isOpen ? null : project.id)}
                             className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {isOpen ? "Close" : "View"}
                           </button>
@@ -553,7 +553,7 @@ export default function AdminDashboard({
 
                         {/* Inline detail panel */}
                         {isOpen && (
-                          <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
+                          <div className="border-t border-[#00205C]/[0.10] bg-white px-6 py-8">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                               {/* Left — Scope Doc */}
                               <div>
@@ -561,8 +561,8 @@ export default function AdminDashboard({
                                   <>
                                     <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
                                       <h2
-                                        className="text-2xl font-bold text-[#F4F2EE] leading-snug"
-                                        style={{ fontFamily: "var(--font-playfair)" }}
+                                        className="text-2xl font-bold text-[#00205C] leading-snug"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {project.scope.title}
                                       </h2>
@@ -570,7 +570,7 @@ export default function AdminDashboard({
                                         className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
                                           GREEN_SCORE_STYLES[project.scope.green_score].border
                                         } ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {GREEN_SCORE_STYLES[project.scope.green_score].label}
                                       </span>
@@ -585,13 +585,13 @@ export default function AdminDashboard({
                                         <div key={label}>
                                           <span
                                             className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            style={{ fontFamily: "var(--font-poppins)" }}
                                           >
                                             {label}
                                           </span>
                                           <p
-                                            className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed"
+                                            style={{ fontFamily: "var(--font-poppins)" }}
                                           >
                                             {value}
                                           </p>
@@ -600,7 +600,7 @@ export default function AdminDashboard({
                                       <div>
                                         <span
                                           className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           Investment Estimate
                                         </span>
@@ -613,21 +613,21 @@ export default function AdminDashboard({
                                                 <div key={tier}>
                                                   <div className="flex items-baseline gap-2">
                                                     <span
-                                                      className="text-[#F4F2EE] text-sm font-semibold"
-                                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                      className="text-[#00205C] text-sm font-semibold"
+                                                      style={{ fontFamily: "var(--font-poppins)" }}
                                                     >
                                                       {tierLabel}
                                                     </span>
                                                     <span
-                                                      className="text-[#F4F2EE]/80 text-sm font-medium"
-                                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                      className="text-[#00205C]/80 text-sm font-medium"
+                                                      style={{ fontFamily: "var(--font-poppins)" }}
                                                     >
                                                       ${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}
                                                     </span>
                                                   </div>
                                                   <p
-                                                    className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5"
-                                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                    className="text-[#00205C] text-xs leading-relaxed mt-0.5"
+                                                    style={{ fontFamily: "var(--font-poppins)" }}
                                                   >
                                                     {tierData.description}
                                                   </p>
@@ -635,8 +635,8 @@ export default function AdminDashboard({
                                               );
                                             })}
                                             <p
-                                              className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2"
-                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              className="text-[#00205C] text-xs italic leading-relaxed mt-2"
+                                              style={{ fontFamily: "var(--font-poppins)" }}
                                             >
                                               {project.scope.pricing.value_rationale}
                                             </p>
@@ -644,14 +644,14 @@ export default function AdminDashboard({
                                         ) : (
                                           <>
                                             <p
-                                              className="mt-1.5 text-[#F4F2EE] text-base font-semibold"
-                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              className="mt-1.5 text-[#00205C] text-base font-semibold"
+                                              style={{ fontFamily: "var(--font-poppins)" }}
                                             >
                                               ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
                                             </p>
                                             <p
-                                              className="mt-1 text-[#F4F2EE] text-xs leading-relaxed"
-                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              className="mt-1 text-[#00205C] text-xs leading-relaxed"
+                                              style={{ fontFamily: "var(--font-poppins)" }}
                                             >
                                               {project.scope.price_rationale}
                                             </p>
@@ -661,7 +661,7 @@ export default function AdminDashboard({
                                     </div>
                                   </>
                                 ) : (
-                                  <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                                  <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
                                     No scope generated yet.
                                   </p>
                                 )}
@@ -671,7 +671,7 @@ export default function AdminDashboard({
                               <div>
                                 <h3
                                   className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  style={{ fontFamily: "var(--font-poppins)" }}
                                 >
                                   Raw Answers
                                 </h3>
@@ -684,14 +684,14 @@ export default function AdminDashboard({
                                     return (
                                       <div key={key}>
                                         <span
-                                          className="text-[#767B7A] text-xs"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#76777A] text-xs"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {label}
                                         </span>
                                         <p
-                                          className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#00205C] text-sm mt-0.5 leading-relaxed"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {text}
                                         </p>
@@ -703,13 +703,13 @@ export default function AdminDashboard({
                             </div>
 
                             {/* Status Controls */}
-                            <div className="border-t border-white/[0.06] pt-6">
+                            <div className="border-t border-[#00205C]/[0.10] pt-6">
                               <div className="flex flex-wrap items-center gap-4">
                                 <span
-                                  className="text-[#767B7A] text-sm"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  className="text-[#76777A] text-sm"
+                                  style={{ fontFamily: "var(--font-poppins)" }}
                                 >
-                                  Status: <span className="text-[#F4F2EE] font-medium">{project.status}</span>
+                                  Status: <span className="text-[#00205C] font-medium">{project.status}</span>
                                 </span>
 
                                 {transition && (
@@ -718,10 +718,10 @@ export default function AdminDashboard({
                                     disabled={updatingId === project.id}
                                     className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
                                       updatingId === project.id
-                                        ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                                        ? "bg-[#00205C]/[0.08] text-[#76777A] cursor-not-allowed"
                                         : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
                                     }`}
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     {updatingId === project.id ? "Updating..." : transition.label}
                                   </button>
@@ -731,12 +731,12 @@ export default function AdminDashboard({
                                   <button
                                     onClick={() => handleBackToReview(project.id)}
                                     disabled={updatingId === project.id}
-                                    className={`text-xs font-semibold px-4 py-2 rounded-full border border-white/20 text-[#767B7A] transition-colors ${
+                                    className={`text-xs font-semibold px-4 py-2 rounded-full border border-[#00205C]/20 text-[#76777A] transition-colors ${
                                       updatingId === project.id
                                         ? "cursor-not-allowed opacity-50"
-                                        : "hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
+                                        : "hover:border-[#00205C]/40 hover:text-[#00205C] cursor-pointer"
                                     }`}
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     {updatingId === project.id ? "Updating..." : "← Back to Review"}
                                   </button>
@@ -745,7 +745,7 @@ export default function AdminDashboard({
                                 {updateError === project.id && (
                                   <span
                                     className="text-red-400 text-xs"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     Update failed. Try again.
                                   </span>
@@ -754,7 +754,7 @@ export default function AdminDashboard({
                                 {backToReviewError === project.id && (
                                   <span
                                     className="text-red-400 text-xs"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     Status update failed — try again
                                   </span>
@@ -764,22 +764,22 @@ export default function AdminDashboard({
 
                             {/* Claude Code Prompt */}
                             {(project.status === "approved" || project.status === "live") && (
-                              <div className="border-t border-white/[0.06] pt-6 mt-6">
+                              <div className="border-t border-[#00205C]/[0.10] pt-6 mt-6">
                                 <span
                                   className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  style={{ fontFamily: "var(--font-poppins)" }}
                                 >
                                   Claude Code Build Prompt
                                 </span>
 
                                 {isPromptLoading ? (
                                   <div className="space-y-2 animate-pulse">
-                                    <div className="h-3 bg-white/[0.06] rounded w-3/4" />
-                                    <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                    <div className="h-3 bg-white/[0.06] rounded w-5/6" />
-                                    <div className="h-3 bg-white/[0.06] rounded w-2/3" />
-                                    <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                    <div className="h-3 bg-white/[0.06] rounded w-4/5" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-3/4" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-5/6" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-2/3" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-4/5" />
                                   </div>
                                 ) : promptText ? (
                                   <>
@@ -788,21 +788,21 @@ export default function AdminDashboard({
                                       <button
                                         onClick={() => handleCopy(project.id, promptText)}
                                         className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {copiedId === project.id ? "Copied ✓" : "Copy Prompt"}
                                       </button>
                                     </div>
                                     <pre
-                                      className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
+                                      className="bg-white border border-[#00205C]/[0.10] rounded-xl p-5 text-[#00205C]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
                                       style={{ fontFamily: "monospace", maxHeight: "400px" }}
                                     >
                                       {promptText}
                                     </pre>
                                     <div className="mt-3">
                                       <span
-                                        className="text-[#767B7A] text-xs block mb-1.5"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#76777A] text-xs block mb-1.5"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Demo URL
                                       </span>
@@ -814,8 +814,8 @@ export default function AdminDashboard({
                                             setDemoUrlDrafts((prev) => ({ ...prev, [project.id]: e.target.value }))
                                           }
                                           placeholder="https://your-vercel-url.vercel.app"
-                                          className="flex-1 min-w-0 bg-[#080C14] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[#F4F2EE] text-xs placeholder-[#767B7A] focus:outline-none focus:border-[#4B858E]/50"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="flex-1 min-w-0 bg-white border border-[#00205C]/[0.12] rounded-lg px-3 py-1.5 text-[#00205C] text-xs placeholder-[#76777A] focus:outline-none focus:border-[#4B858E]/50"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         />
                                         <button
                                           onClick={() =>
@@ -826,7 +826,7 @@ export default function AdminDashboard({
                                           }
                                           disabled={savingDemoUrlIds.has(project.id)}
                                           className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {savedDemoUrlIds.has(project.id)
                                             ? "Saved ✓"
@@ -838,7 +838,7 @@ export default function AdminDashboard({
                                       {demoUrlSaveErrors[project.id] && (
                                         <p
                                           className="text-red-400 text-xs mt-1.5"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {demoUrlSaveErrors[project.id]}
                                         </p>
@@ -851,17 +851,17 @@ export default function AdminDashboard({
                                           disabled={regeneratingIds.has(project.id)}
                                           className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
                                             regeneratingIds.has(project.id)
-                                              ? "border-white/10 text-[#767B7A] cursor-not-allowed"
-                                              : "border-white/20 text-[#767B7A] hover:border-white/40 hover:text-[#F4F2EE] cursor-pointer"
+                                              ? "border-[#00205C]/15 text-[#76777A] cursor-not-allowed"
+                                              : "border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] cursor-pointer"
                                           }`}
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {regeneratingIds.has(project.id) ? "Regenerating..." : "Regenerate Prompt"}
                                         </button>
                                         {regenerateErrors.has(project.id) && (
                                           <span
                                             className="text-red-400 text-xs ml-3"
-                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            style={{ fontFamily: "var(--font-poppins)" }}
                                           >
                                             Regeneration failed — try again
                                           </span>
@@ -875,16 +875,16 @@ export default function AdminDashboard({
                                 <div className="mt-8">
                                   <span
                                     className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     Project README
                                   </span>
                                   {isPromptLoading ? (
                                     <div className="space-y-2 animate-pulse">
-                                      <div className="h-3 bg-white/[0.06] rounded w-3/4" />
-                                      <div className="h-3 bg-white/[0.06] rounded w-full" />
-                                      <div className="h-3 bg-white/[0.06] rounded w-5/6" />
-                                      <div className="h-3 bg-white/[0.06] rounded w-2/3" />
+                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-3/4" />
+                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
+                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-5/6" />
+                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-2/3" />
                                     </div>
                                   ) : project.project_readme ? (
                                     <>
@@ -893,13 +893,13 @@ export default function AdminDashboard({
                                         <button
                                           onClick={() => handleCopyReadme(project.id, project.project_readme!)}
                                           className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {copiedReadmeId === project.id ? "Copied ✓" : "Copy README"}
                                         </button>
                                       </div>
                                       <pre
-                                        className="bg-[#080C14] border border-white/[0.06] rounded-xl p-5 text-[#F4F2EE]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
+                                        className="bg-white border border-[#00205C]/[0.10] rounded-xl p-5 text-[#00205C]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
                                         style={{ fontFamily: "monospace", maxHeight: "400px" }}
                                       >
                                         {project.project_readme}
@@ -907,8 +907,8 @@ export default function AdminDashboard({
                                     </>
                                   ) : (
                                     <p
-                                      className="text-[#767B7A] text-xs"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      className="text-[#76777A] text-xs"
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       README not generated — regenerate the prompt to produce one
                                     </p>
@@ -929,8 +929,8 @@ export default function AdminDashboard({
                 <div className="mt-10">
                   <button
                     onClick={() => setIncompleteOpen((v) => !v)}
-                    className="flex items-center gap-2 text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors mb-4"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                    className="flex items-center gap-2 text-sm text-[#76777A] hover:text-[#00205C] transition-colors mb-4"
+                    style={{ fontFamily: "var(--font-poppins)" }}
                   >
                     <svg
                       width="12"
@@ -949,34 +949,34 @@ export default function AdminDashboard({
                       {incompleteProjects.map((project) => {
                         const isOpen = openId === project.id;
                         return (
-                          <div key={project.id} className="border border-white/[0.06] rounded-2xl overflow-hidden opacity-70">
+                          <div key={project.id} className="border border-[#00205C]/[0.10] rounded-2xl overflow-hidden opacity-70 bg-white">
                             {/* Row */}
                             <div className="flex items-center gap-4 px-6 py-5">
                               <div className="flex-1 min-w-0">
                                 <p
-                                  className="text-[#F4F2EE]/80 font-medium truncate"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  className="text-[#00205C]/80 font-medium truncate"
+                                  style={{ fontFamily: "var(--font-poppins)" }}
                                 >
                                   {project.title ?? "Untitled"}
                                 </p>
                                 <p
-                                  className="text-[#F4F2EE] text-xs mt-0.5"
-                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                  className="text-[#00205C] text-xs mt-0.5"
+                                  style={{ fontFamily: "var(--font-poppins)" }}
                                 >
                                   No account created
                                 </p>
                               </div>
 
                               <span
-                                className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 bg-white/[0.04] text-[#767B7A] border border-white/10"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 bg-[#00205C]/[0.05] text-[#76777A] border border-[#00205C]/15"
+                                style={{ fontFamily: "var(--font-poppins)" }}
                               >
                                 incomplete
                               </span>
 
                               <span
-                                className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
+                                style={{ fontFamily: "var(--font-poppins)" }}
                               >
                                 {relativeDate(project.created_at)}
                               </span>
@@ -984,7 +984,7 @@ export default function AdminDashboard({
                               <button
                                 onClick={() => setOpenId(isOpen ? null : project.id)}
                                 className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                style={{ fontFamily: "var(--font-poppins)" }}
                               >
                                 {isOpen ? "Close" : "View"}
                               </button>
@@ -992,7 +992,7 @@ export default function AdminDashboard({
 
                             {/* Inline detail panel */}
                             {isOpen && (
-                              <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
+                              <div className="border-t border-[#00205C]/[0.10] bg-white px-6 py-8">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                   {/* Left — Scope Doc */}
                                   <div>
@@ -1000,15 +1000,15 @@ export default function AdminDashboard({
                                       <>
                                         <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
                                           <h2
-                                            className="text-2xl font-bold text-[#F4F2EE] leading-snug"
-                                            style={{ fontFamily: "var(--font-playfair)" }}
+                                            className="text-2xl font-bold text-[#00205C] leading-snug"
+                                            style={{ fontFamily: "var(--font-poppins)" }}
                                           >
                                             {project.scope.title}
                                           </h2>
                                           {project.scope.green_score && GREEN_SCORE_STYLES[project.scope.green_score] && (
                                             <span
                                               className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${GREEN_SCORE_STYLES[project.scope.green_score].border} ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              style={{ fontFamily: "var(--font-poppins)" }}
                                             >
                                               {GREEN_SCORE_STYLES[project.scope.green_score].label}
                                             </span>
@@ -1024,13 +1024,13 @@ export default function AdminDashboard({
                                             <div key={label}>
                                               <span
                                                 className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                style={{ fontFamily: "var(--font-poppins)" }}
                                               >
                                                 {label}
                                               </span>
                                               <p
-                                                className="mt-1.5 text-[#F4F2EE]/70 text-sm leading-relaxed"
-                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed"
+                                                style={{ fontFamily: "var(--font-poppins)" }}
                                               >
                                                 {value}
                                               </p>
@@ -1039,7 +1039,7 @@ export default function AdminDashboard({
                                           <div>
                                             <span
                                               className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                                              style={{ fontFamily: "var(--font-poppins)" }}
                                             >
                                               Investment Estimate
                                             </span>
@@ -1051,17 +1051,17 @@ export default function AdminDashboard({
                                                   return (
                                                     <div key={tier}>
                                                       <div className="flex items-baseline gap-2">
-                                                        <span className="text-[#F4F2EE] text-sm font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierLabel}</span>
-                                                        <span className="text-[#F4F2EE]/80 text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}</span>
+                                                        <span className="text-[#00205C] text-sm font-semibold" style={{ fontFamily: "var(--font-poppins)" }}>{tierLabel}</span>
+                                                        <span className="text-[#00205C]/80 text-sm font-medium" style={{ fontFamily: "var(--font-poppins)" }}>${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}</span>
                                                       </div>
-                                                      <p className="text-[#F4F2EE] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>{tierData.description}</p>
+                                                      <p className="text-[#00205C] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>{tierData.description}</p>
                                                     </div>
                                                   );
                                                 })}
-                                                <p className="text-[#F4F2EE] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>{project.scope.pricing.value_rationale}</p>
+                                                <p className="text-[#00205C] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-poppins)" }}>{project.scope.pricing.value_rationale}</p>
                                               </div>
                                             ) : (
-                                              <p className="mt-1.5 text-[#F4F2EE] text-base font-semibold" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                                              <p className="mt-1.5 text-[#00205C] text-base font-semibold" style={{ fontFamily: "var(--font-poppins)" }}>
                                                 ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
                                               </p>
                                             )}
@@ -1069,7 +1069,7 @@ export default function AdminDashboard({
                                         </div>
                                       </>
                                     ) : (
-                                      <p className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>No scope generated yet.</p>
+                                      <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>No scope generated yet.</p>
                                     )}
                                   </div>
 
@@ -1077,7 +1077,7 @@ export default function AdminDashboard({
                                   <div>
                                     <h3
                                       className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       Raw Answers
                                     </h3>
@@ -1089,8 +1089,8 @@ export default function AdminDashboard({
                                         if (!text.trim()) return null;
                                         return (
                                           <div key={key}>
-                                            <span className="text-[#767B7A] text-xs" style={{ fontFamily: "var(--font-dm-sans)" }}>{label}</span>
-                                            <p className="text-[#F4F2EE] text-sm mt-0.5 leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)" }}>{text}</p>
+                                            <span className="text-[#76777A] text-xs" style={{ fontFamily: "var(--font-poppins)" }}>{label}</span>
+                                            <p className="text-[#00205C] text-sm mt-0.5 leading-relaxed" style={{ fontFamily: "var(--font-poppins)" }}>{text}</p>
                                           </div>
                                         );
                                       })}
@@ -1116,7 +1116,7 @@ export default function AdminDashboard({
           {activeTab === "audits" && (
             <>
               {auditEstimates.length === 0 ? (
-                <p className="text-[#F4F2EE] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
                   No audits yet.
                 </p>
               ) : (
@@ -1130,19 +1130,19 @@ export default function AdminDashboard({
                       .map(([k]) => k);
 
                     return (
-                      <div key={audit.id} className="border border-white/[0.08] rounded-2xl overflow-hidden">
+                      <div key={audit.id} className="border border-[#00205C]/[0.12] rounded-2xl overflow-hidden bg-white">
                         {/* Row */}
                         <div className="flex items-center gap-4 px-6 py-5">
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-[#F4F2EE] font-medium truncate"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="text-[#00205C] font-medium truncate"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               {audit.business_name ?? "Anonymous"}
                             </p>
                             <p
-                              className="text-[#767B7A] text-xs mt-0.5"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="text-[#76777A] text-xs mt-0.5"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               {audit.business_type} &middot; {audit.team_size}
                             </p>
@@ -1151,14 +1151,14 @@ export default function AdminDashboard({
                           {scoreStyle && score ? (
                             <span
                               className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 border uppercase tracking-wide ${scoreStyle.bg} ${scoreStyle.text} ${scoreStyle.border}`}
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               {score}
                             </span>
                           ) : (
                             <span
-                              className="text-xs px-2.5 py-1 rounded-full flex-shrink-0 border border-white/10 text-[#767B7A]"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="text-xs px-2.5 py-1 rounded-full flex-shrink-0 border border-[#00205C]/15 text-[#76777A]"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               pending
                             </span>
@@ -1166,23 +1166,23 @@ export default function AdminDashboard({
 
                           {audit.report ? (
                             <span
-                              className="hidden sm:block text-[#F4F2EE] text-xs flex-shrink-0 font-medium"
-                              style={{ fontFamily: "var(--font-dm-sans)" }}
+                              className="hidden sm:block text-[#00205C] text-xs flex-shrink-0 font-medium"
+                              style={{ fontFamily: "var(--font-poppins)" }}
                             >
                               ${audit.report.estimated_monthly_waste_low.toLocaleString()}–${audit.report.estimated_monthly_waste_high.toLocaleString()}/mo
                             </span>
                           ) : null}
 
                           <span
-                            className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {audit.monthly_spend_range}
                           </span>
 
                           <span
-                            className="hidden sm:block text-[#767B7A] text-xs flex-shrink-0"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {relativeDate(audit.created_at)}
                           </span>
@@ -1190,7 +1190,7 @@ export default function AdminDashboard({
                           <button
                             onClick={() => setOpenAuditId(isOpen ? null : audit.id)}
                             className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                            style={{ fontFamily: "var(--font-poppins)" }}
                           >
                             {isOpen ? "Close" : "View"}
                           </button>
@@ -1198,11 +1198,11 @@ export default function AdminDashboard({
 
                         {/* Detail panel */}
                         {isOpen && (
-                          <div className="border-t border-white/[0.06] bg-[#080C14]/40 px-6 py-8">
+                          <div className="border-t border-[#00205C]/[0.10] bg-white px-6 py-8">
                             {!audit.report ? (
                               <p
-                                className="text-[#767B7A] text-sm text-center"
-                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                className="text-[#76777A] text-sm text-center"
+                                style={{ fontFamily: "var(--font-poppins)" }}
                               >
                                 Report not yet generated.
                               </p>
@@ -1212,15 +1212,15 @@ export default function AdminDashboard({
                                 <div>
                                   <div className="flex flex-wrap items-start gap-3 mb-4">
                                     <h2
-                                      className="text-2xl font-bold text-[#F4F2EE] leading-snug"
-                                      style={{ fontFamily: "var(--font-playfair)" }}
+                                      className="text-2xl font-bold text-[#00205C] leading-snug"
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       {audit.business_name ?? "Anonymous"}
                                     </h2>
                                     {scoreStyle && score && (
                                       <span
                                         className={`text-xs font-bold px-3 py-1.5 rounded-full border uppercase tracking-wide ${scoreStyle.bg} ${scoreStyle.text} ${scoreStyle.border}`}
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {score} waste
                                       </span>
@@ -1228,37 +1228,37 @@ export default function AdminDashboard({
                                   </div>
 
                                   <p
-                                    className="text-[#F4F2EE] text-base leading-relaxed mb-5"
-                                    style={{ fontFamily: "var(--font-playfair)" }}
+                                    className="text-[#00205C] text-base leading-relaxed mb-5"
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     {audit.report.headline}
                                   </p>
 
                                   {/* Waste estimate card */}
-                                  <div className="border border-[#4B858E]/40 rounded-xl p-4 mb-5 bg-[#4B858E]/05">
+                                  <div className="border border-[#4B858E]/40 rounded-xl p-4 mb-5 bg-[#4B858E]/10">
                                     <p
-                                      className="text-[#767B7A] text-xs uppercase tracking-widest mb-1"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      className="text-[#76777A] text-xs uppercase tracking-widest mb-1"
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       Estimated monthly waste
                                     </p>
                                     <p
                                       className="text-[#4B858E] text-2xl font-bold mb-1"
-                                      style={{ fontFamily: "var(--font-playfair)" }}
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       ${audit.report.estimated_monthly_waste_low.toLocaleString()} – ${audit.report.estimated_monthly_waste_high.toLocaleString()}
                                     </p>
                                     <p
-                                      className="text-[#767B7A] text-xs"
-                                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                                      className="text-[#76777A] text-xs"
+                                      style={{ fontFamily: "var(--font-poppins)" }}
                                     >
                                       {audit.report.estimated_hours_wasted_per_month} hours wasted per month
                                     </p>
                                   </div>
 
                                   <p
-                                    className="text-[#F4F2EE]/70 text-sm leading-relaxed mb-5"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    className="text-[#00205C]/70 text-sm leading-relaxed mb-5"
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     {audit.report.summary}
                                   </p>
@@ -1268,7 +1268,7 @@ export default function AdminDashboard({
                                     <div className="mb-5">
                                       <span
                                         className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Findings
                                       </span>
@@ -1281,37 +1281,37 @@ export default function AdminDashboard({
                                           .map((f, i) => (
                                             <div
                                               key={i}
-                                              className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-3"
+                                              className="bg-[#00205C]/[0.03] border border-[#00205C]/[0.10] rounded-lg p-3"
                                             >
                                               <div className="flex flex-wrap gap-2 items-center mb-1.5">
                                                 <span
-                                                  className="text-[#F4F2EE] text-xs font-semibold"
-                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                  className="text-[#00205C] text-xs font-semibold"
+                                                  style={{ fontFamily: "var(--font-poppins)" }}
                                                 >
                                                   {f.tool}
                                                 </span>
                                                 <span
-                                                  className="text-[#767B7A] text-xs bg-white/[0.06] px-2 py-0.5 rounded-full"
-                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                  className="text-[#76777A] text-xs bg-[#00205C]/[0.08] px-2 py-0.5 rounded-full"
+                                                  style={{ fontFamily: "var(--font-poppins)" }}
                                                 >
                                                   {f.department}
                                                 </span>
                                                 <span
-                                                  className={`text-xs font-bold uppercase tracking-wide ${IMPACT_TEXT[f.impact] ?? "text-[#767B7A]"}`}
-                                                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                  className={`text-xs font-bold uppercase tracking-wide ${IMPACT_TEXT[f.impact] ?? "text-[#76777A]"}`}
+                                                  style={{ fontFamily: "var(--font-poppins)" }}
                                                 >
                                                   {f.impact} impact
                                                 </span>
                                               </div>
                                               <p
-                                                className="text-[#767B7A] text-xs leading-relaxed mb-1"
-                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                className="text-[#00205C]/70 text-xs leading-relaxed mb-1"
+                                                style={{ fontFamily: "var(--font-poppins)" }}
                                               >
                                                 {f.issue}
                                               </p>
                                               <p
                                                 className="text-[#4B858E] text-xs leading-relaxed"
-                                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                                                style={{ fontFamily: "var(--font-poppins)" }}
                                               >
                                                 {f.recommendation}
                                               </p>
@@ -1326,7 +1326,7 @@ export default function AdminDashboard({
                                     <div className="mb-5">
                                       <span
                                         className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Quick Wins
                                       </span>
@@ -1334,8 +1334,8 @@ export default function AdminDashboard({
                                         {audit.report.quick_wins.map((win, i) => (
                                           <li
                                             key={i}
-                                            className="flex gap-2 text-[#F4F2EE]/70 text-xs leading-relaxed"
-                                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                                            className="flex gap-2 text-[#00205C]/70 text-xs leading-relaxed"
+                                            style={{ fontFamily: "var(--font-poppins)" }}
                                           >
                                             <span className="text-[#4B858E] flex-shrink-0">&rarr;</span>
                                             {win}
@@ -1349,14 +1349,14 @@ export default function AdminDashboard({
                                   {audit.report.environmental_note && (
                                     <div className="border-l-2 border-[#4B858E]/50 pl-4 mb-4">
                                       <p
-                                        className="text-[#767B7A] text-xs leading-relaxed mb-1"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#00205C]/70 text-xs leading-relaxed mb-1"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {audit.report.environmental_note}
                                       </p>
                                       <p
                                         className="text-[#4B858E] text-xs font-semibold"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Redirect estimate: ${audit.report.redirect_estimate_usd?.toLocaleString()}/month
                                       </p>
@@ -1368,7 +1368,7 @@ export default function AdminDashboard({
                                 <div>
                                   <h3
                                     className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                                    style={{ fontFamily: "var(--font-poppins)" }}
                                   >
                                     Stack Details
                                   </h3>
@@ -1377,14 +1377,14 @@ export default function AdminDashboard({
                                     {/* Departments */}
                                     <div>
                                       <span
-                                        className="text-[#767B7A] text-xs block mb-1"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#76777A] text-xs block mb-1"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Departments
                                       </span>
                                       <p
-                                        className="text-[#F4F2EE] text-sm"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#00205C] text-sm"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {(audit.departments ?? []).join(", ")}
                                       </p>
@@ -1394,14 +1394,14 @@ export default function AdminDashboard({
                                     {Object.entries(audit.tools_by_department ?? {}).map(([dept, tools]) => (
                                       <div key={dept}>
                                         <span
-                                          className="text-[#767B7A] text-xs block mb-1"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#76777A] text-xs block mb-1"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {dept}
                                         </span>
                                         <p
-                                          className="text-[#F4F2EE] text-sm leading-relaxed"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#00205C] text-sm leading-relaxed"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {(tools as string[]).join(", ")}
                                         </p>
@@ -1412,14 +1412,14 @@ export default function AdminDashboard({
                                     {aiTools.length > 0 && (
                                       <div>
                                         <span
-                                          className="text-[#767B7A] text-xs block mb-1"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#76777A] text-xs block mb-1"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           Using AI features
                                         </span>
                                         <p
-                                          className="text-[#F4F2EE] text-sm"
-                                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                                          className="text-[#00205C] text-sm"
+                                          style={{ fontFamily: "var(--font-poppins)" }}
                                         >
                                           {aiTools.join(", ")}
                                         </p>
@@ -1429,14 +1429,14 @@ export default function AdminDashboard({
                                     {/* Monthly spend */}
                                     <div>
                                       <span
-                                        className="text-[#767B7A] text-xs block mb-1"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#76777A] text-xs block mb-1"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         Monthly spend range
                                       </span>
                                       <p
-                                        className="text-[#F4F2EE] text-sm"
-                                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                                        className="text-[#00205C] text-sm"
+                                        style={{ fontFamily: "var(--font-poppins)" }}
                                       >
                                         {audit.monthly_spend_range}
                                       </p>
@@ -1457,8 +1457,8 @@ export default function AdminDashboard({
         </div>
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-5xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.10] py-6 px-6">
+        <div className="max-w-5xl mx-auto text-center text-[#76777A] text-xs">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

@@ -137,10 +137,9 @@ export default function ImpactTab() {
             disabled={syncing}
             className={`text-sm font-semibold px-5 py-2.5 rounded-full transition-colors ${
               syncing
-                ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                ? "bg-[#00205C]/10 text-[#76777A] cursor-not-allowed"
                 : "bg-[#4B858E] text-[#080C14] hover:bg-[#5a9aa4] cursor-pointer"
             }`}
-            style={{ fontFamily: "var(--font-dm-sans)" }}
           >
             {syncing ? (
               <span className="flex items-center gap-2">
@@ -155,20 +154,14 @@ export default function ImpactTab() {
             )}
           </button>
         </div>
-        <p
-          className="text-[#767B7A] text-xs italic"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <p className="text-[#76777A] text-xs italic font-normal">
           Last synced:{" "}
           {lastSynced
             ? new Date(lastSynced).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : "Never synced"}
         </p>
         {syncError && (
-          <p
-            className="text-red-400 text-xs mt-2"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="text-red-400 text-xs mt-2 font-normal">
             Sync failed: {syncError}
           </p>
         )}
@@ -177,86 +170,71 @@ export default function ImpactTab() {
       {/* Section B: Cards */}
       {loading ? (
         <div className="space-y-2 animate-pulse">
-          <div className="h-4 bg-white/[0.06] rounded w-1/2" />
-          <div className="h-4 bg-white/[0.06] rounded w-3/4" />
-          <div className="h-4 bg-white/[0.06] rounded w-2/3" />
+          <div className="h-4 bg-[#00205C]/10 rounded w-1/2" />
+          <div className="h-4 bg-[#00205C]/10 rounded w-3/4" />
+          <div className="h-4 bg-[#00205C]/10 rounded w-2/3" />
         </div>
       ) : snapshots.length === 0 ? (
-        <p
-          className="text-[#767B7A] text-sm"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <p className="text-[#76777A] text-sm font-normal">
           No data yet. Click Sync to pull from Anthropic.
         </p>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* API Usage card */}
-            <div className="bg-[#00205C] rounded-2xl p-6 border border-white/[0.06]">
-              <p
-                className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+            <div className="bg-white rounded-2xl p-6 border border-[#00205C]/10">
+              <p className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4">
                 API Usage
               </p>
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Input tokens</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>{fmt(totals.api_input_tokens)}</span>
+                  <span className="text-navy/70 text-sm font-normal">Input tokens</span>
+                  <span className="text-[#00205C] text-sm font-medium">{fmt(totals.api_input_tokens)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Cache read tokens</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>{fmt(totals.api_cache_read_tokens)}</span>
+                  <span className="text-navy/70 text-sm font-normal">Cache read tokens</span>
+                  <span className="text-[#00205C] text-sm font-medium">{fmt(totals.api_cache_read_tokens)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Output tokens</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>{fmt(totals.api_output_tokens)}</span>
+                  <span className="text-navy/70 text-sm font-normal">Output tokens</span>
+                  <span className="text-[#00205C] text-sm font-medium">{fmt(totals.api_output_tokens)}</span>
                 </div>
-                <div className="h-px bg-white/[0.06] my-2" />
+                <div className="h-px bg-[#00205C]/10 my-2" />
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Energy</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>{totals.energy_wh.toFixed(2)} Wh</span>
+                  <span className="text-navy/70 text-sm font-normal">Energy</span>
+                  <span className="text-[#00205C] text-sm font-medium">{totals.energy_wh.toFixed(2)} Wh</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Water</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>{totals.water_ml.toFixed(1)} ml</span>
+                  <span className="text-navy/70 text-sm font-normal">Water</span>
+                  <span className="text-[#00205C] text-sm font-medium">{totals.water_ml.toFixed(1)} ml</span>
                 </div>
               </div>
-              <p
-                className="text-[#767B7A] text-xs"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <p className="text-[#76777A] text-xs font-normal">
                 Source: Anthropic Admin API
               </p>
             </div>
 
             {/* Claude.ai Chats card */}
-            <div className="bg-[#00205C] rounded-2xl p-6 border border-white/[0.06]">
-              <p
-                className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+            <div className="bg-white rounded-2xl p-6 border border-[#00205C]/10">
+              <p className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4">
                 Claude.ai Chats
               </p>
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Planning sessions</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>~{CLAUDE_AI_SESSIONS} (estimated)</span>
+                  <span className="text-navy/70 text-sm font-normal">Planning sessions</span>
+                  <span className="text-[#00205C] text-sm font-medium">~{CLAUDE_AI_SESSIONS} (estimated)</span>
                 </div>
-                <div className="h-px bg-white/[0.06] my-2" />
+                <div className="h-px bg-[#00205C]/10 my-2" />
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Energy</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>~{CLAUDE_AI_ENERGY_WH} Wh (estimated)</span>
+                  <span className="text-navy/70 text-sm font-normal">Energy</span>
+                  <span className="text-[#00205C] text-sm font-medium">~{CLAUDE_AI_ENERGY_WH} Wh (estimated)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#767B7A] text-sm" style={{ fontFamily: "var(--font-dm-sans)" }}>Water</span>
-                  <span className="text-[#F4F2EE] text-sm font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>~{CLAUDE_AI_WATER_ML} ml (estimated)</span>
+                  <span className="text-navy/70 text-sm font-normal">Water</span>
+                  <span className="text-[#00205C] text-sm font-medium">~{CLAUDE_AI_WATER_ML} ml (estimated)</span>
                 </div>
               </div>
-              <p
-                className="text-[#767B7A] text-xs leading-relaxed"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <p className="text-[#76777A] text-xs leading-relaxed font-normal">
                 Claude.ai subscription usage is not accessible via API. Estimated from session count x 0.31 Wh average query energy (Epoch AI 2025).
               </p>
             </div>
@@ -264,43 +242,31 @@ export default function ImpactTab() {
 
           {/* Combined Totals bar */}
           <div className="border border-[#4B858E]/40 rounded-2xl p-6 bg-[#4B858E]/05">
-            <p
-              className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-3"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
+            <p className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-3">
               Combined Totals
             </p>
             <div className="flex flex-wrap gap-6">
               <div>
-                <p
-                  className="text-[#4B858E] text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
+                <p className="text-[#4B858E] text-2xl font-bold">
                   {totalEnergyWh.toFixed(1)} Wh total
                 </p>
-                <p className="text-[#767B7A] text-xs mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#76777A] text-xs mt-0.5 font-normal">
                   measured + estimated
                 </p>
               </div>
               <div>
-                <p
-                  className="text-[#4B858E] text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
+                <p className="text-[#4B858E] text-2xl font-bold">
                   {totalWaterMl.toFixed(1)} ml total
                 </p>
-                <p className="text-[#767B7A] text-xs mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#76777A] text-xs mt-0.5 font-normal">
                   measured + estimated
                 </p>
               </div>
               <div>
-                <p
-                  className="text-[#4B858E] text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-playfair)" }}
-                >
+                <p className="text-[#4B858E] text-2xl font-bold">
                   ~{showerSeconds}s of a shower
                 </p>
-                <p className="text-[#767B7A] text-xs mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-[#76777A] text-xs mt-0.5 font-normal">
                   water equivalent
                 </p>
               </div>

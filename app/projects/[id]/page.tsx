@@ -12,7 +12,7 @@ import ProjectDetailClient from "./ProjectDetailClient";
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   draft: {
     label: "Draft",
-    classes: "bg-white/[0.04] text-[#767B7A] border border-white/10",
+    classes: "bg-white text-[#76777A] border border-[#00205C]/15",
   },
   scoped: {
     label: "Scoped",
@@ -97,10 +97,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -109,10 +109,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           />
         </Link>
         <div className="flex items-center gap-4">
-          <span
-            className="text-sm text-[#767B7A] hidden sm:block"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <span className="text-sm text-[#76777A] hidden sm:block font-normal">
             {userEmail}
           </span>
           <SignOutButton />
@@ -125,33 +122,25 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           {/* Back link */}
           <Link
             href="/projects"
-            className="inline-flex items-center gap-1.5 text-sm text-[#767B7A] hover:text-[#F4F2EE] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+            className="inline-flex items-center gap-1.5 text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
           >
             &larr; Your Projects
           </Link>
 
           {/* Title row */}
           <div className="mt-6 flex flex-wrap items-start gap-4">
-            <h1
-              className="flex-1 min-w-0 text-3xl sm:text-4xl font-bold text-[#F4F2EE] leading-snug"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h1 className="flex-1 min-w-0 text-3xl sm:text-4xl font-bold text-[#00205C] leading-snug">
               {project.title ?? "Untitled Project"}
             </h1>
             <span
               className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full ${statusStyle.classes}`}
-              style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               {statusStyle.label}
             </span>
           </div>
 
           {/* Created date */}
-          <p
-            className="mt-2 text-[#767B7A] text-sm"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
+          <p className="mt-2 text-[#76777A] text-sm font-normal">
             Started {formatStartDate(project.created_at)}
           </p>
 
@@ -164,15 +153,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
                 >
                   View Your Demo &rarr;
                 </a>
               ) : (
-                <p
-                  className="text-[#767B7A] text-sm"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <p className="text-[#76777A] text-sm font-normal">
                   Demo coming soon
                 </p>
               )}
@@ -193,8 +178,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs font-normal">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

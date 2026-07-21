@@ -66,11 +66,11 @@ export default async function ModulePage({
   const completedCount = lessons.filter((l) => completedLessonIds.has(l.id)).length;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#080C14" }}>
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+    <div className="min-h-screen flex flex-col bg-offwhite">
+      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={160}
             height={38}
@@ -92,7 +92,7 @@ export default async function ModulePage({
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-3xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-[#767B7A] mb-8 flex-wrap">
+          <nav className="flex items-center gap-2 text-xs text-[#76777A] mb-8 flex-wrap">
             <Link href="/curriculum" className="hover:text-[#4B858E] transition-colors">
               Curriculum
             </Link>
@@ -104,7 +104,7 @@ export default async function ModulePage({
               {domain.title}
             </Link>
             <span>/</span>
-            <span className="text-[#F4F2EE]/50">Module {moduleNumber}</span>
+            <span className="text-[#00205C]/50">Module {moduleNumber}</span>
           </nav>
 
           {/* Module header */}
@@ -113,19 +113,16 @@ export default async function ModulePage({
               <span className="text-xs font-bold text-[#4B858E] bg-[#4B858E]/10 px-2 py-0.5 rounded">
                 Module {moduleNumber}
               </span>
-              <span className="text-xs text-[#767B7A]">{mod.estimated_time}</span>
+              <span className="text-xs text-[#76777A]">{mod.estimated_time}</span>
             </div>
-            <h1
-              className="text-3xl sm:text-4xl font-bold text-[#F4F2EE] mb-6"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] mb-6 font-light">
               {mod.title}
             </h1>
 
             {/* Learning objectives */}
             {Array.isArray(mod.learning_objectives) &&
               (mod.learning_objectives as string[]).length > 0 && (
-                <div className="bg-[#00205C]/30 border border-white/[0.06] rounded-xl p-5">
+                <div className="bg-white border border-[#00205C]/10 rounded-xl p-5">
                   <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-4">
                     Learning Objectives
                   </p>
@@ -133,8 +130,7 @@ export default async function ModulePage({
                     {(mod.learning_objectives as string[]).map((obj, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-3 text-sm text-[#F4F2EE]/80"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                        className="flex items-start gap-3 text-sm text-[#00205C]/80 font-normal"
                       >
                         <span className="text-[#4B858E] flex-shrink-0 mt-0.5 text-xs">◆</span>
                         {obj}
@@ -147,13 +143,10 @@ export default async function ModulePage({
 
           {/* Lessons */}
           <div className="flex items-center justify-between mb-5">
-            <h2
-              className="text-xl font-bold text-[#F4F2EE]"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
+            <h2 className="text-xl font-bold text-[#00205C] font-light">
               Lessons
             </h2>
-            <span className="text-sm text-[#767B7A]">
+            <span className="text-sm text-[#76777A]">
               {completedCount}/{lessons.length} complete
             </span>
           </div>
@@ -171,7 +164,7 @@ export default async function ModulePage({
                     className={`flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-200 ${
                       isComplete
                         ? "bg-[#4B858E]/10 border-[#4B858E]/30"
-                        : "bg-[#00205C]/40 border-white/[0.08] hover:border-[#4B858E]/40 hover:bg-[#00205C]/60"
+                        : "bg-white border-[#00205C]/10 hover:border-[#4B858E]/40 hover:bg-[#00205C]/[0.04]"
                     }`}
                   >
                     {/* Completion circle */}
@@ -179,7 +172,7 @@ export default async function ModulePage({
                       className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
                         isComplete
                           ? "bg-[#4B858E] border-[#4B858E]"
-                          : "border-white/20 group-hover:border-[#4B858E]/50"
+                          : "border-[#00205C]/20 group-hover:border-[#4B858E]/50"
                       }`}
                     >
                       {isComplete && (
@@ -190,23 +183,22 @@ export default async function ModulePage({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs text-[#767B7A] mr-2">
+                      <span className="text-xs text-[#76777A] mr-2">
                         {lesson.lesson_number}
                       </span>
                       <span
                         className={`text-sm ${
                           isComplete
-                            ? "text-[#F4F2EE]/50"
-                            : "text-[#F4F2EE] group-hover:text-white"
-                        } transition-colors`}
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                            ? "text-[#00205C]/50"
+                            : "text-[#00205C] group-hover:text-[#00205C]"
+                        } transition-colors font-normal`}
                       >
                         {lesson.title}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-xs text-[#767B7A] hidden sm:block">
+                      <span className="text-xs text-[#76777A] hidden sm:block">
                         {lesson.estimated_time}
                       </span>
                       <span className="text-[#4B858E] group-hover:translate-x-1 transition-transform">
@@ -225,14 +217,11 @@ export default async function ModulePage({
               <p className="text-xs font-semibold tracking-widest text-[#4B858E] uppercase mb-3">
                 Assessment{assessment.is_capstone ? " — Capstone" : ""}
               </p>
-              <p
-                className="text-sm text-[#F4F2EE]/80 leading-relaxed mb-3"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
+              <p className="text-sm text-[#00205C]/80 leading-relaxed mb-3 font-normal">
                 {assessment.prompt}
               </p>
               {assessment.what_it_measures && (
-                <p className="text-xs text-[#767B7A]">
+                <p className="text-xs text-[#76777A]">
                   Measures: {assessment.what_it_measures}
                 </p>
               )}
@@ -241,8 +230,8 @@ export default async function ModulePage({
         </div>
       </main>
 
-      <footer className="border-t border-white/[0.06] py-6 px-6">
-        <div className="max-w-6xl mx-auto text-center text-[#767B7A] text-xs">
+      <footer className="border-t border-[#00205C]/[0.08] py-6 px-6">
+        <div className="max-w-6xl mx-auto text-center text-[#76777A] text-xs">
           &copy; {new Date().getFullYear()} World Shift Technologies
         </div>
       </footer>

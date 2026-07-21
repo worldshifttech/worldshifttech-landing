@@ -34,7 +34,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
     .join(" ");
 
   return (
-    <div style={{ background: "#080C14", minHeight: "100vh", fontFamily: "var(--font-dm-sans)" }}>
+    <div style={{ background: "#F4F2EE", minHeight: "100vh", fontFamily: "var(--font-poppins)" }}>
       {/* Nav */}
       <nav
         style={{
@@ -47,7 +47,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
       >
         <Link href="/">
           <Image
-            src="/World_shift_tech_LOGO_WHITE.png"
+            src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
             width={180}
             height={46}
@@ -63,7 +63,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
             background: "var(--color-teal)",
             borderRadius: 999,
             color: "#080C14",
-            fontFamily: "var(--font-dm-sans)",
+            fontFamily: "var(--font-poppins)",
             fontSize: "0.875rem",
             fontWeight: 600,
             textDecoration: "none",
@@ -91,10 +91,9 @@ export default async function PersonalizedPage({ params }: PageProps) {
         {/* Headline */}
         <h1
           style={{
-            fontFamily: "var(--font-playfair)",
-            color: "var(--color-offwhite)",
+            color: "var(--color-navy)",
             fontSize: "clamp(2rem, 5vw, 3rem)",
-            fontWeight: 600,
+            fontWeight: 300,
             lineHeight: 1.25,
             marginBottom: "2rem",
           }}
@@ -128,7 +127,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
           </p>
           <p
             style={{
-              color: "var(--color-offwhite)",
+              color: "var(--color-navy)",
               fontSize: "1.0625rem",
               lineHeight: 1.75,
             }}
@@ -152,7 +151,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
           </p>
           <p
             style={{
-              color: "var(--color-offwhite)",
+              color: "var(--color-navy)",
               fontSize: "1.0625rem",
               lineHeight: 1.75,
             }}
@@ -175,7 +174,8 @@ export default async function PersonalizedPage({ params }: PageProps) {
                 <div
                   key={i}
                   style={{
-                    background: "#00205C",
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(0,32,92,0.08)",
                     borderTop: "3px solid var(--color-teal)",
                     borderRadius: 10,
                     padding: "1.5rem",
@@ -183,7 +183,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
                 >
                   <p
                     style={{
-                      color: "var(--color-offwhite)",
+                      color: "var(--color-navy)",
                       fontWeight: 700,
                       fontSize: "1rem",
                       marginBottom: "0.6rem",
@@ -193,7 +193,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
                   </p>
                   <p
                     style={{
-                      color: "#F4F2EE",
+                      color: "#00205C",
                       fontSize: "0.9rem",
                       lineHeight: 1.65,
                     }}
@@ -210,10 +210,9 @@ export default async function PersonalizedPage({ params }: PageProps) {
         <section style={{ textAlign: "center" }}>
           <h2
             style={{
-              fontFamily: "var(--font-playfair)",
-              color: "var(--color-offwhite)",
+              color: "var(--color-navy)",
               fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
-              fontWeight: 600,
+              fontWeight: 300,
               lineHeight: 1.35,
               marginBottom: "1.75rem",
             }}
@@ -230,7 +229,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
               background: "var(--color-teal)",
               borderRadius: 8,
               color: "#080C14",
-              fontFamily: "var(--font-dm-sans)",
+              fontFamily: "var(--font-poppins)",
               fontSize: "1rem",
               fontWeight: 700,
               textDecoration: "none",
@@ -241,7 +240,7 @@ export default async function PersonalizedPage({ params }: PageProps) {
           </a>
           <p
             style={{
-              color: "var(--color-offwhite)",
+              color: "var(--color-navy)",
               fontSize: "0.8rem",
             }}
           >

@@ -82,11 +82,11 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "0.75rem 1rem",
-    background: "var(--color-dark)",
-    border: "1.5px solid rgba(255,255,255,0.15)",
+    background: "var(--bg-surface)",
+    border: "1.5px solid rgba(0,32,92,0.18)",
     borderRadius: 8,
-    color: "var(--color-offwhite)",
-    fontFamily: "var(--font-dm-sans)",
+    color: "var(--text-primary)",
+    fontFamily: "var(--font-poppins)",
     fontSize: "0.95rem",
     outline: "none",
     boxSizing: "border-box",
@@ -98,7 +98,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(8,12,20,0.85)",
+        background: "rgba(0,32,92,0.35)",
         backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
@@ -109,7 +109,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
     >
       <div
         style={{
-          background: "#0f1623",
+          background: "var(--bg-surface)",
           border: "1px solid rgba(75,133,142,0.25)",
           borderRadius: 12,
           padding: "2rem",
@@ -127,7 +127,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
             right: "1rem",
             background: "transparent",
             border: "none",
-            color: "var(--color-gray)",
+            color: "var(--text-secondary)",
             cursor: "pointer",
             fontSize: "1.25rem",
             lineHeight: 1,
@@ -140,13 +140,13 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
 
         {confirmEmail ? (
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "var(--color-teal)", fontSize: "2rem", marginBottom: "1rem" }}>
+            <p style={{ color: "var(--accent)", fontSize: "2rem", marginBottom: "1rem" }}>
               âœ“
             </p>
             <h2
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "1.4rem",
                 fontWeight: 600,
                 marginBottom: "0.75rem",
@@ -154,16 +154,16 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
             >
               Check your email
             </h2>
-            <p style={{ color: "var(--color-gray)", fontSize: "0.95rem", lineHeight: 1.6 }}>
-              We sent a confirmation link to <strong style={{ color: "var(--color-offwhite)" }}>{email}</strong>. Your report will be linked when you confirm.
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.6 }}>
+              We sent a confirmation link to <strong style={{ color: "var(--text-primary)" }}>{email}</strong>. Your report will be linked when you confirm.
             </p>
           </div>
         ) : (
           <>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans)",
-                color: "var(--color-teal)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--accent)",
                 fontSize: "0.75rem",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
@@ -175,8 +175,8 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
 
             <h2
               style={{
-                fontFamily: "var(--font-playfair)",
-                color: "var(--color-offwhite)",
+                fontFamily: "var(--font-poppins)",
+                color: "var(--text-primary)",
                 fontSize: "1.4rem",
                 fontWeight: 600,
                 marginBottom: "1.5rem",
@@ -193,8 +193,8 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,32,92,0.18)")}
               />
               <input
                 type="password"
@@ -204,8 +204,8 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
                 required
                 minLength={6}
                 style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-teal)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,32,92,0.18)")}
               />
 
               {error && (
@@ -221,11 +221,11 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
                   background:
                     loading || !email || !password
                       ? "rgba(75,133,142,0.35)"
-                      : "var(--color-teal)",
+                      : "var(--accent)",
                   border: "none",
                   borderRadius: 8,
-                  color: loading || !email || !password ? "var(--color-gray)" : "var(--color-dark)",
-                  fontFamily: "var(--font-dm-sans)",
+                  color: loading || !email || !password ? "var(--text-secondary)" : "var(--text-on-accent)",
+                  fontFamily: "var(--font-poppins)",
                   fontSize: "0.975rem",
                   fontWeight: 600,
                   cursor: loading || !email || !password ? "not-allowed" : "pointer",
@@ -240,7 +240,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
               style={{
                 marginTop: "1rem",
                 textAlign: "center",
-                color: "var(--color-gray)",
+                color: "var(--text-secondary)",
                 fontSize: "0.85rem",
               }}
             >
@@ -252,7 +252,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
                     style={{
                       background: "none",
                       border: "none",
-                      color: "var(--color-teal)",
+                      color: "var(--accent)",
                       cursor: "pointer",
                       fontSize: "0.85rem",
                       padding: 0,
@@ -270,7 +270,7 @@ export default function AuthModal({ auditId, onSuccess, onClose }: AuthModalProp
                     style={{
                       background: "none",
                       border: "none",
-                      color: "var(--color-teal)",
+                      color: "var(--accent)",
                       cursor: "pointer",
                       fontSize: "0.85rem",
                       padding: 0,

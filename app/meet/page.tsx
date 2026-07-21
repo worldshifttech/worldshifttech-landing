@@ -86,7 +86,7 @@ export default function MeetPage() {
   }
 
   const labelStyle = {
-    fontFamily: "var(--font-dm-sans)",
+    fontFamily: "var(--font-poppins)",
     color: "var(--color-teal)",
     fontSize: "0.8rem",
     letterSpacing: "0.12em",
@@ -95,17 +95,17 @@ export default function MeetPage() {
   };
 
   const headingStyle = {
-    fontFamily: "var(--font-playfair)",
-    color: "var(--color-offwhite)",
+    fontFamily: "var(--font-poppins)",
+    color: "var(--color-navy)",
     fontSize: "clamp(1.5rem, 4vw, 2rem)",
-    fontWeight: 600,
+    fontWeight: 300,
     lineHeight: 1.3,
     marginBottom: "2rem",
   };
 
   return (
     <main
-      style={{ background: "var(--color-dark)" }}
+      style={{ background: "var(--color-offwhite)" }}
       className="min-h-screen flex items-center justify-center px-4 py-16"
     >
       <Script
@@ -120,7 +120,7 @@ export default function MeetPage() {
           transition: "opacity 0.25s ease",
           maxWidth: 480,
           width: "100%",
-          background: "#0f1623",
+          background: "#FFFFFF",
           border: "1px solid rgba(75,133,142,0.25)",
           borderRadius: 12,
           padding: "2.5rem 2rem",
@@ -154,8 +154,8 @@ export default function MeetPage() {
                     background: "transparent",
                     border: "1.5px solid var(--color-teal)",
                     borderRadius: 8,
-                    color: "var(--color-offwhite)",
-                    fontFamily: "var(--font-dm-sans)",
+                    color: "var(--color-navy)",
+                    fontFamily: "var(--font-poppins)",
                     fontSize: "0.975rem",
                     textAlign: "left",
                     cursor: "pointer",
@@ -163,11 +163,11 @@ export default function MeetPage() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "var(--color-teal)";
-                    e.currentTarget.style.color = "var(--color-dark)";
+                    e.currentTarget.style.color = "var(--color-near-black)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "var(--color-offwhite)";
+                    e.currentTarget.style.color = "var(--color-navy)";
                   }}
                 >
                   {option}
@@ -192,11 +192,11 @@ export default function MeetPage() {
               style={{
                 width: "100%",
                 padding: "0.875rem 1rem",
-                background: "var(--color-dark)",
-                border: "1.5px solid var(--color-offwhite)",
+                background: "var(--color-offwhite)",
+                border: "1.5px solid rgba(0,32,92,0.2)",
                 borderRadius: 8,
-                color: "var(--color-offwhite)",
-                fontFamily: "var(--font-dm-sans)",
+                color: "var(--color-navy)",
+                fontFamily: "var(--font-poppins)",
                 fontSize: "0.95rem",
                 lineHeight: 1.6,
                 resize: "none",
@@ -208,7 +208,7 @@ export default function MeetPage() {
                 e.currentTarget.style.borderColor = "var(--color-teal)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-offwhite)";
+                e.currentTarget.style.borderColor = "rgba(0,32,92,0.2)";
               }}
             />
             <button
@@ -220,8 +220,8 @@ export default function MeetPage() {
                 background: description.trim() ? "var(--color-teal)" : "rgba(75,133,142,0.35)",
                 border: "none",
                 borderRadius: 8,
-                color: description.trim() ? "var(--color-dark)" : "var(--color-gray)",
-                fontFamily: "var(--font-dm-sans)",
+                color: description.trim() ? "var(--color-near-black)" : "var(--color-gray)",
+                fontFamily: "var(--font-poppins)",
                 fontSize: "0.975rem",
                 fontWeight: 600,
                 cursor: description.trim() ? "pointer" : "not-allowed",
@@ -251,8 +251,8 @@ export default function MeetPage() {
                       background: selected ? "var(--color-teal)" : "transparent",
                       border: "1.5px solid var(--color-teal)",
                       borderRadius: 8,
-                      color: selected ? "var(--color-dark)" : "var(--color-offwhite)",
-                      fontFamily: "var(--font-dm-sans)",
+                      color: selected ? "var(--color-near-black)" : "var(--color-navy)",
+                      fontFamily: "var(--font-poppins)",
                       fontSize: "0.975rem",
                       textAlign: "left",
                       cursor: "pointer",
@@ -274,8 +274,8 @@ export default function MeetPage() {
                   background: "var(--color-teal)",
                   border: "none",
                   borderRadius: 8,
-                  color: "var(--color-dark)",
-                  fontFamily: "var(--font-dm-sans)",
+                  color: "var(--color-near-black)",
+                  fontFamily: "var(--font-poppins)",
                   fontSize: "0.975rem",
                   fontWeight: 600,
                   cursor: "pointer",
@@ -303,11 +303,11 @@ export default function MeetPage() {
               style={{
                 width: "100%",
                 padding: "0.875rem 1rem",
-                background: "var(--color-dark)",
-                border: "1.5px solid var(--color-offwhite)",
+                background: "var(--color-offwhite)",
+                border: "1.5px solid rgba(0,32,92,0.2)",
                 borderRadius: 8,
-                color: "var(--color-offwhite)",
-                fontFamily: "var(--font-dm-sans)",
+                color: "var(--color-navy)",
+                fontFamily: "var(--font-poppins)",
                 fontSize: "0.95rem",
                 lineHeight: 1.6,
                 resize: "none",
@@ -319,7 +319,7 @@ export default function MeetPage() {
                 e.currentTarget.style.borderColor = "var(--color-teal)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-offwhite)";
+                e.currentTarget.style.borderColor = "rgba(0,32,92,0.2)";
               }}
             />
             {/* Turnstile widget — rendered explicitly via turnstile.render() in useEffect */}
@@ -333,10 +333,10 @@ export default function MeetPage() {
                   flex: 1,
                   padding: "0.9rem 1.25rem",
                   background: "transparent",
-                  border: "1.5px solid rgba(118,123,122,0.5)",
+                  border: "1.5px solid rgba(118,119,122,0.5)",
                   borderRadius: 8,
                   color: "var(--color-gray)",
-                  fontFamily: "var(--font-dm-sans)",
+                  fontFamily: "var(--font-poppins)",
                   fontSize: "0.975rem",
                   fontWeight: 500,
                   cursor: turnstileToken ? "pointer" : "not-allowed",
@@ -347,7 +347,7 @@ export default function MeetPage() {
                   if (turnstileToken) e.currentTarget.style.borderColor = "var(--color-gray)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(118,123,122,0.5)";
+                  e.currentTarget.style.borderColor = "rgba(118,119,122,0.5)";
                 }}
               >
                 Skip
@@ -361,8 +361,8 @@ export default function MeetPage() {
                   background: turnstileToken ? "var(--color-teal)" : "rgba(75,133,142,0.35)",
                   border: "none",
                   borderRadius: 8,
-                  color: turnstileToken ? "var(--color-dark)" : "var(--color-gray)",
-                  fontFamily: "var(--font-dm-sans)",
+                  color: turnstileToken ? "var(--color-near-black)" : "var(--color-gray)",
+                  fontFamily: "var(--font-poppins)",
                   fontSize: "0.975rem",
                   fontWeight: 600,
                   cursor: turnstileToken ? "pointer" : "not-allowed",

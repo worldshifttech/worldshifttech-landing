@@ -43,13 +43,13 @@ export default function ForYouPage() {
 
   return (
     <main
-      style={{ background: "var(--color-dark)" }}
+      style={{ background: "var(--color-offwhite)" }}
       className="min-h-screen flex items-center justify-center px-4"
     >
       <div style={{ textAlign: "center" }}>
         <p
           style={{
-            fontFamily: "var(--font-dm-sans)",
+            fontFamily: "var(--font-poppins)",
             color: "var(--color-teal)",
             fontSize: "0.8rem",
             letterSpacing: "0.12em",
@@ -61,10 +61,10 @@ export default function ForYouPage() {
         </p>
         <h1
           style={{
-            fontFamily: "var(--font-playfair)",
-            color: "var(--color-offwhite)",
+            fontFamily: "var(--font-poppins)",
+            color: "var(--color-navy)",
             fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
-            fontWeight: 600,
+            fontWeight: 300,
             lineHeight: 1.3,
             marginBottom: "2rem",
           }}

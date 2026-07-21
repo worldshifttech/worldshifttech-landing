@@ -35,7 +35,7 @@ const GREEN_BADGE_STYLES: Record<string, string> = {
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   draft: {
     label: "Draft",
-    classes: "bg-white/[0.04] text-[#767B7A] border border-white/10",
+    classes: "bg-white text-[#76777A] border border-[#00205C]/15",
   },
   scoped: {
     label: "Scoped",
@@ -99,7 +99,7 @@ export default function ProjectList({
 
   if (projects.length === 0) {
     return (
-      <div className="border border-dashed border-white/10 rounded-2xl px-8 py-16 text-center bg-[#00205C]/10">
+      <div className="border border-dashed border-[#00205C]/15 rounded-2xl px-8 py-16 text-center bg-white">
         <div className="w-12 h-12 rounded-full bg-[#4B858E]/10 border border-[#4B858E]/20 flex items-center justify-center mx-auto mb-6">
           <svg
             width="22"
@@ -116,16 +116,12 @@ export default function ProjectList({
             />
           </svg>
         </div>
-        <p
-          className="text-[#F4F2EE] text-sm mb-6"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
+        <p className="text-[#00205C] text-sm mb-6 font-normal">
           No projects yet
         </p>
         <Link
           href="/projects/new"
           className="inline-block bg-[#4B858E] text-[#080C14] text-sm font-bold px-7 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           Start a New Project
         </Link>
@@ -146,14 +142,11 @@ export default function ProjectList({
           <Link
             key={project.id}
             href={`/projects/${project.id}`}
-            className="block bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-5 hover:border-white/[0.12] hover:bg-white/[0.04] transition-all"
+            className="block bg-white border border-[#00205C]/[0.08] rounded-xl px-6 py-5 hover:border-[#00205C]/[0.15] hover:bg-[#F4F2EE] transition-all"
           >
             {isConfirming ? (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <span
-                  className="text-[#F4F2EE]/80 text-sm"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
+                <span className="text-[#00205C]/80 text-sm font-normal">
                   Delete this project?
                 </span>
                 <button
@@ -161,18 +154,16 @@ export default function ProjectList({
                   disabled={isDeleting}
                   className={`text-xs font-bold px-4 py-2.5 rounded-full transition-colors ${
                     isDeleting
-                      ? "bg-white/[0.06] text-[#767B7A] cursor-not-allowed"
+                      ? "bg-[#00205C]/[0.08] text-[#76777A] cursor-not-allowed"
                       : "bg-red-500/80 text-white hover:bg-red-500 cursor-pointer"
                   }`}
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
                 >
                   {isDeleting ? "Deleting..." : "Delete"}
                 </button>
                 <button
                   onClick={(e) => { e.preventDefault(); cancelConfirm(project.id); }}
                   disabled={isDeleting}
-                  className="text-xs text-[#767B7A] hover:text-[#F4F2EE] transition-colors px-2 py-2.5"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  className="text-xs text-[#76777A] hover:text-[#00205C] transition-colors px-2 py-2.5"
                 >
                   Cancel
                 </button>
@@ -184,10 +175,7 @@ export default function ProjectList({
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                     {/* Title row — no truncate on mobile, truncate on desktop */}
                     <div className="min-w-0">
-                      <p
-                        className="text-[#F4F2EE] font-semibold text-sm sm:truncate"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
+                      <p className="text-[#00205C] font-semibold text-sm sm:truncate">
                         {project.title ?? "Untitled Project"}
                       </p>
                       {/* Demo link desktop only (mobile version below) */}
@@ -199,31 +187,21 @@ export default function ProjectList({
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="hidden sm:inline-block text-[#4B858E] text-xs hover:underline mt-0.5"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
                           >
                             View Demo &rarr;
                           </a>
                         ) : (
-                          <span
-                            className="hidden sm:block text-[#767B7A] text-xs mt-0.5"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
-                          >
+                          <span className="hidden sm:block text-[#76777A] text-xs mt-0.5 font-normal">
                             Demo coming soon
                           </span>
                         )
                       )}
                       {/* Date desktop only (mobile version below) */}
-                      <p
-                        className="hidden sm:block text-[#767B7A] text-xs mt-0.5"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
+                      <p className="hidden sm:block text-[#76777A] text-xs mt-0.5 font-normal">
                         {relativeDate(project.created_at)}
                       </p>
                       {hasError && (
-                        <p
-                          className="text-red-400 text-xs mt-1"
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
-                        >
+                        <p className="text-red-400 text-xs mt-1 font-normal">
                           Delete failed. Try again.
                         </p>
                       )}
@@ -233,22 +211,17 @@ export default function ProjectList({
                     <div className="flex flex-col gap-2 sm:hidden">
                       <span
                         className={`text-xs font-semibold px-3 py-1 rounded-full self-start ${statusStyle.classes}`}
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         {statusStyle.label}
                       </span>
                       {greenBadgeStyle && (
                         <span
                           className={`text-xs font-semibold px-3 py-1 rounded-full border self-start ${greenBadgeStyle}`}
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
                         >
                           {gs}
                         </span>
                       )}
-                      <p
-                        className="text-[#767B7A] text-xs"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
+                      <p className="text-[#76777A] text-xs font-normal">
                         {relativeDate(project.created_at)}
                       </p>
                       {project.status === "live" && (
@@ -259,15 +232,11 @@ export default function ProjectList({
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="text-[#4B858E] text-xs hover:underline min-h-[44px] flex items-center self-start"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
                           >
                             View Demo &rarr;
                           </a>
                         ) : (
-                          <span
-                            className="text-[#767B7A] text-xs"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
-                          >
+                          <span className="text-[#76777A] text-xs font-normal">
                             Demo coming soon
                           </span>
                         )
@@ -278,9 +247,8 @@ export default function ProjectList({
                           setConfirmId(project.id);
                           setErrorId(null);
                         }}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-[#767B7A] hover:text-[#F4F2EE] hover:bg-white/[0.08] transition-all text-base leading-none self-start"
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-[#76777A] hover:text-[#00205C] hover:bg-[#00205C]/[0.08] transition-all text-base leading-none self-start"
                         aria-label="Delete project"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         ×
                       </button>
@@ -294,22 +262,19 @@ export default function ProjectList({
                           setConfirmId(project.id);
                           setErrorId(null);
                         }}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-[#767B7A] hover:text-[#F4F2EE] hover:bg-white/[0.08] transition-all text-base leading-none"
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-[#76777A] hover:text-[#00205C] hover:bg-[#00205C]/[0.08] transition-all text-base leading-none"
                         aria-label="Delete project"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         ×
                       </button>
                       <span
                         className={`text-xs font-semibold px-3 py-1 rounded-full ${statusStyle.classes}`}
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
                         {statusStyle.label}
                       </span>
                       {greenBadgeStyle && (
                         <span
                           className={`text-xs font-semibold px-3 py-1 rounded-full border ${greenBadgeStyle}`}
-                          style={{ fontFamily: "var(--font-dm-sans)" }}
                         >
                           {gs}
                         </span>

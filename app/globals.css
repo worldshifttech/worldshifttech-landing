@@ -1,17 +1,53 @@
 @import "tailwindcss";
 
 :root {
+  /* Raw brand palette (WST_BRAND_STYLE_SHEET.pdf) */
   --color-navy: #00205C;
   --color-teal: #4B858E;
-  --color-gray: #767B7A;
+  --color-teal-soft: #91B6BB;
+  --color-gray: #76777A;
   --color-offwhite: #F4F2EE;
-  --color-dark: #080C14;
+  --color-white: #FFFFFF;
+  --color-near-black: #080C14;
+  --color-teal-hover-light: #5a9aa4;
+  --color-teal-hover-dark: #3a6b73;
+
+  /* Semantic tokens — light theme */
+  --bg-page: var(--color-offwhite);
+  --bg-surface: var(--color-white);
+  --bg-surface-alt: var(--color-offwhite);
+  --text-primary: var(--color-navy);
+  --text-secondary: var(--color-gray);
+  --text-on-accent: var(--color-near-black);
+  --accent: var(--color-teal);
+  --accent-soft: var(--color-teal-soft);
+  --accent-hover: var(--color-teal-hover-dark);
+  --border-default: rgb(0 32 92 / 0.12);
+  --border-strong: rgb(0 32 92 / 0.24);
+}
+
+@theme {
+  --color-navy: #00205C;
+  --color-teal: #4B858E;
+  --color-teal-soft: #91B6BB;
+  --color-gray: #76777A;
+  --color-offwhite: #F4F2EE;
+  --color-near-black: #080C14;
+  --color-teal-hover-light: #5a9aa4;
+  --color-teal-hover-dark: #3a6b73;
+
+  --color-bg-page: #F4F2EE;
+  --color-bg-surface: #FFFFFF;
+  --color-text-primary: #00205C;
+  --color-text-secondary: #76777A;
+
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
-  background-color: var(--color-dark);
-  color: var(--color-offwhite);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
 }
 
 @keyframes wst-progress {
