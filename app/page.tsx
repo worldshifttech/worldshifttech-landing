@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AuthModal from "@/app/components/AuthModal";
+import Reveal from "@/app/components/Reveal";
 
 export default function Home() {
   return (
@@ -37,7 +38,7 @@ export default function Home() {
         <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-20">
 
           {/* Left: Text content */}
-          <div className="flex-1 text-center lg:text-left">
+          <Reveal className="flex-1 text-center lg:text-left">
             <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-7">
               BUILT WITH PEOPLE IN MIND.
             </p>
@@ -66,10 +67,10 @@ export default function Home() {
             <p className="mt-4 text-navy/70 text-sm">
               See how it works
             </p>
-          </div>
+          </Reveal>
 
           {/* Right: Headshot */}
-          <div className="flex-shrink-0 relative">
+          <Reveal className="flex-shrink-0 relative" delay={150}>
             <div className="absolute inset-0 rounded-2xl bg-[#4B858E]/10 blur-2xl scale-110" />
             <div className="relative w-64 h-80 sm:w-72 sm:h-96 lg:w-80 lg:h-[420px] rounded-2xl overflow-hidden border border-[#4B858E]/25 shadow-2xl">
               <Image
@@ -84,11 +85,11 @@ export default function Home() {
                 <p className="text-[#4B858E] text-xs">Founder, World Shift Technologies</p>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
 
         {/* Founder Intro */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+        <Reveal className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <div className="max-w-3xl space-y-4 text-gray text-base leading-relaxed">
             <p>
               I have been an operations consultant since 2018. I saw the rise and potential threat of AI from a mile away. Most businesses said yes to AI because that is where things were going. Now all your tools are using AI, hardly any of it is helpful, and in most cases it is costing more time and energy than before. Now we are experiencing the harm to our environment when no guardrails are in place.
@@ -96,18 +97,20 @@ export default function Home() {
             <p>Teams are in tool burnout. Your operations are a combination of five or more systems that are barely working together. Add in AI and now you cannot tell if things are better or worse.</p>
             <p>The fix is not ditching AI, because there are places it can help. It is creating a system that uses only what is necessary and supports the people involved.</p>
           </div>
-        </div>
+        </Reveal>
 
       </div>
 
       {/* What I Do Strip — dark band for visual rhythm */}
       <section className="w-full bg-[#00205C] py-20">
         <div className="max-w-6xl mx-auto w-full px-6">
-          <p className="text-center text-[#91B6BB] text-xs tracking-widest uppercase mb-10">
-            What I Do
-          </p>
+          <Reveal>
+            <p className="text-center text-[#91B6BB] text-xs tracking-widest uppercase mb-10">
+              What I Do
+            </p>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl px-6 py-6">
+            <Reveal className="bg-white rounded-xl px-6 py-6" delay={0}>
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -116,8 +119,8 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 A structured look across people, processes, and technology. I map who is doing what and whether the work still matches what they were hired for. I trace how work actually flows. I document every tool you are running, what it costs, what it produces, and what it is taking from your team. We then evaluate where AI and automation will be effective and shift roles to keep team members doing what they do best.
               </p>
-            </div>
-            <div className="bg-white rounded-xl px-6 py-6">
+            </Reveal>
+            <Reveal className="bg-white rounded-xl px-6 py-6" delay={120}>
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -126,8 +129,8 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 After the audit, I design a system that takes into account the people, processes, and technology working together with as little AI as it takes to get the result. Sometimes that is one agent replacing three subscriptions. Sometimes it is cutting five processes and building a precision tool to replace them.
               </p>
-            </div>
-            <div className="bg-white rounded-xl px-6 py-6">
+            </Reveal>
+            <Reveal className="bg-white rounded-xl px-6 py-6" delay={240}>
               <h3
                 className="text-xl font-light text-[#00205C] mb-3"
               >
@@ -136,7 +139,7 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 AI and automation have a real environmental cost. Every model inference, every automation running, every tool idling adds up. A fixed portion of every project goes into verified programs doing real work on that problem. Reforestation. Ocean cleanup. Renewable infrastructure in underserved areas. Programs specifically chosen for transparency and accountability.
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -144,13 +147,15 @@ export default function Home() {
       <div className="max-w-6xl mx-auto w-full px-6 pt-20 pb-24">
         {/* Audience Mirrors */}
         <div>
-          <h2
-            className="text-2xl sm:text-3xl font-light text-[#00205C] mb-10"
-          >
-            Who this is for
-          </h2>
+          <Reveal>
+            <h2
+              className="text-2xl sm:text-3xl font-light text-[#00205C] mb-10"
+            >
+              Who this is for
+            </h2>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div>
+            <Reveal delay={0}>
               <h3
                 className="text-lg font-light text-[#4B858E] mb-3"
               >
@@ -159,8 +164,8 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 Chief operators and team leads who want to help their team be more efficient in their tools and processes, but do not want to overcomplicate things with additional tools and AI.
               </p>
-            </div>
-            <div>
+            </Reveal>
+            <Reveal delay={120}>
               <h3
                 className="text-lg font-light text-[#4B858E] mb-3"
               >
@@ -169,8 +174,8 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 AI and automation promise better visibility into reporting, efficiency, and understanding what is happening across your organization. Oftentimes that visibility is just noise, and you are not seeing the results you want.
               </p>
-            </div>
-            <div>
+            </Reveal>
+            <Reveal delay={240}>
               <h3
                 className="text-lg font-light text-[#4B858E] mb-3"
               >
@@ -179,12 +184,12 @@ export default function Home() {
               <p className="text-navy/70 text-sm leading-relaxed">
                 You take calls, gather information, and collect data about your clients that needs to be aggregated in a way that makes sense to you. Precise AI and the right set of tools can help you provide better services to your clients and teams.
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
 
         {/* Sustainability Statement */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+        <Reveal className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
             BUILT WITH PEOPLE IN MIND.
           </p>
@@ -197,10 +202,10 @@ export default function Home() {
             </p>
             <p>Let&apos;s face it, AI is not going away. That does not mean you are not accountable for the costs it takes to use AI.</p>
           </div>
-        </div>
+        </Reveal>
 
         {/* Drew Section */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
+        <Reveal className="mt-20 pt-12 border-t border-[#00205C]/[0.16]">
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
             <div className="flex-shrink-0 relative">
               <div className="absolute inset-0 rounded-2xl bg-[#4B858E]/10 blur-2xl scale-110" />
@@ -242,10 +247,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* Final CTA */}
-        <div className="mt-20 pt-12 border-t border-[#00205C]/[0.16] text-center">
+        <Reveal className="mt-20 pt-12 border-t border-[#00205C]/[0.16] text-center">
           <h2
             className="text-2xl sm:text-3xl font-light text-[#00205C] mb-4"
           >
@@ -262,7 +267,7 @@ export default function Home() {
           >
             Get to Know Me
           </a>
-        </div>
+        </Reveal>
       </div>
       </main>
 
