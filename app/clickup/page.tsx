@@ -14,25 +14,27 @@ export default function ClickUpPage() {
     <div className="min-h-screen flex flex-col">
 
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-6 max-w-6xl mx-auto w-full">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={200}
-            height={48}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <a
-          href={CALENDLY}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm font-bold text-white bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
-        >
-          Book a Call
-        </a>
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={200}
+              height={48}
+              className="object-contain"
+              priority
+            />
+          </Link>
+          <a
+            href={CALENDLY}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-bold text-white bg-[#4B858E] px-5 py-2 rounded-full hover:bg-[#3a6b73] transition-colors duration-200"
+          >
+            Book a Call
+          </a>
+        </div>
       </nav>
 
       {/* Hero */}

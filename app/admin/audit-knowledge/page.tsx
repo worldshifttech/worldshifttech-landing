@@ -46,35 +46,34 @@ export default async function AuditKnowledgePage({
       style={{ background: "var(--color-offwhite, #F4F2EE)", color: "var(--color-navy, #00205C)" }}
     >
       {/* Nav */}
-      <nav
-        className="flex items-center justify-between px-6 py-5 border-b"
-        style={{ borderColor: "rgba(0,32,92,0.1)" }}
-      >
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={160}
-            height={38}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <div className="flex items-center gap-6">
-          <Link
-            href="/admin"
-            className="text-sm transition-colors font-normal"
-            style={{ color: "var(--color-teal, #4B858E)" }}
-          >
-            &larr; Dashboard
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={160}
+              height={38}
+              className="object-contain"
+              priority
+            />
           </Link>
-          <Link
-            href="/"
-            className="text-sm transition-colors font-normal"
-            style={{ color: "#76777A" }}
-          >
-            Back to Site
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/admin"
+              className="text-sm transition-colors font-normal"
+              style={{ color: "var(--color-teal, #4B858E)" }}
+            >
+              &larr; Dashboard
+            </Link>
+            <Link
+              href="/"
+              className="text-sm transition-colors font-normal"
+              style={{ color: "#76777A" }}
+            >
+              Back to Site
+            </Link>
+          </div>
         </div>
       </nav>
 

@@ -13,35 +13,37 @@ export default function YourTeamAndAIPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-6 max-w-6xl mx-auto w-full">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={180}
-            height={45}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <div className="flex items-center gap-3">
-          <a
-            href="https://calendly.com/fractionalbusinesscompanion/wst"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
-          >
-            Book a Call
-          </a>
-          <Link
-            href="/your-team-and-ai"
-            className="text-sm font-medium text-[#4B858E] border-b border-[#4B858E] px-3 py-2"
-          >
-            Your Team &amp; AI
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={180}
+              height={45}
+              className="object-contain"
+              priority
+            />
           </Link>
-          <Suspense fallback={null}>
-            <AuthModal />
-          </Suspense>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://calendly.com/fractionalbusinesscompanion/wst"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[#4B858E] border border-[#4B858E]/60 px-5 py-2 rounded-full hover:bg-[#4B858E] hover:text-white hover:border-[#4B858E] transition-all duration-200"
+            >
+              Book a Call
+            </a>
+            <Link
+              href="/your-team-and-ai"
+              className="text-sm font-medium text-[#4B858E] border-b border-[#4B858E] px-3 py-2"
+            >
+              Your Team &amp; AI
+            </Link>
+            <Suspense fallback={null}>
+              <AuthModal />
+            </Suspense>
+          </div>
         </div>
       </nav>
 

@@ -67,25 +67,27 @@ export default async function ModulePage({
 
   return (
     <div className="min-h-screen flex flex-col bg-offwhite">
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={160}
-            height={38}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/curriculum/${domainNumber}`}
-            className="text-sm text-[#4B858E] hover:underline hidden sm:block"
-          >
-            Domain {domainNumber}
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={160}
+              height={38}
+              className="object-contain"
+              priority
+            />
           </Link>
-          <SignOutButton />
+          <div className="flex items-center gap-4">
+            <Link
+              href={`/curriculum/${domainNumber}`}
+              className="text-sm text-[#4B858E] hover:underline hidden sm:block"
+            >
+              Domain {domainNumber}
+            </Link>
+            <SignOutButton />
+          </div>
         </div>
       </nav>
 

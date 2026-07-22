@@ -12,17 +12,19 @@ export default function TermsPage() {
     <div className="min-h-screen flex flex-col">
 
       {/* Nav */}
-      <nav className="px-6 py-6 max-w-3xl mx-auto w-full">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={180}
-            height={45}
-            className="object-contain"
-            priority
-          />
-        </Link>
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="px-6 py-5 max-w-3xl mx-auto w-full">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={180}
+              height={45}
+              className="object-contain"
+              priority
+            />
+          </Link>
+        </div>
       </nav>
 
       {/* Content */}

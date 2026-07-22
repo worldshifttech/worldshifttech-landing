@@ -42,7 +42,13 @@ export default async function PersonalizedPage({ params }: PageProps) {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "1.25rem 2rem",
-          borderBottom: "1px solid rgba(75,133,142,0.15)",
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          background: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(4px)",
+          borderBottom: "1px solid rgba(0,32,92,0.1)",
+          boxShadow: "0 1px 2px rgba(0,32,92,0.05)",
         }}
       >
         <Link href="/">

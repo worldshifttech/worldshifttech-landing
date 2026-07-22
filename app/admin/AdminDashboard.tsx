@@ -418,32 +418,34 @@ export default function AdminDashboard({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.10]">
-        <Link href="/">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={160}
-            height={38}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <div className="flex items-center gap-6">
-          <Link
-            href="/admin/audit-knowledge"
-            className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
-            style={{ fontFamily: "var(--font-poppins)" }}
-          >
-            Audit KB
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={160}
+              height={38}
+              className="object-contain"
+              priority
+            />
           </Link>
-          <Link
-            href="/"
-            className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
-            style={{ fontFamily: "var(--font-poppins)" }}
-          >
-            &larr; Back to Site
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/admin/audit-knowledge"
+              className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Audit KB
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              &larr; Back to Site
+            </Link>
+          </div>
         </div>
       </nav>
 

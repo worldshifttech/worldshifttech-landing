@@ -218,20 +218,22 @@ export default function ProjectWizard({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 border-b border-[#00205C]/[0.08]">
-        <Link href="/projects">
-          <Image
-            src="/World_shift_tech_LOGO_PRIMARY.png"
-            alt="World Shift Technologies"
-            width={140}
-            height={34}
-            className="object-contain"
-            priority
-          />
-        </Link>
-        <span className="text-sm text-[#76777A] hidden sm:block font-normal">
-          {userEmail}
-        </span>
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5">
+          <Link href="/projects">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={140}
+              height={34}
+              className="object-contain"
+              priority
+            />
+          </Link>
+          <span className="text-sm text-[#76777A] hidden sm:block font-normal">
+            {userEmail}
+          </span>
+        </div>
       </nav>
 
       {/* Chapter progress */}
