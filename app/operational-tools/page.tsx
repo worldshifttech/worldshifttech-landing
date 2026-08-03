@@ -82,7 +82,8 @@ export default function OperationalToolsPage() {
             Custom Operational Tools
           </p>
           <h1 className="text-4xl sm:text-5xl xl:text-[3.5rem] font-light leading-[1.15] tracking-tight text-[#00205C] mb-7 max-w-3xl">
-            If The Right Tool Doesn&apos;t Exist,{" "}
+            If The Right Tool Doesn&apos;t Exist,
+            <br />
             <span className="text-[#4B858E]">I Build It.</span>
           </h1>
           <p className="text-gray text-lg leading-relaxed max-w-2xl mb-10">
@@ -138,44 +139,46 @@ export default function OperationalToolsPage() {
             <h2 className="text-2xl sm:text-3xl font-light text-[#00205C] mb-8 max-w-2xl">
               I build the bridge between the tools you already have.
             </h2>
-            <div className="max-w-3xl space-y-4 text-[#00205C]/80 text-base leading-relaxed mb-10">
-              <p>
-                A family-owned operations business was tracking shipping containers by logging
-                into an outside system and updating a spreadsheet by hand. Their invoicing tool
-                and their project management tool had never been connected, so finance and
-                delivery were always a step behind each other. A nonprofit was losing recurring
-                donors because a cancelled payment sat unnoticed until someone happened to check.
-              </p>
-              <p>
-                In each case the fix wasn&apos;t a new platform. It was connecting the ones
-                already in use: live tracking data posted automatically into the right task,
-                invoices syncing to project records the moment they&apos;re created, a failed
-                payment triggering a recovery sequence instead of waiting for someone to catch
-                it. Spreadsheets and CSV exports get reshaped into whatever format the next
-                system actually needs, on a schedule, without anyone doing it by hand.
-              </p>
-            </div>
+            <p className="max-w-3xl text-[#00205C]/80 text-base leading-relaxed mb-10">
+              When your invoicing tool doesn&apos;t talk to your project management tool, or a
+              spreadsheet is the only thing tracking something that should update itself, the fix
+              usually isn&apos;t a new platform. It&apos;s connecting the ones you already run.
+            </p>
           </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Reveal className="bg-[#F4F2EE] rounded-xl px-6 py-6" delay={0}>
-              <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
-                Family-owned logistics operation
-              </p>
-              <p className="text-[#00205C]/70 text-sm leading-relaxed">
-                Finance, project management, and container tracking connected into one system.
-                8 to 12 hours saved per month, manual data entry eliminated across 3 disconnected
-                tools.
-              </p>
+            <Reveal delay={0}>
+              <Link
+                href="/case-studies/operations-business-automation-suite"
+                className="group block bg-[#F4F2EE] rounded-xl px-6 py-6 hover:bg-[#4B858E]/10 transition-colors duration-200"
+              >
+                <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+                  Family-owned logistics operation
+                </p>
+                <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
+                  Finance, project management, and container tracking connected into one system.
+                  8 to 12 hours saved per month.
+                </p>
+                <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
+                  Read the case study &rarr;
+                </span>
+              </Link>
             </Reveal>
-            <Reveal className="bg-[#F4F2EE] rounded-xl px-6 py-6" delay={120}>
-              <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
-                Nonprofit donor operations
-              </p>
-              <p className="text-[#00205C]/70 text-sm leading-relaxed">
-                Donation platform connected to email marketing so cancellations and failed
-                payments trigger recovery automatically. 3 to 5 hours saved per week, live within
-                the first month.
-              </p>
+            <Reveal delay={120}>
+              <Link
+                href="/case-studies/nonprofit-donor-retention-automation"
+                className="group block bg-[#F4F2EE] rounded-xl px-6 py-6 hover:bg-[#4B858E]/10 transition-colors duration-200"
+              >
+                <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+                  Nonprofit donor operations
+                </p>
+                <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
+                  Donation platform connected to email marketing so cancellations trigger recovery
+                  automatically. 3 to 5 hours saved per week.
+                </p>
+                <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
+                  Read the case study &rarr;
+                </span>
+              </Link>
             </Reveal>
           </div>
         </div>
@@ -190,43 +193,47 @@ export default function OperationalToolsPage() {
           <h2 className="text-2xl sm:text-3xl font-light text-[#00205C] mb-8 max-w-2xl">
             Quality control that runs in the background, not a step someone forgets.
           </h2>
-          <div className="max-w-3xl space-y-4 text-[#00205C]/80 text-base leading-relaxed mb-10">
-            <p>
-              A high-volume creative studio had every incoming request landing in the same
-              queue, and a project manager had to read each one and manually sort it before
-              anyone could start work. On a busy week that sorting became the bottleneck. A
-              sister studio inside a larger organization had the opposite problem: an intake
-              form built by a contractor who was long gone, stale dropdowns, and project managers
-              copy-pasting the same ID prefix into 60 tasks a week by hand.
-            </p>
-            <p>
-              The fix in both cases was a classification layer that reads each request as it
-              arrives and routes it correctly the first time, applying the right labels,
-              assignments, and priority based on rules specific to that request type. Structured
-              fields replace free text so bad data can&apos;t get through. Only genuine edge
-              cases surface for a human to look at. What used to be a daily sorting task became a
-              background process.
-            </p>
-          </div>
+          <p className="max-w-3xl text-[#00205C]/80 text-base leading-relaxed mb-10">
+            When every incoming request lands in the same queue and a person has to sort it by
+            hand, that sorting becomes the bottleneck the moment volume picks up. A classification
+            layer that reads each request and routes it correctly the first time turns that daily
+            task into a background process.
+          </p>
         </Reveal>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Reveal className="bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6" delay={0}>
-            <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
-              Creative studio triage
-            </p>
-            <p className="text-[#00205C]/70 text-sm leading-relaxed">
-              2 to 4 hours saved per week, manual PM sorting eliminated on 40 to 60 weekly
-              submissions.
-            </p>
+          <Reveal delay={0}>
+            <Link
+              href="/case-studies/creative-studio-triage-agent"
+              className="group block bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6 hover:bg-[#4B858E]/[0.06] transition-colors duration-200"
+            >
+              <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+                Creative studio triage
+              </p>
+              <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
+                2 to 4 hours saved per week, manual PM sorting eliminated on 40 to 60 weekly
+                submissions.
+              </p>
+              <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
+                Read the case study &rarr;
+              </span>
+            </Link>
           </Reveal>
-          <Reveal className="bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6" delay={120}>
-            <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
-              Creative ops intake rebuild
-            </p>
-            <p className="text-[#00205C]/70 text-sm leading-relaxed">
-              3 to 5 hours saved per week, routing errors eliminated across up to 60 submissions
-              per week.
-            </p>
+          <Reveal delay={120}>
+            <Link
+              href="/case-studies/creative-ops-intake-automation"
+              className="group block bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6 hover:bg-[#4B858E]/[0.06] transition-colors duration-200"
+            >
+              <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+                Creative ops intake rebuild
+              </p>
+              <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
+                3 to 5 hours saved per week, routing errors eliminated across up to 60 submissions
+                per week.
+              </p>
+              <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
+                Read the case study &rarr;
+              </span>
+            </Link>
           </Reveal>
         </div>
       </section>
@@ -294,22 +301,28 @@ export default function OperationalToolsPage() {
           <h2 className="text-2xl sm:text-3xl font-light text-[#00205C] mb-8 max-w-2xl">
             One record for a client, not five copies of the truth.
           </h2>
-          <div className="max-w-3xl space-y-4 text-[#00205C]/80 text-base leading-relaxed">
-            <p>
-              A digital marketing agency was onboarding new clients across four service lines,
-              and every new client meant copy-pasting the same information into template after
-              template. Nothing talked to anything else, so the same details got typed in
-              multiple times by multiple people, with multiple chances to get it wrong.
+          <p className="max-w-3xl text-[#00205C]/80 text-base leading-relaxed mb-10">
+            When client information gets typed into five different tools by five different
+            people, something eventually stops matching. A single structured record, populated
+            once and read by everything downstream, ends that.
+          </p>
+        </Reveal>
+        <Reveal delay={0} className="max-w-3xl">
+          <Link
+            href="/case-studies/agency-onboarding-automation"
+            className="group block bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6 hover:bg-[#4B858E]/[0.06] transition-colors duration-200"
+          >
+            <p className="text-[#4B858E] text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+              Digital marketing agency onboarding
             </p>
-            <p>
-              I built a structured client record, 30 fields covering everything from contact
-              info to service scope, as the single source of truth. An agent reads the kickoff
-              call and populates it automatically. Every other tool, and every dashboard the
-              client sees, reads from that same record instead of its own copy. What used to
-              take the better part of a day now happens in the background before the kickoff
-              call is even over.
+            <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
+              6 to 10 hours saved per new client onboarded, manual data entry eliminated across 4
+              onboarding workflows.
             </p>
-          </div>
+            <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
+              Read the case study &rarr;
+            </span>
+          </Link>
         </Reveal>
       </section>
 

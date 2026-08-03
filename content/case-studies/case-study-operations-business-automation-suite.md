@@ -26,7 +26,7 @@ story: >
 
   The build: a Zapier automation pulls live container tracking data from an external spreadsheet on a daily schedule and posts formatted status reports directly into the relevant project task. No logging in, no copy-pasting, no wondering where a container is. A QuickBooks to ClickUp integration creates and updates tasks automatically when invoices are created or paid, keeping finance and operations in sync without anyone bridging them manually.
 
-  A time tracking processor cleans and formats payroll exports automatically — grouping totals by employee, flagging any entries that look like forgotten timers, and generating a summary report ready for submission.
+  A time tracking processor cleans and formats payroll exports automatically, grouping totals by employee, flagging any entries that look like forgotten timers, and generating a summary report ready for submission.
 
   On top of that, an AI support agent was trained on the company's documented knowledge so team members and clients can ask questions and get accurate answers without pulling someone away from actual work.
 
