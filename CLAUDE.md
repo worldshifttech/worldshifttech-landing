@@ -91,10 +91,12 @@ Drew uploads a case study doc to a designated Google Drive folder. A Zapier webh
 4. **Fractional COO Advisory** — Strategic operations leadership
 5. **AI Agent Development** — Custom agent builds beyond ClickUp
 
-**Pricing tiers:**
-- Starter: $500–$997/mo (1–2 agents, solo professionals)
-- Growth: $1,500–$2,497/mo (growing teams, most popular)
-- Agency Scale: $2,500–$5,000/mo (agencies, complex systems)
+**Pricing:** Not published on the site. Every engagement is scoped and priced per client
+internally (see admin/project tooling in `/app/admin` and `/app/projects`), not shown as
+public tiers. The `$500–$5K/month` range below is internal positioning context only, for
+comparing against ZenPilot/fractional COO costs — don't surface it as a pricing table or
+tier list on any public page. The one exception is the AI audit itself (`/app/audit`),
+which has its own disclosed flat fee ($500–$1,500) since that's a distinct, bounded offer.
 
 ---
 
@@ -207,7 +209,7 @@ Generate:
 - Don't lead with technology — lead with outcomes
 - Don't make this feel like a SaaS product page — it's a founder's personal practice
 - Don't hide Drew's face — the headshot is a conversion signal
-- Don't hide pricing — show the three tiers
+- Don't publish pricing tiers or numbers on public pages — pricing is scoped per client internally, not shown on the site (exception: the audit's flat fee, which is a disclosed standalone offer)
 - Don't make the question flow feel like a form — it should feel like a conversation
 - Don't generate a wall of text for the personalized page — it should feel curated and specific
 

@@ -48,24 +48,6 @@ const IS_THIS_YOU = [
   "You've looked for a tool that does exactly what you need, and it doesn't exist",
 ];
 
-const PRICING = [
-  {
-    tier: "Starter",
-    range: "$500–$997/mo",
-    detail: "One tool, one gap. Solo professionals and lean teams.",
-  },
-  {
-    tier: "Growth",
-    range: "$1,500–$2,497/mo",
-    detail: "Multiple tools working together. Most popular for growing teams.",
-  },
-  {
-    tier: "Agency Scale",
-    range: "$2,500–$5,000/mo",
-    detail: "Full operational systems across departments and clients.",
-  },
-];
-
 export default function OperationalToolsPage() {
   return (
     <div className="min-h-screen flex flex-col">
@@ -351,33 +333,6 @@ export default function OperationalToolsPage() {
             ))}
           </ul>
         </Reveal>
-      </section>
-
-      {/* Pricing strip */}
-      <section className="w-full bg-[#F4F2EE] border-y border-[#00205C]/[0.12] py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <Reveal>
-            <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-5">
-              Investment
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-light text-[#00205C] leading-[1.2] mb-14 max-w-xl">
-              Every tool is scoped and priced to the problem it solves.
-            </h2>
-          </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {PRICING.map((tier, i) => (
-              <Reveal
-                key={tier.tier}
-                delay={i * 100}
-                className="bg-white rounded-xl px-6 py-7 border border-[#00205C]/[0.1]"
-              >
-                <p className="text-[#00205C] font-light text-lg mb-1">{tier.tier}</p>
-                <p className="text-[#4B858E] font-semibold text-xl mb-4">{tier.range}</p>
-                <p className="text-[#00205C]/70 text-sm leading-relaxed">{tier.detail}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* CTA Section */}
