@@ -5,16 +5,17 @@ import Reveal from "@/app/components/Reveal";
 export const metadata = {
   title: "Custom Operational Tools — World Shift Technologies",
   description:
-    "Training academies, system integrations, quality control agents, and brand voice tools. I build the software your operations need when off-the-shelf doesn't fit.",
+    "System integrations, quality control agents, client data handling, and branded client-facing dashboards. I build the tools your operations need when off-the-shelf doesn't fit.",
 };
 
 const CALENDLY = "https://calendly.com/fractionalbusinesscompanion/wst";
+const EXAMPLE_PATH = "/operational-tools/example";
 
 const WHAT_I_BUILD = [
   {
     title: "Team Training Infrastructure",
     description:
-      "Custom training academies built around how your team actually sells and works. Diagnostic placement, spaced-repetition review, and branching practice scenarios instead of a slide deck nobody finishes.",
+      "Custom training built around how your team actually sells and works, instead of a slide deck nobody finishes.",
   },
   {
     title: "System & Data Integration",
@@ -29,7 +30,12 @@ const WHAT_I_BUILD = [
   {
     title: "Brand & Voice Tools",
     description:
-      "Tools that keep client-facing work sounding like you. Draft communications and review copy against a documented voice guide before anything goes out.",
+      "Client-facing work that looks and sounds like you, from written communication to the dashboards clients actually log into.",
+  },
+  {
+    title: "Client Data Handling",
+    description:
+      "One structured record as the source of truth for a client, captured once and pushed everywhere it's needed instead of retyped into five tools.",
   },
 ];
 
@@ -37,7 +43,8 @@ const IS_THIS_YOU = [
   "New hires take weeks to ramp because training is tribal knowledge, not a system",
   "Your invoicing, project management, and reporting tools don't talk to each other",
   "Quality slips through because there's no consistent check before things ship",
-  "Client-facing communication sounds different depending on who wrote it",
+  "Your client dashboards and reports look like generic software, not like your company",
+  "You're retyping the same client information into multiple tools because nothing shares data",
   "You've looked for a tool that does exactly what you need, and it doesn't exist",
 ];
 
@@ -97,10 +104,10 @@ export default function OperationalToolsPage() {
             <span className="text-[#4B858E]">I Build It.</span>
           </h1>
           <p className="text-gray text-lg leading-relaxed max-w-2xl mb-10">
-            Most operational problems don&apos;t get solved by another subscription. They get
-            solved by a tool built for the exact gap you have. I build training systems,
-            integrations, quality checks, and brand tools that fit how your team actually
-            works, not how a platform decided teams should work.
+            Most operational problems don&apos;t get solved by another subscription. Have a
+            custom tool built for the exact gap you have, whether that&apos;s integrations,
+            quality checks, client data, or the branded dashboards your clients actually see.
+            Built to fit how your team works, not how a platform decided teams should work.
           </p>
           <a
             href={CALENDLY}
@@ -113,7 +120,7 @@ export default function OperationalToolsPage() {
         </Reveal>
       </section>
 
-      {/* What I Build — 4 card grid */}
+      {/* What I Build — 5 card grid */}
       <section className="w-full bg-[#F4F2EE] py-20">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal>
@@ -121,14 +128,14 @@ export default function OperationalToolsPage() {
               What I Build
             </p>
             <h2 className="text-3xl sm:text-4xl font-light text-[#00205C] leading-[1.2] mb-14 max-w-xl">
-              Four kinds of gaps I close for operations teams
+              Gaps I help close within operations
             </h2>
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {WHAT_I_BUILD.map((card, i) => (
               <Reveal
                 key={card.title}
-                delay={i * 100}
+                delay={i * 80}
                 className="bg-white border-t-[3px] border-[#4B858E] rounded-xl px-6 py-6"
               >
                 <p className="text-[#00205C] font-light text-lg mb-3">{card.title}</p>
@@ -139,37 +146,7 @@ export default function OperationalToolsPage() {
         </div>
       </section>
 
-      {/* Deep dive 1 — Team Training Infrastructure */}
-      <section className="max-w-6xl mx-auto w-full px-6 py-20">
-        <Reveal>
-          <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
-            Team Training Infrastructure
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-light text-[#00205C] mb-8 max-w-2xl">
-            Training that actually sticks, built around how your team sells and works.
-          </h2>
-          <div className="max-w-3xl space-y-4 text-[#00205C]/80 text-base leading-relaxed">
-            <p>
-              Most training lives in a slide deck or a shared doc that gets skimmed once and
-              never opened again. For a manufacturer selling complex technical equipment, I
-              built a full training academy for their sales team instead: a diagnostic
-              placement that routes new hires and experienced reps onto different tracks,
-              lessons built around the actual sales method the team uses (not generic theory),
-              and spaced-repetition review that resurfaces material right before it would
-              otherwise be forgotten.
-            </p>
-            <p>
-              The centerpiece is a branching practice arena where reps rehearse real
-              conversations and get scored against the specific behaviors that close deals for
-              that product, not a canned script. It lives wherever the team already works and
-              updates as the product line or messaging changes, so onboarding a new rep stops
-              depending on whoever has an hour free to walk them through it.
-            </p>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* Deep dive 2 — System & Data Integration */}
+      {/* Deep dive 1 — System & Data Integration */}
       <section className="w-full bg-white py-20">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal>
@@ -222,7 +199,7 @@ export default function OperationalToolsPage() {
         </div>
       </section>
 
-      {/* Deep dive 3 — Quality Control & Process Gaps */}
+      {/* Deep dive 2 — Quality Control & Process Gaps */}
       <section className="max-w-6xl mx-auto w-full px-6 py-20">
         <Reveal>
           <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
@@ -272,34 +249,86 @@ export default function OperationalToolsPage() {
         </div>
       </section>
 
-      {/* Deep dive 4 — Brand & Voice Tools */}
+      {/* Deep dive 3 — Brand & Voice Tools */}
       <section className="w-full bg-[#00205C] py-20">
         <div className="max-w-6xl mx-auto px-6">
           <Reveal>
             <p className="text-[#91B6BB] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
-              Sounding Like You At Scale
+              Brand & Voice Tools
             </p>
             <h2 className="text-2xl sm:text-3xl font-light text-white mb-8 max-w-2xl">
-              Keep your voice consistent even when you&apos;re not the one writing.
+              Brand isn&apos;t just what you write. It&apos;s what they see.
             </h2>
-            <div className="max-w-3xl space-y-4 text-white/80 text-base leading-relaxed">
+            <div className="max-w-3xl space-y-4 text-white/80 text-base leading-relaxed mb-10">
               <p>
-                The bigger a team gets, the more client-facing writing happens without the
-                founder in the room. Proposals, support replies, onboarding emails, social copy.
-                Every one of them is a chance to sound like a different company depending on who
-                typed it.
+                The bigger a team gets, the more client-facing work happens without the founder
+                in the room. Proposals, support replies, onboarding emails. Every one of them is
+                a chance to sound like a different company depending on who wrote it. I build
+                tools that hold the line on that: an agent that drafts a first pass of client
+                communication in your documented tone so the team edits instead of starting
+                blank, and a review step that checks outbound copy against your voice guide
+                before it goes out.
               </p>
               <p>
-                I build tools that hold the line on that: an agent that drafts a first pass of
-                client communication in your documented tone so the team edits instead of
-                starting blank, and a review step that checks outbound copy against your voice
-                guide before it goes out. The goal isn&apos;t to automate the writing away. It&apos;s
-                to make sure the work still sounds like the person who started the company, even
-                on the days you didn&apos;t write it.
+                Brand also shows up in what a client sees when they check on their project. A
+                generic dashboard bolted onto someone else&apos;s software says something about
+                your company whether you meant it to or not. I build the client-facing side of
+                that separately, skinned to look like you: project management dashboards, KPI
+                dashboards, progress maps, and development trackers that pull from the systems
+                you already run and present it as your own branded experience instead of a
+                third-party tool with your logo pasted on top.
               </p>
             </div>
           </Reveal>
+          <Reveal
+            delay={100}
+            className="bg-white/[0.06] border border-white/15 rounded-xl px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5 max-w-3xl"
+          >
+            <div>
+              <p className="text-white font-light text-lg mb-1">
+                See what a client would actually see.
+              </p>
+              <p className="text-white/70 text-sm leading-relaxed">
+                A sample dashboard built from representative data, the kind of KPI and progress
+                view I build on top of your existing tools.
+              </p>
+            </div>
+            <Link
+              href={EXAMPLE_PATH}
+              className="flex-shrink-0 inline-block bg-[#4B858E] text-white text-sm font-bold px-6 py-3 rounded-full hover:bg-[#5a9aa4] transition-colors duration-200 text-center"
+            >
+              View the example &rarr;
+            </Link>
+          </Reveal>
         </div>
+      </section>
+
+      {/* Deep dive 4 — Client Data Handling */}
+      <section className="max-w-6xl mx-auto w-full px-6 py-20">
+        <Reveal>
+          <p className="text-[#4B858E] text-xs font-semibold tracking-[0.2em] uppercase mb-6">
+            Client Data Handling
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-light text-[#00205C] mb-8 max-w-2xl">
+            One record for a client, not five copies of the truth.
+          </h2>
+          <div className="max-w-3xl space-y-4 text-[#00205C]/80 text-base leading-relaxed">
+            <p>
+              A digital marketing agency was onboarding new clients across four service lines,
+              and every new client meant copy-pasting the same information into template after
+              template. Nothing talked to anything else, so the same details got typed in
+              multiple times by multiple people, with multiple chances to get it wrong.
+            </p>
+            <p>
+              I built a structured client record, 30 fields covering everything from contact
+              info to service scope, as the single source of truth. An agent reads the kickoff
+              call and populates it automatically. Every other tool, and every dashboard the
+              client sees, reads from that same record instead of its own copy. What used to
+              take the better part of a day now happens in the background before the kickoff
+              call is even over.
+            </p>
+          </div>
+        </Reveal>
       </section>
 
       {/* Is this you? */}
