@@ -21,7 +21,7 @@ story: >
 
   The problem was that nothing talked to anything else. The kickoff call happened in one tool, the notes lived somewhere else, and the actual project workspace had to be set up from scratch every time. The team was good at client work. They were just spending too much time on the logistics around it.
 
-  The build: a ClickUp-based system with AI agents layered on top. A structured client data record was designed to serve as the single source of truth: 30 fields covering DNS, hosting, team assignments, service scope, and contact info. An AI agent reads kickoff call transcripts and populates that record automatically. A second agent routes every meeting note to the correct client folder using a two-filter matching system: first by attendee email, then by AI inference from the transcript itself.
+  The build: a structured client record as the single source of truth, populated automatically from the kickoff call transcript. A second agent routes every meeting note to the correct client folder without anyone sorting it by hand.
 
   Template deployment went from a multi-step manual process to a triggered workflow. New client folder, all lists, all tasks, ready to go.
 

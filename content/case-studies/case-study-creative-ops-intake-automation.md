@@ -22,9 +22,9 @@ story: >
 
   The biggest pain point: project managers were copy-pasting a custom ID prefix into every single task title by hand. On a busy week, that's 60 manual edits that added no value and introduced errors.
 
-  Phase one was a discovery audit: mapping every field in the intake form to what the team actually needed, identifying broken connections between the form tool and the project management system, and documenting which automations were failing and why.
+  Phase one was a discovery audit to find out what was actually broken and why.
 
-  Phase two was rebuilding it. Text fields converted to structured dropdowns and assignee fields. An automation to apply the correct task ID prefix on creation. A conditional logic layer so that marketing-specific requests surface different fields than general ones. A branch routing system tied to a group code structure that auto-sorts requests into the right workstream before anyone has to touch them.
+  Phase two was the rebuild: structured fields in place of free text, ID prefixes applied automatically, and routing that sorts every request into the right workstream before anyone has to touch it.
 
   The underlying principle: the system should do the clerical work so the creative team can focus on the actual creative work.
 ---

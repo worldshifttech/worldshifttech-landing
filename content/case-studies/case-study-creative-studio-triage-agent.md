@@ -21,9 +21,7 @@ story: >
 
   On a slow week that was manageable. On a busy week it was a bottleneck that delayed work from even starting.
 
-  The build: an AI agent that reads each incoming request as it arrives, the form fields, the request type, the market, the deliverable, and classifies it. Based on that classification it routes the task to the correct workstream, applies the right labels and assignments, and sets the priority level. Requests that match a standard pattern are handled entirely without human intervention. Only edge cases surface for review.
-
-  The conditional logic layer was the key piece: marketing requests behave differently than custom solutions requests, which behave differently than portfolio work. Each branch has its own routing rules and field requirements. The agent handles all of it.
+  The build: an agent that reads each incoming request as it arrives, understands what the request actually needs, and classifies it, then routes it straight to the right team. Only genuine edge cases surface for a person to review.
 
   What used to be a daily sorting task became a background process. The PM's queue went from full of logistics to full of actual work.
 ---

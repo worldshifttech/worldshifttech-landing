@@ -15,7 +15,7 @@ tools_used:
   - AI agents
   - external API integration
 results:
-  time_saved: 8-12 hours per month across operations and finance
+  time_saved: 12-24 hours per month across operations and finance
   roi: Eliminated manual data entry across 3 disconnected systems
   payback_period: 6 weeks
 headline: Connected a family business's operations, finance, and logistics into one automated system that runs without anyone having to chase it.
@@ -24,11 +24,11 @@ story: >
 
   Each of these was a small inefficiency on its own. Together they added up to most of a workday every week just maintaining visibility into operations that were already running.
 
-  The build: a Zapier automation pulls live container tracking data from an external spreadsheet on a daily schedule and posts formatted status reports directly into the relevant project task. No logging in, no copy-pasting, no wondering where a container is. A QuickBooks to ClickUp integration creates and updates tasks automatically when invoices are created or paid, keeping finance and operations in sync without anyone bridging them manually.
+  The fix: container tracking data now flows straight into the right project task, and invoicing stays in sync with the project management system without anyone bridging the two by hand.
 
-  A time tracking processor cleans and formats payroll exports automatically, grouping totals by employee, flagging any entries that look like forgotten timers, and generating a summary report ready for submission.
+  A payroll process that used to take manual cleanup every month now runs automatically, catching errors before they reach submission.
 
-  On top of that, an AI support agent was trained on the company's documented knowledge so team members and clients can ask questions and get accurate answers without pulling someone away from actual work.
+  On top of that, an AI support agent trained on the company's documented knowledge answers routine questions from the team and clients without pulling anyone away from their work.
 
   The result: the team stopped managing the systems and started using them.
 ---

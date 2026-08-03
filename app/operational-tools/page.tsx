@@ -156,7 +156,7 @@ export default function OperationalToolsPage() {
                 </p>
                 <p className="text-[#00205C]/70 text-sm leading-relaxed mb-4">
                   Finance, project management, and container tracking connected into one system.
-                  8 to 12 hours saved per month.
+                  12 to 24 hours saved per month.
                 </p>
                 <span className="text-[#4B858E] text-sm font-semibold group-hover:underline">
                   Read the case study &rarr;

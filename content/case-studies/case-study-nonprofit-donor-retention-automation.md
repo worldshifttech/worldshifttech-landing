@@ -19,9 +19,9 @@ headline: Built an automated donor retention system that catches cancellations a
 story: >
   A nonprofit organization was losing donors without knowing it in real time. When a donor cancelled their recurring gift or had a payment fail, there was no automated response. Someone had to notice, look it up, and manually send a follow-up. That process was inconsistent and slow, which meant donors slipped away before anyone had a chance to re-engage them.
 
-  The fix was straightforward but required connecting tools that had never talked to each other. The donation platform sends webhook events when specific things happen: a cancellation, a failed charge, a lapsed subscription. Those events now trigger targeted Zapier workflows that route each scenario to the right response in Mailchimp.
+  The fix was straightforward but required connecting tools that had never talked to each other. Specific events, a cancellation, a failed payment, now trigger the right response automatically instead of waiting for someone to notice.
 
-  A cancellation fires a retention email sequence. A failed payment triggers a gentle payment recovery flow. Each path is separate, timed appropriately, and requires zero staff involvement to run.
+  A cancellation fires a retention sequence. A failed payment triggers a recovery flow. Each one runs on its own, with zero staff involvement.
 
   The result: the organization now has a donor retention system that works in the background every day, catching situations that used to fall through the cracks entirely.
 ---
