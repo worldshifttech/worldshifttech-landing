@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import AuthModal from "@/app/components/AuthModal";
 import Reveal from "@/app/components/Reveal";
 
 export default function Home() {
@@ -27,9 +25,6 @@ export default function Home() {
             >
               Book a Call
             </a>
-            <Suspense fallback={null}>
-              <AuthModal />
-            </Suspense>
           </div>
         </div>
       </nav>

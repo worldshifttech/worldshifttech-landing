@@ -1,49 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import ImpactTab from "./ImpactTab";
+import SignOutButton from "@/app/components/SignOutButton";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PricingTier = {
-  low: number;
-  high: number;
-  description: string;
-};
-
-export type ScopeData = {
-  title: string;
-  the_problem: string;
-  without_it: string;
-  with_it: string;
-  price_low: number;
-  price_high: number;
-  price_rationale: string;
-  green_score: "Light" | "Moderate" | "Heavy";
-  pricing?: {
-    mvp: PricingTier;
-    polished: PricingTier;
-    perfected: PricingTier;
-    value_rationale: string;
-  };
-};
-
 export type AdminProject = {
   id: string;
-  title: string | null;
-  status: string;
+  slug: string;
+  client_name: string | null;
+  title: string;
+  percent_complete: number;
+  next_update_note: string | null;
+  next_due_date: string | null;
+  access_mode: "public" | "password";
+  budget_type: "none" | "hourly";
+  budget_hours_cap: number | null;
+  hourly_rate: number | null;
   created_at: string;
-  scope: ScopeData | null;
-  answers: Record<string, unknown> | null;
-  user_id: string | null;
-  userEmail: string;
-  claude_code_prompt: string | null;
-  demo_url: string | null;
-  project_readme: string | null;
-  guest: boolean;
 };
 
 type AuditFinding = {
@@ -94,32 +73,17 @@ function relativeDate(dateStr: string): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  draft: "bg-[#76777A]/10 text-[#76777A] border border-[#76777A]/30",
-  scoped: "border border-[#4B858E] text-[#4B858E]",
-  submitted: "bg-[#4B858E] text-white",
-  reviewed: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-  approved: "bg-green-600/20 text-green-400 border border-green-600/30",
-  building: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
-  live: "bg-green-400/20 text-green-300 border border-green-400/30",
-  resubmitted: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
-};
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
-const STATUS_TRANSITIONS: Record<string, { label: string; next: string } | undefined> = {
-  submitted: { label: "Mark Reviewed", next: "reviewed" },
-  reviewed: { label: "Approve", next: "approved" },
-  approved: { label: "Mark Building", next: "building" },
-  building: { label: "Mark Live", next: "live" },
-  resubmitted: { label: "Mark Reviewed", next: "reviewed" },
-};
-
-const GREEN_SCORE_STYLES: Record<
-  ScopeData["green_score"],
-  { label: string; border: string; text: string }
-> = {
-  Light: { label: "Energy Footprint: Light", border: "border-green-500/40", text: "text-green-400" },
-  Moderate: { label: "Energy Footprint: Moderate", border: "border-yellow-500/40", text: "text-yellow-400" },
-  Heavy: { label: "Energy Footprint: Heavy", border: "border-orange-500/40", text: "text-orange-400" },
+const ACCESS_BADGE: Record<string, string> = {
+  public: "border border-[#4B858E] text-[#4B858E]",
+  password: "bg-[#00205C]/[0.05] text-[#76777A] border border-[#00205C]/15",
 };
 
 const WASTE_SCORE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -135,52 +99,6 @@ const IMPACT_TEXT: Record<string, string> = {
   high: "text-orange-400",
 };
 
-const Q_LABELS: Record<string, string> = {
-  q1: "What kind of tool",
-  q2: "Who it's for",
-  q3: "The problem",
-  q4: "What it costs",
-  value_signals: "Value if it worked perfectly",
-  q6: "What would change",
-  q7: "Needs AI?",
-  q8: "Who else uses it",
-  q9: "Success in 90 days",
-  q10: "Existing integrations",
-  q10_other: "Other integration",
-  q11: "Technical level",
-  q12: "Anything else",
-};
-
-function buildClaudePrompt(scope: ScopeData): string {
-  return `---
-
-Read the README first, then build this project:
-
-**Project:** ${scope.title}
-
-**The Problem**
-${scope.the_problem}
-
-**Without It**
-${scope.without_it}
-
-**With It**
-${scope.with_it}
-
-**Investment Range:** $${scope.price_low.toLocaleString()} – $${scope.price_high.toLocaleString()}
-
-**What to Build**
-Based on the scope above, implement the full solution. Start with the core data model and API layer, then build the UI. Deploy to Vercel when complete and return the live URL.
-
----`;
-}
-
-function formatAnswer(value: unknown): string {
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "string") return value;
-  return String(value ?? "");
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard({
@@ -190,229 +108,64 @@ export default function AdminDashboard({
   initialProjects: AdminProject[];
   auditEstimates: AuditEstimate[];
 }) {
-  const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
+  const router = useRouter();
+  const [projects] = useState<AdminProject[]>(initialProjects);
   const [activeTab, setActiveTab] = useState<"projects" | "audits" | "impact">("projects");
-  const [openId, setOpenId] = useState<string | null>(null);
   const [openAuditId, setOpenAuditId] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [updateError, setUpdateError] = useState<string | null>(null);
-  const [backToReviewError, setBackToReviewError] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [copiedReadmeId, setCopiedReadmeId] = useState<string | null>(null);
-  const [promptLoadingIds, setPromptLoadingIds] = useState<Set<string>>(new Set());
-  const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
-  const [regenerateErrors, setRegenerateErrors] = useState<Set<string>>(new Set());
-  const [incompleteOpen, setIncompleteOpen] = useState(false);
-  const [demoUrlDrafts, setDemoUrlDrafts] = useState<Record<string, string>>({});
-  const [savingDemoUrlIds, setSavingDemoUrlIds] = useState<Set<string>>(new Set());
-  const [savedDemoUrlIds, setSavedDemoUrlIds] = useState<Set<string>>(new Set());
-  const [demoUrlSaveErrors, setDemoUrlSaveErrors] = useState<Record<string, string>>({});
 
-  const activeProjects = projects.filter((p) => !p.guest);
-  const incompleteProjects = projects.filter((p) => p.guest);
-  const total = activeProjects.length;
-  const submittedCount = activeProjects.filter((p) => p.status === "submitted").length;
-  const inReviewCount = activeProjects.filter((p) => p.status === "reviewed").length;
+  // New project form
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newClientName, setNewClientName] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [newAccessMode, setNewAccessMode] = useState<"public" | "password">("password");
+  const [newPassword, setNewPassword] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
 
-  async function handleStatusUpdate(projectId: string, newStatus: string) {
-    setUpdatingId(projectId);
-    setUpdateError(null);
+  const total = projects.length;
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError("");
 
     const supabase = getSupabaseBrowser();
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const token = session?.access_token;
 
-    if (newStatus === "approved") {
-      setProjects((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, status: "approved" } : p))
-      );
-      setPromptLoadingIds((prev) => new Set([...prev, projectId]));
-    }
-
     try {
-      const res = await fetch("/api/admin-update-status", {
-        method: "PATCH",
+      const res = await fetch("/api/admin-projects", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ projectId, status: newStatus }),
+        body: JSON.stringify({
+          title: newTitle,
+          client_name: newClientName,
+          slug: newSlug || slugify(newTitle),
+          access_mode: newAccessMode,
+          password: newPassword,
+        }),
       });
-      if (!res.ok) throw new Error("Update failed");
 
       const data = await res.json();
-
-      setProjects((prev) =>
-        prev.map((p) => {
-          if (p.id !== projectId) return p;
-          return {
-            ...p,
-            status: newStatus,
-            ...(data.demo_url !== undefined ? { demo_url: data.demo_url } : {}),
-            ...(data.claude_code_prompt !== undefined
-              ? { claude_code_prompt: data.claude_code_prompt }
-              : {}),
-            ...(data.project_readme !== undefined
-              ? { project_readme: data.project_readme }
-              : {}),
-          };
-        })
-      );
-
-      if (newStatus === "live") {
-        fetch("/api/notify-client", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId }),
-        }).catch(() => {});
-      }
-    } catch {
-      if (newStatus === "approved") {
-        setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, status: "reviewed" } : p))
-        );
-      }
-      setUpdateError(projectId);
-    } finally {
-      setUpdatingId(null);
-      setPromptLoadingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(projectId);
-        return next;
-      });
-    }
-  }
-
-  async function handleBackToReview(projectId: string) {
-    setUpdatingId(projectId);
-    setBackToReviewError(null);
-
-    const supabase = getSupabaseBrowser();
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-
-    try {
-      const res = await fetch("/api/admin-update-status", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ projectId, status: "reviewed" }),
-      });
-      if (!res.ok) throw new Error("Update failed");
-      setProjects((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, status: "reviewed" } : p))
-      );
-    } catch {
-      setBackToReviewError(projectId);
-    } finally {
-      setUpdatingId(null);
-    }
-  }
-
-  async function handleRegeneratePrompt(projectId: string) {
-    setRegeneratingIds((prev) => new Set([...prev, projectId]));
-    setRegenerateErrors((prev) => { const next = new Set(prev); next.delete(projectId); return next; });
-
-    const supabase = getSupabaseBrowser();
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-
-    try {
-      const res = await fetch("/api/admin-update-status", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ projectId, status: "approved" }),
-      });
-      if (!res.ok) throw new Error("Regeneration failed");
-      const data = await res.json();
-      setProjects((prev) =>
-        prev.map((p) => {
-          if (p.id !== projectId) return p;
-          return {
-            ...p,
-            ...(data.claude_code_prompt !== undefined
-              ? { claude_code_prompt: data.claude_code_prompt }
-              : {}),
-            ...(data.project_readme !== undefined
-              ? { project_readme: data.project_readme }
-              : {}),
-          };
-        })
-      );
-    } catch {
-      setRegenerateErrors((prev) => new Set([...prev, projectId]));
-    } finally {
-      setRegeneratingIds((prev) => { const next = new Set(prev); next.delete(projectId); return next; });
-    }
-  }
-
-  async function handleCopy(projectId: string, text: string) {
-    await navigator.clipboard.writeText(text);
-    setCopiedId(projectId);
-    setTimeout(() => setCopiedId((prev) => (prev === projectId ? null : prev)), 2000);
-  }
-
-  async function handleSaveDemoUrl(projectId: string, url: string) {
-    setSavingDemoUrlIds((prev) => new Set([...prev, projectId]));
-    setDemoUrlSaveErrors((prev) => { const next = { ...prev }; delete next[projectId]; return next; });
-
-    const supabase = getSupabaseBrowser();
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-
-    console.log("[DEMO URL SAVE]", projectId, url);
-
-    try {
-      const res = await fetch("/api/admin-update-demo-url", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ projectId, demo_url: url }),
-      });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        const msg = data.error ?? `Save failed (${res.status})`;
-        console.log("[DEMO URL SAVE ERROR]", msg);
-        setDemoUrlSaveErrors((prev) => ({ ...prev, [projectId]: msg }));
+        setCreateError(data.error ?? "Failed to create project");
         return;
       }
 
-      setProjects((prev) =>
-        prev.map((p) => (p.id === projectId ? { ...p, demo_url: url } : p))
-      );
-      setSavedDemoUrlIds((prev) => new Set([...prev, projectId]));
-      setTimeout(() => {
-        setSavedDemoUrlIds((prev) => {
-          const next = new Set(prev);
-          next.delete(projectId);
-          return next;
-        });
-      }, 2000);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Save failed";
-      console.log("[DEMO URL SAVE ERROR]", msg);
-      setDemoUrlSaveErrors((prev) => ({ ...prev, [projectId]: msg }));
+      router.push(`/admin/projects/${data.id}`);
+    } catch {
+      setCreateError("Something went wrong. Please try again.");
     } finally {
-      setSavingDemoUrlIds((prev) => {
-        const next = new Set(prev);
-        next.delete(projectId);
-        return next;
-      });
+      setCreating(false);
     }
-  }
-
-  async function handleCopyReadme(projectId: string, text: string) {
-    await navigator.clipboard.writeText(text);
-    setCopiedReadmeId(projectId);
-    setTimeout(() => setCopiedReadmeId((prev) => (prev === projectId ? null : prev)), 2000);
   }
 
   return (
@@ -445,6 +198,7 @@ export default function AdminDashboard({
             >
               &larr; Back to Site
             </Link>
+            <SignOutButton />
           </div>
         </div>
       </nav>
@@ -489,12 +243,119 @@ export default function AdminDashboard({
           {/* ─── Projects tab ──────────────────────────────────────────────── */}
           {activeTab === "projects" && (
             <>
-              <p
-                className="text-[#76777A] text-sm mb-8"
-                style={{ fontFamily: "var(--font-poppins)" }}
-              >
-                {total} project{total !== 1 ? "s" : ""} &mdash; {submittedCount} submitted, {inReviewCount} in review
-              </p>
+              <div className="flex items-center justify-between mb-8">
+                <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
+                  {total} project{total !== 1 ? "s" : ""}
+                </p>
+                <button
+                  onClick={() => setShowNewForm((v) => !v)}
+                  className="text-xs font-semibold px-4 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors"
+                  style={{ fontFamily: "var(--font-poppins)" }}
+                >
+                  {showNewForm ? "Cancel" : "+ New Project"}
+                </button>
+              </div>
+
+              {showNewForm && (
+                <form
+                  onSubmit={handleCreate}
+                  className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 mb-6 space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                        Project Title
+                      </label>
+                      <input
+                        required
+                        value={newTitle}
+                        onChange={(e) => {
+                          setNewTitle(e.target.value);
+                          if (!slugTouched) setNewSlug(slugify(e.target.value));
+                        }}
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                        Client Name
+                      </label>
+                      <input
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#76777A] mb-1.5">URL slug</label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#76777A] whitespace-nowrap">
+                        worldshifttech.com/projects/
+                      </span>
+                      <input
+                        required
+                        value={newSlug}
+                        onChange={(e) => {
+                          setSlugTouched(true);
+                          setNewSlug(slugify(e.target.value));
+                        }}
+                        className="flex-1 bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                      <input
+                        type="radio"
+                        checked={newAccessMode === "password"}
+                        onChange={() => setNewAccessMode("password")}
+                      />
+                      Password protected
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                      <input
+                        type="radio"
+                        checked={newAccessMode === "public"}
+                        onChange={() => setNewAccessMode("public")}
+                      />
+                      Public
+                    </label>
+                  </div>
+
+                  {newAccessMode === "password" && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                        Password
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                  )}
+
+                  {createError && (
+                    <p className="text-red-400 text-xs" style={{ fontFamily: "var(--font-poppins)" }}>
+                      {createError}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={creating}
+                    className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {creating ? "Creating..." : "Create Project"}
+                  </button>
+                </form>
+              )}
 
               {total === 0 ? (
                 <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
@@ -502,610 +363,57 @@ export default function AdminDashboard({
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {activeProjects.map((project) => {
-                    const isOpen = openId === project.id;
-                    const transition = STATUS_TRANSITIONS[project.status];
-                    const badgeClass = STATUS_BADGE[project.status] ?? "border border-[#00205C]/20 text-[#76777A]";
-                    const isPromptLoading = promptLoadingIds.has(project.id);
-                    const promptText =
-                      project.claude_code_prompt ??
-                      (project.scope ? buildClaudePrompt(project.scope) : null);
-
-                    return (
-                      <div key={project.id} className="border border-[#00205C]/[0.12] rounded-2xl overflow-hidden bg-white">
-                        {/* Row */}
-                        <div className="flex items-center gap-4 px-6 py-5">
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className="text-[#00205C] font-medium truncate"
-                              style={{ fontFamily: "var(--font-poppins)" }}
-                            >
-                              {project.title ?? "Untitled Project"}
-                            </p>
-                            <p
-                              className="text-[#76777A] text-xs mt-0.5"
-                              style={{ fontFamily: "var(--font-poppins)" }}
-                            >
-                              {project.userEmail}
-                            </p>
-                          </div>
-
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${badgeClass}`}
-                            style={{ fontFamily: "var(--font-poppins)" }}
-                          >
-                            {project.status}
-                          </span>
-
-                          <span
-                            className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
-                            style={{ fontFamily: "var(--font-poppins)" }}
-                          >
-                            {relativeDate(project.created_at)}
-                          </span>
-
-                          <button
-                            onClick={() => setOpenId(isOpen ? null : project.id)}
-                            className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                            style={{ fontFamily: "var(--font-poppins)" }}
-                          >
-                            {isOpen ? "Close" : "View"}
-                          </button>
-                        </div>
-
-                        {/* Inline detail panel */}
-                        {isOpen && (
-                          <div className="border-t border-[#00205C]/[0.10] bg-white px-6 py-8">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                              {/* Left — Scope Doc */}
-                              <div>
-                                {project.scope ? (
-                                  <>
-                                    <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-                                      <h2
-                                        className="text-2xl font-bold text-[#00205C] leading-snug"
-                                        style={{ fontFamily: "var(--font-poppins)" }}
-                                      >
-                                        {project.scope.title}
-                                      </h2>
-                                      <span
-                                        className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${
-                                          GREEN_SCORE_STYLES[project.scope.green_score].border
-                                        } ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                        style={{ fontFamily: "var(--font-poppins)" }}
-                                      >
-                                        {GREEN_SCORE_STYLES[project.scope.green_score].label}
-                                      </span>
-                                    </div>
-                                    <div className="h-px bg-[#4B858E]/30 my-5" />
-                                    <div className="space-y-5">
-                                      {[
-                                        { label: "The Problem", value: project.scope.the_problem },
-                                        { label: "Without It", value: project.scope.without_it },
-                                        { label: "With It", value: project.scope.with_it },
-                                      ].map(({ label, value }) => (
-                                        <div key={label}>
-                                          <span
-                                            className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                            style={{ fontFamily: "var(--font-poppins)" }}
-                                          >
-                                            {label}
-                                          </span>
-                                          <p
-                                            className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed"
-                                            style={{ fontFamily: "var(--font-poppins)" }}
-                                          >
-                                            {value}
-                                          </p>
-                                        </div>
-                                      ))}
-                                      <div>
-                                        <span
-                                          className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          Investment Estimate
-                                        </span>
-                                        {project.scope.pricing ? (
-                                          <div className="mt-3 space-y-3">
-                                            {(["mvp", "polished", "perfected"] as const).map((tier) => {
-                                              const tierData = project.scope!.pricing![tier];
-                                              const tierLabel = { mvp: "MVP", polished: "Polished", perfected: "Perfected" }[tier];
-                                              return (
-                                                <div key={tier}>
-                                                  <div className="flex items-baseline gap-2">
-                                                    <span
-                                                      className="text-[#00205C] text-sm font-semibold"
-                                                      style={{ fontFamily: "var(--font-poppins)" }}
-                                                    >
-                                                      {tierLabel}
-                                                    </span>
-                                                    <span
-                                                      className="text-[#00205C]/80 text-sm font-medium"
-                                                      style={{ fontFamily: "var(--font-poppins)" }}
-                                                    >
-                                                      ${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}
-                                                    </span>
-                                                  </div>
-                                                  <p
-                                                    className="text-[#00205C] text-xs leading-relaxed mt-0.5"
-                                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                                  >
-                                                    {tierData.description}
-                                                  </p>
-                                                </div>
-                                              );
-                                            })}
-                                            <p
-                                              className="text-[#00205C] text-xs italic leading-relaxed mt-2"
-                                              style={{ fontFamily: "var(--font-poppins)" }}
-                                            >
-                                              {project.scope.pricing.value_rationale}
-                                            </p>
-                                          </div>
-                                        ) : (
-                                          <>
-                                            <p
-                                              className="mt-1.5 text-[#00205C] text-base font-semibold"
-                                              style={{ fontFamily: "var(--font-poppins)" }}
-                                            >
-                                              ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
-                                            </p>
-                                            <p
-                                              className="mt-1 text-[#00205C] text-xs leading-relaxed"
-                                              style={{ fontFamily: "var(--font-poppins)" }}
-                                            >
-                                              {project.scope.price_rationale}
-                                            </p>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
-                                    No scope generated yet.
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Right — Raw Answers */}
-                              <div>
-                                <h3
-                                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                                  style={{ fontFamily: "var(--font-poppins)" }}
-                                >
-                                  Raw Answers
-                                </h3>
-                                <div className="space-y-3">
-                                  {Object.entries(Q_LABELS).map(([key, label]) => {
-                                    const value = project.answers?.[key];
-                                    if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                                    const text = formatAnswer(value);
-                                    if (!text.trim()) return null;
-                                    return (
-                                      <div key={key}>
-                                        <span
-                                          className="text-[#76777A] text-xs"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {label}
-                                        </span>
-                                        <p
-                                          className="text-[#00205C] text-sm mt-0.5 leading-relaxed"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {text}
-                                        </p>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Status Controls */}
-                            <div className="border-t border-[#00205C]/[0.10] pt-6">
-                              <div className="flex flex-wrap items-center gap-4">
-                                <span
-                                  className="text-[#76777A] text-sm"
-                                  style={{ fontFamily: "var(--font-poppins)" }}
-                                >
-                                  Status: <span className="text-[#00205C] font-medium">{project.status}</span>
-                                </span>
-
-                                {transition && (
-                                  <button
-                                    onClick={() => handleStatusUpdate(project.id, transition.next)}
-                                    disabled={updatingId === project.id}
-                                    className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
-                                      updatingId === project.id
-                                        ? "bg-[#00205C]/[0.08] text-[#76777A] cursor-not-allowed"
-                                        : "bg-[#4B858E] text-white hover:bg-[#5a9aa4] cursor-pointer"
-                                    }`}
-                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                  >
-                                    {updatingId === project.id ? "Updating..." : transition.label}
-                                  </button>
-                                )}
-
-                                {project.status === "approved" && (
-                                  <button
-                                    onClick={() => handleBackToReview(project.id)}
-                                    disabled={updatingId === project.id}
-                                    className={`text-xs font-semibold px-4 py-2 rounded-full border border-[#00205C]/20 text-[#76777A] transition-colors ${
-                                      updatingId === project.id
-                                        ? "cursor-not-allowed opacity-50"
-                                        : "hover:border-[#00205C]/40 hover:text-[#00205C] cursor-pointer"
-                                    }`}
-                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                  >
-                                    {updatingId === project.id ? "Updating..." : "← Back to Review"}
-                                  </button>
-                                )}
-
-                                {updateError === project.id && (
-                                  <span
-                                    className="text-red-400 text-xs"
-                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                  >
-                                    Update failed. Try again.
-                                  </span>
-                                )}
-
-                                {backToReviewError === project.id && (
-                                  <span
-                                    className="text-red-400 text-xs"
-                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                  >
-                                    Status update failed — try again
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Claude Code Prompt */}
-                            {(project.status === "approved" || project.status === "live") && (
-                              <div className="border-t border-[#00205C]/[0.10] pt-6 mt-6">
-                                <span
-                                  className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                  style={{ fontFamily: "var(--font-poppins)" }}
-                                >
-                                  Claude Code Build Prompt
-                                </span>
-
-                                {isPromptLoading ? (
-                                  <div className="space-y-2 animate-pulse">
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-3/4" />
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-5/6" />
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-2/3" />
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
-                                    <div className="h-3 bg-[#00205C]/[0.08] rounded w-4/5" />
-                                  </div>
-                                ) : promptText ? (
-                                  <>
-                                    <div className="flex items-center justify-between mb-3">
-                                      <span />
-                                      <button
-                                        onClick={() => handleCopy(project.id, promptText)}
-                                        className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                        style={{ fontFamily: "var(--font-poppins)" }}
-                                      >
-                                        {copiedId === project.id ? "Copied ✓" : "Copy Prompt"}
-                                      </button>
-                                    </div>
-                                    <pre
-                                      className="bg-white border border-[#00205C]/[0.10] rounded-xl p-5 text-[#00205C]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
-                                      style={{ fontFamily: "monospace", maxHeight: "400px" }}
-                                    >
-                                      {promptText}
-                                    </pre>
-                                    <div className="mt-3">
-                                      <span
-                                        className="text-[#76777A] text-xs block mb-1.5"
-                                        style={{ fontFamily: "var(--font-poppins)" }}
-                                      >
-                                        Demo URL
-                                      </span>
-                                      <div className="flex items-center gap-2">
-                                        <input
-                                          type="url"
-                                          value={demoUrlDrafts[project.id] ?? project.demo_url ?? ""}
-                                          onChange={(e) =>
-                                            setDemoUrlDrafts((prev) => ({ ...prev, [project.id]: e.target.value }))
-                                          }
-                                          placeholder="https://your-vercel-url.vercel.app"
-                                          className="flex-1 min-w-0 bg-white border border-[#00205C]/[0.12] rounded-lg px-3 py-1.5 text-[#00205C] text-xs placeholder-[#76777A] focus:outline-none focus:border-[#4B858E]/50"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        />
-                                        <button
-                                          onClick={() =>
-                                            handleSaveDemoUrl(
-                                              project.id,
-                                              demoUrlDrafts[project.id] ?? project.demo_url ?? ""
-                                            )
-                                          }
-                                          disabled={savingDemoUrlIds.has(project.id)}
-                                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {savedDemoUrlIds.has(project.id)
-                                            ? "Saved ✓"
-                                            : savingDemoUrlIds.has(project.id)
-                                            ? "Saving..."
-                                            : "Save"}
-                                        </button>
-                                      </div>
-                                      {demoUrlSaveErrors[project.id] && (
-                                        <p
-                                          className="text-red-400 text-xs mt-1.5"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {demoUrlSaveErrors[project.id]}
-                                        </p>
-                                      )}
-                                    </div>
-                                    {project.status === "approved" && (
-                                      <div className="mt-3">
-                                        <button
-                                          onClick={() => handleRegeneratePrompt(project.id)}
-                                          disabled={regeneratingIds.has(project.id)}
-                                          className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
-                                            regeneratingIds.has(project.id)
-                                              ? "border-[#00205C]/15 text-[#76777A] cursor-not-allowed"
-                                              : "border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] cursor-pointer"
-                                          }`}
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {regeneratingIds.has(project.id) ? "Regenerating..." : "Regenerate Prompt"}
-                                        </button>
-                                        {regenerateErrors.has(project.id) && (
-                                          <span
-                                            className="text-red-400 text-xs ml-3"
-                                            style={{ fontFamily: "var(--font-poppins)" }}
-                                          >
-                                            Regeneration failed — try again
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
-                                  </>
-                                ) : null}
-
-                                {/* Project README */}
-                                <div className="mt-8">
-                                  <span
-                                    className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-3"
-                                    style={{ fontFamily: "var(--font-poppins)" }}
-                                  >
-                                    Project README
-                                  </span>
-                                  {isPromptLoading ? (
-                                    <div className="space-y-2 animate-pulse">
-                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-3/4" />
-                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-full" />
-                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-5/6" />
-                                      <div className="h-3 bg-[#00205C]/[0.08] rounded w-2/3" />
-                                    </div>
-                                  ) : project.project_readme ? (
-                                    <>
-                                      <div className="flex items-center justify-between mb-3">
-                                        <span />
-                                        <button
-                                          onClick={() => handleCopyReadme(project.id, project.project_readme!)}
-                                          className="text-xs font-semibold px-4 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                          style={{ fontFamily: "var(--font-poppins)" }}
-                                        >
-                                          {copiedReadmeId === project.id ? "Copied ✓" : "Copy README"}
-                                        </button>
-                                      </div>
-                                      <pre
-                                        className="bg-white border border-[#00205C]/[0.10] rounded-xl p-5 text-[#00205C]/80 text-xs leading-relaxed overflow-auto whitespace-pre-wrap"
-                                        style={{ fontFamily: "monospace", maxHeight: "400px" }}
-                                      >
-                                        {project.project_readme}
-                                      </pre>
-                                    </>
-                                  ) : (
-                                    <p
-                                      className="text-[#76777A] text-xs"
-                                      style={{ fontFamily: "var(--font-poppins)" }}
-                                    >
-                                      README not generated — regenerate the prompt to produce one
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* ─── Incomplete (guest) projects ─────────────────────────── */}
-              {incompleteProjects.length > 0 && (
-                <div className="mt-10">
-                  <button
-                    onClick={() => setIncompleteOpen((v) => !v)}
-                    className="flex items-center gap-2 text-sm text-[#76777A] hover:text-[#00205C] transition-colors mb-4"
-                    style={{ fontFamily: "var(--font-poppins)" }}
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      className={`transition-transform ${incompleteOpen ? "rotate-90" : ""}`}
+                  {projects.map((project) => (
+                    <Link
+                      key={project.id}
+                      href={`/admin/projects/${project.id}`}
+                      className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 border border-[#00205C]/[0.12] rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
                     >
-                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Incomplete ({incompleteProjects.length})
-                  </button>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-[#00205C] font-medium truncate"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                        >
+                          {project.title}
+                        </p>
+                        <p
+                          className="text-[#76777A] text-xs mt-0.5"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                        >
+                          {project.client_name ?? "No client name set"}
+                        </p>
+                      </div>
 
-                  {incompleteOpen && (
-                    <div className="space-y-3">
-                      {incompleteProjects.map((project) => {
-                        const isOpen = openId === project.id;
-                        return (
-                          <div key={project.id} className="border border-[#00205C]/[0.10] rounded-2xl overflow-hidden opacity-70 bg-white">
-                            {/* Row */}
-                            <div className="flex items-center gap-4 px-6 py-5">
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className="text-[#00205C]/80 font-medium truncate"
-                                  style={{ fontFamily: "var(--font-poppins)" }}
-                                >
-                                  {project.title ?? "Untitled"}
-                                </p>
-                                <p
-                                  className="text-[#00205C] text-xs mt-0.5"
-                                  style={{ fontFamily: "var(--font-poppins)" }}
-                                >
-                                  No account created
-                                </p>
-                              </div>
+                      <div className="hidden sm:block w-32 flex-shrink-0">
+                        <div className="h-1.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#4B858E] rounded-full"
+                            style={{ width: `${project.percent_complete}%` }}
+                          />
+                        </div>
+                        <p
+                          className="text-[#76777A] text-xs mt-1"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                        >
+                          {project.percent_complete}% complete
+                        </p>
+                      </div>
 
-                              <span
-                                className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 bg-[#00205C]/[0.05] text-[#76777A] border border-[#00205C]/15"
-                                style={{ fontFamily: "var(--font-poppins)" }}
-                              >
-                                incomplete
-                              </span>
+                      <span
+                        className="hidden md:block text-[#76777A] text-xs flex-shrink-0 max-w-[220px] truncate"
+                        style={{ fontFamily: "var(--font-poppins)" }}
+                      >
+                        {project.next_update_note ?? "No update set"}
+                      </span>
 
-                              <span
-                                className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
-                                style={{ fontFamily: "var(--font-poppins)" }}
-                              >
-                                {relativeDate(project.created_at)}
-                              </span>
-
-                              <button
-                                onClick={() => setOpenId(isOpen ? null : project.id)}
-                                className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                                style={{ fontFamily: "var(--font-poppins)" }}
-                              >
-                                {isOpen ? "Close" : "View"}
-                              </button>
-                            </div>
-
-                            {/* Inline detail panel */}
-                            {isOpen && (
-                              <div className="border-t border-[#00205C]/[0.10] bg-white px-6 py-8">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                  {/* Left — Scope Doc */}
-                                  <div>
-                                    {project.scope ? (
-                                      <>
-                                        <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-                                          <h2
-                                            className="text-2xl font-bold text-[#00205C] leading-snug"
-                                            style={{ fontFamily: "var(--font-poppins)" }}
-                                          >
-                                            {project.scope.title}
-                                          </h2>
-                                          {project.scope.green_score && GREEN_SCORE_STYLES[project.scope.green_score] && (
-                                            <span
-                                              className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${GREEN_SCORE_STYLES[project.scope.green_score].border} ${GREEN_SCORE_STYLES[project.scope.green_score].text}`}
-                                              style={{ fontFamily: "var(--font-poppins)" }}
-                                            >
-                                              {GREEN_SCORE_STYLES[project.scope.green_score].label}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="h-px bg-[#4B858E]/30 my-5" />
-                                        <div className="space-y-5">
-                                          {[
-                                            { label: "The Problem", value: project.scope.the_problem },
-                                            { label: "Without It", value: project.scope.without_it },
-                                            { label: "With It", value: project.scope.with_it },
-                                          ].map(({ label, value }) => (
-                                            <div key={label}>
-                                              <span
-                                                className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                                style={{ fontFamily: "var(--font-poppins)" }}
-                                              >
-                                                {label}
-                                              </span>
-                                              <p
-                                                className="mt-1.5 text-[#00205C]/70 text-sm leading-relaxed"
-                                                style={{ fontFamily: "var(--font-poppins)" }}
-                                              >
-                                                {value}
-                                              </p>
-                                            </div>
-                                          ))}
-                                          <div>
-                                            <span
-                                              className="text-xs font-bold tracking-widest uppercase text-[#4B858E]"
-                                              style={{ fontFamily: "var(--font-poppins)" }}
-                                            >
-                                              Investment Estimate
-                                            </span>
-                                            {project.scope.pricing ? (
-                                              <div className="mt-3 space-y-3">
-                                                {(["mvp", "polished", "perfected"] as const).map((tier) => {
-                                                  const tierData = project.scope!.pricing![tier];
-                                                  const tierLabel = { mvp: "MVP", polished: "Polished", perfected: "Perfected" }[tier];
-                                                  return (
-                                                    <div key={tier}>
-                                                      <div className="flex items-baseline gap-2">
-                                                        <span className="text-[#00205C] text-sm font-semibold" style={{ fontFamily: "var(--font-poppins)" }}>{tierLabel}</span>
-                                                        <span className="text-[#00205C]/80 text-sm font-medium" style={{ fontFamily: "var(--font-poppins)" }}>${tierData.low.toLocaleString()} &ndash; ${tierData.high.toLocaleString()}</span>
-                                                      </div>
-                                                      <p className="text-[#00205C] text-xs leading-relaxed mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>{tierData.description}</p>
-                                                    </div>
-                                                  );
-                                                })}
-                                                <p className="text-[#00205C] text-xs italic leading-relaxed mt-2" style={{ fontFamily: "var(--font-poppins)" }}>{project.scope.pricing.value_rationale}</p>
-                                              </div>
-                                            ) : (
-                                              <p className="mt-1.5 text-[#00205C] text-base font-semibold" style={{ fontFamily: "var(--font-poppins)" }}>
-                                                ${project.scope.price_low.toLocaleString()} &ndash; ${project.scope.price_high.toLocaleString()}
-                                              </p>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>No scope generated yet.</p>
-                                    )}
-                                  </div>
-
-                                  {/* Right — Raw Answers */}
-                                  <div>
-                                    <h3
-                                      className="text-xs font-bold tracking-widest uppercase text-[#4B858E] mb-4"
-                                      style={{ fontFamily: "var(--font-poppins)" }}
-                                    >
-                                      Raw Answers
-                                    </h3>
-                                    <div className="space-y-3">
-                                      {Object.entries(Q_LABELS).map(([key, label]) => {
-                                        const value = project.answers?.[key];
-                                        if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                                        const text = formatAnswer(value);
-                                        if (!text.trim()) return null;
-                                        return (
-                                          <div key={key}>
-                                            <span className="text-[#76777A] text-xs" style={{ fontFamily: "var(--font-poppins)" }}>{label}</span>
-                                            <p className="text-[#00205C] text-sm mt-0.5 leading-relaxed" style={{ fontFamily: "var(--font-poppins)" }}>{text}</p>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                      <span
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[project.access_mode]}`}
+                        style={{ fontFamily: "var(--font-poppins)" }}
+                      >
+                        {project.access_mode === "public" ? "Public" : "Password"}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
               )}
             </>

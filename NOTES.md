@@ -1,4 +1,57 @@
-﻿Last session: 45
+﻿Last session: 46
+
+## Recent Changes (Session 46, August 4, 2026)
+
+**Backend rehaul: client accounts retired everywhere, project backend rebuilt around a roadmap model**
+
+Drew is now the only login on the site. Clients never sign up or sign in, each project has a direct link, either open or gated by a per-project password (no Supabase Auth involved in that gate at all). The old wizard to account to status-queue system (submitted/reviewed/approved/building/live) is gone. Two judgment calls made during this session, flagged for Drew to sanity-check: (1) `audit_estimates` capture itself was kept (still useful lead data for the Audits tab), only the account-creation "save your report" step was removed. (2) The old id-based `/projects/[id]` client page is fully replaced by `/projects/[slug]`, not kept alongside.
+
+**Retired (deleted, not just disconnected):**
+- `app/projects/new/` (ProjectWizard.tsx + page.tsx), the public 6-question scope wizard
+- `app/projects/page.tsx`, `app/projects/ProjectList.tsx`, `app/projects/GuestProjectAttacher.tsx`
+- `app/projects/[id]/` (old auth-gated client detail page + edit/resubmit client component)
+- `app/components/AuthModal.tsx`, the site-wide login/signup modal
+- `app/audit/AuthModal.tsx`, the audit tool's "create an account to save your report" modal
+- `app/api/attach-guest-project/route.ts`, `app/api/attach-guest-audit/route.ts`
+- `app/api/admin-update-status/route.ts`, `app/api/admin-update-demo-url/route.ts`, `app/api/notify-client/route.ts`, `app/api/generate-scope/route.ts`, all exclusively served the old wizard/status-queue flow; orphaned once AdminDashboard and ProjectWizard were gone, so removed rather than left dead. `/content/claude-code-prompt-template.md` is now unused by any route but was left in place (not code, no harm sitting there).
+
+**`app/page.tsx`, `app/your-team-and-ai/page.tsx`**: removed the `<AuthModal />` nav block (Suspense + import). No visible "Log In" entry point on any public page anymore, that's intentional, see `/admin/login` below.
+
+**`app/audit/AuditWizard.tsx`**: removed the `showAuth`/`reportSaved` state, the unused `auditId` state (was only read by the now-deleted AuthModal), and the "Save My Report" / "Log in to save" CTAs. The post-report action is now just the existing "Book a Call" button, styled as the primary CTA. The guest insert into `audit_estimates` (`guest: true, user_id: null`) is unchanged, that data still feeds the admin Audits tab.
+
+**`app/auth/callback/route.ts`**: simplified to a plain `exchangeCodeForSession` + redirect to `/admin`. Removed all `guestProjectId` cookie handling (no guest projects left to attach).
+
+**`app/admin/login/page.tsx`** (new): Drew-only login: email/password via `lib/auth.ts`'s `signIn`, plus a "Continue with Google" option (reuses the OAuth callback above). Not linked from any nav, reached by direct URL only.
+
+**`app/admin/page.tsx`**: auth-gate redirect target changed from `/` to `/admin/login`. Data fetch changed from the old `projects` columns (status/scope/answers/claude_code_prompt/etc.) to the new schema's columns. `audit_estimates` fetch for the Audits tab is unchanged.
+
+**`app/admin/audit-knowledge/page.tsx`**: same gate redirect target change (`/` to `/admin/login`) for consistency with `/admin`.
+
+**`app/admin/AdminDashboard.tsx`**: full rewrite of the Projects tab: a project list (title, client name, percent complete bar, next-update note, access-mode badge) with a "New Project" inline form (title, client name, slug, access mode, password) that POSTs to `/api/admin-projects` and redirects into the new detail page. All the old status-pipeline UI, scope viewer, Claude Code prompt/README blocks, and demo-URL editor are gone. The Audits tab and its types/consts (`AuditFinding`, `AuditReportData`, `AuditEstimate`, `WASTE_SCORE_STYLES`, `IMPACT_TEXT`, `relativeDate`) were carried over unchanged. Impact tab unchanged. Added a `SignOutButton` to the admin nav (wasn't there before, now that there's a real login page, there should be a way out of the session).
+
+**`app/admin/projects/[id]/page.tsx` + `ProjectDetailClient.tsx`** (new): full project management screen: editable core fields (title, client name, percent complete slider, next-update note/date, access mode + password, budget type/hours-cap/hourly-rate), a milestone editor (add/edit/delete, title/description/status/target-date, no persistence until Save), a read-only "logged so far" line computed from `build_cost_entries` matched by `project_slug` (not `project_id` yet, see Session 49 note below), a "View Client Page" link and "Copy Link" button, and two static "coming in a future session" placeholders for files and feedback. Save PATCHes `/api/admin-projects/[id]`, which replaces the project's milestones wholesale (delete-then-reinsert, fine at this list size) alongside the core field update.
+
+**`app/projects/[slug]/page.tsx` + `PasswordGate.tsx`** (new): the client-facing roadmap page. No login. If `access_mode = 'password'`, checks for a signed `wst_pa_{slug}` cookie (HMAC via `WST_COOKIE_SECRET`, see `lib/project-access.ts`); missing or invalid renders `PasswordGate` only, which POSTs to `/api/project-access` and `router.refresh()`s on success. Public projects skip the gate. Renders percent complete, next-update note/date, milestones (read-only), and a budget-vs-logged line if `budget_type = 'hourly'`. Same file/feedback placeholders as the admin side.
+
+**`lib/project-access.ts`** (new): `hashPassword`/`verifyPassword` (Node `crypto.scryptSync`, salted, no new dependency), `signAccessToken`/`verifyAccessToken` (HMAC-SHA256 over the slug, keyed by `WST_COOKIE_SECRET`), `accessCookieName`. Falls back to a fixed dev-only secret if `WST_COOKIE_SECRET` isn't set, so `npm run dev` doesn't break, production must have it set for real.
+
+**`app/api/admin-projects/route.ts`** (new): POST, creates a project. Same bearer-token admin-email verification pattern as the old `admin-update-status` route.
+
+**`app/api/admin-projects/[id]/route.ts`** (new): PATCH, updates core fields + replaces milestones. Same admin verification pattern.
+
+**`app/api/project-access/route.ts`** (new): POST, public. Verifies a project's password and sets the signed access cookie.
+
+**New required Vercel env var: `WST_COOKIE_SECRET`**, any long random string. Added to `.env.local` for local dev (gitignored, not committed); must be added to Vercel's production env vars separately before this goes live, not something this session can do.
+
+**Supabase migration, run in SQL editor before deploying (see `supabase/schema.sql` for the full block):**
+- Renames the old `projects` table to `projects_archive_2026` (archived, not dropped)
+- Creates a fresh `projects` table with no `user_id`/RLS (no client accounts to scope rows to)
+- Creates `project_milestones`, plus `project_files` and `project_feedback` (schema only, no UI reads/writes them until Sessions 47 to 48)
+- Adds a `project_id` column to `build_cost_entries` (not populated yet, Session 49 will resolve it from `project_slug` in `ingest-build-cost` and surface real usage against the budget cap)
+
+**Next sessions:** 47 (file uploads, both sides), 48 (client feedback, both sides), 49 (wire `ingest-build-cost` to resolve `project_id`, surface real hours/cost against budget caps instead of the `project_slug` join used today).
+
+---
 
 ## Recent Changes (Session 45 â€” June 8, 2026)
 
@@ -1041,31 +1094,27 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
   /meet/page.tsx                     â€” Question flow (4 Qs, stores wst_visitor cookie)
   /for-you/page.tsx                  â€” Loading state â†’ POSTs to /api/personalize â†’ redirects
   /for-you/[industry]/[solution]/    â€” Personalized result (pulled from Supabase)
-  /projects/page.tsx                 â€” Authenticated dashboard (server: auth + data fetch)
-  /projects/GuestProjectAttacher.tsx â€” Client component: attaches guest project after OAuth redirect
-  /projects/ProjectList.tsx          â€” Client component: project cards with inline delete
-  /projects/[id]/page.tsx            â€” Project detail page (protected server component)
-  /projects/[id]/ProjectDetailClient.tsx â€” Client component: scope card, inline edit form, regenerate flow
-  /projects/new/page.tsx             â€” Auth guard, renders ProjectWizard
-  /projects/new/ProjectWizard.tsx    â€” Client component: 6-question wizard + reveal state
+  /projects/[slug]/page.tsx          - Public client roadmap page, no login. Password-gated or open per project.
+  /projects/[slug]/PasswordGate.tsx  - Client component: password form, POSTs to /api/project-access
   /auth
-    /callback/route.ts               â€” OAuth callback: exchange code for session, redirect to /projects
+    /callback/route.ts               - OAuth callback: exchange code for session, redirect to /admin
   /components
-    /AuthModal.tsx                   â€” Login/Signup modal + nav trigger buttons (client)
-    /SignOutButton.tsx               â€” Sign out button (client)
+    /SignOutButton.tsx               - Sign out button (client)
   /admin
-    /page.tsx                        â€” Server component: JWT gate (drew@worldshifttech.com), data fetch (projects + audit_estimates)
-    /AdminDashboard.tsx              â€” Client component: Projects tab (project table, detail panel, status controls) + Audits tab (audit estimates table, stack breakdown) + Audit KB nav link
-    /ImpactTab.tsx                   â€” Client component: Anthropic usage sync and impact display
-    /audit-knowledge/page.tsx        â€” Drew-only server component: sidebar + markdown viewer for audit knowledge docs
-    /audit-knowledge/AuditKnowledgeClient.tsx â€” Client component: search input + grouped tool list
+    /login/page.tsx                  - Drew-only login (client): email/password + Google OAuth, not linked from any nav
+    /page.tsx                        - Server component: JWT gate (drew@worldshifttech.com) -> /admin/login, data fetch (projects + audit_estimates)
+    /AdminDashboard.tsx              - Client component: Projects tab (list + New Project form) + Audits tab (unchanged) + Impact tab (unchanged) + Audit KB nav link
+    /ImpactTab.tsx                   - Client component: Anthropic usage sync and impact display
+    /projects/[id]/page.tsx          - Server component: full project fetch + milestones + build-cost sum, admin gate
+    /projects/[id]/ProjectDetailClient.tsx - Client component: core fields, milestone editor, budget vs. logged hours, file/feedback placeholders
+    /audit-knowledge/page.tsx        - Drew-only server component: sidebar + markdown viewer for audit knowledge docs
+    /audit-knowledge/AuditKnowledgeClient.tsx - Client component: search input + grouped tool list
   /api
-    /personalize/route.ts            â€” Classify â†’ cache check â†’ generate â†’ save â†’ return
-    /generate-scope/route.ts         â€” Claude scope generation for wizard; updates projects row
-    /notify-slack/route.ts           â€” Posts Slack notification on project submit, resubmit, or audit completion (type: "submission" | "resubmission" | "audit")
-    /admin-update-status/route.ts    â€” PATCH: verifies admin session, updates status; on approved: generates demo URL + Claude Code prompt
-    /notify-client/route.ts          â€” POST: sends Resend email to project owner when status â†’ live
-    /attach-guest-project/route.ts   â€” PATCH: attaches a guest project row to a newly created user account
+    /personalize/route.ts            - Classify -> cache check -> generate -> save -> return
+    /notify-slack/route.ts           - Posts Slack notification on project submit, resubmit, or audit completion (type: "submission" | "resubmission" | "audit") - submission/resubmission types are now unreachable dead branches, left as-is
+    /admin-projects/route.ts         - POST: creates a project (admin auth)
+    /admin-projects/[id]/route.ts    - PATCH: updates core fields + replaces milestones (admin auth)
+    /project-access/route.ts         - POST, public: verifies a project password, sets the signed access cookie
     /ingest-case-study/route.ts      â€” Zapier webhook for content pipeline
     /admin-usage-snapshots/route.ts  â€” GET: returns all wst_usage_snapshots rows (admin auth)
     /admin-sync-usage/route.ts       â€” POST: pulls token data from Anthropic Admin API, inserts snapshot (admin auth)
@@ -1085,7 +1134,8 @@ CREATE POLICY "Guest project insert allowed" ON projects FOR INSERT WITH CHECK (
   /case-studies.ts                   â€” Reads and concatenates case study files
   /audit-knowledge.ts                â€” getAuditKnowledge() (Supabase fetch), formatKnowledgeForPrompt() (prompt injection), getAuditDoc() (admin viewer), ALL_AUDIT_TOOLS
   /supabase.ts                       â€” getSupabase() (service role) + getSupabaseBrowser() (anon)
-  /auth.ts                           â€” getSession, getUser, signIn, signUp, signOut helpers
+  /auth.ts                           â€” getSession, getUser, signIn, signUp, signOut helpers (signUp unused since Session 46, kept for now)
+  /project-access.ts                 - hashPassword/verifyPassword (scrypt), signAccessToken/verifyAccessToken (HMAC), accessCookieName
 /supabase
   /schema.sql                        â€” Source of truth for DB schema
 ```

@@ -100,15 +100,14 @@ npm run dev  # http://localhost:3000
 - [x] Personalization system — `/api/personalize`, `/for-you/[industry]/[solution]`, Supabase cache
 - [x] Bot protection — honeypot + Cloudflare Turnstile on `/meet` + `/api/personalize`
 - [x] `/fractional` — static ClickUp consultant landing page
-- [x] Supabase Auth — login/signup modal, `/projects` dashboard, RLS policies
-- [x] `/projects/new` — 3-chapter, 6-question project wizard with scope reveal
-- [x] `/api/generate-scope` — Claude scope generation with 3-tier pricing
-- [x] `/content/pricing-intelligence.md` — pricing context injected into scope generation
-- [x] `/admin` — Drew-only project queue with status controls, prompt + README generation
-- [x] `/api/admin-update-status` — admin PATCH with Claude build prompt + README generation
-- [x] `/content/claude-code-prompt-template.md` — canonical Claude Code prompt template
-- [x] `/api/notify-client` — Resend email to project owner on go-live
-- [x] `/audit` — 5-phase AI waste estimate wizard
+- [x] Session 46 — client accounts retired everywhere (projects wizard, audit save-flow). Drew is the only login.
+- [x] `/admin/login` — Drew-only login (Supabase Auth), unlinked from any public nav
+- [x] `/admin` — project list (title, client, % complete, next update, access badge) + "New Project"
+- [x] `/admin/projects/[id]` — full project management: core fields, milestone editor, budget cap vs. logged hours
+- [x] `/projects/[slug]` — public client roadmap page, no login; open or gated by a per-project password (`lib/project-access.ts`)
+- [x] File uploads and client feedback are scaffolded in the schema (`project_files`, `project_feedback`) but have no UI yet — Sessions 47–48
+- [x] `build_cost_entries.project_id` column exists but isn't populated or surfaced against the budget cap yet — Session 49
+- [x] `/audit` — 5-phase AI waste estimate wizard (guest-only; the account-creation "save your report" flow was retired in Session 46 — CTA is Book a Call only)
 - [x] `/api/generate-audit` — Claude audit report with tool-registry knowledge base
 - [x] `content/tool-registry.json` — ~80 tool knowledge base with waste patterns
 - [x] Audit knowledge base — 22 tool-specific markdown files in `/content/audit-knowledge/`
@@ -139,6 +138,8 @@ npm run dev  # http://localhost:3000
 | `SLACK_WEBHOOK_URL` | Set |
 | `RESEND_API_KEY` | Set |
 | `ANTHROPIC_ADMIN_KEY` | Set |
+| `WST_INGEST_SECRET` | Set |
+| `WST_COOKIE_SECRET` | **Needs to be added** (Session 46) — signs the per-project password-gate cookie in `lib/project-access.ts`. Any long random string. |
 
 ---
 

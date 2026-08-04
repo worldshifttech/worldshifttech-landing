@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import AuthModal from "./AuthModal";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // â"€â"€â"€ Department â†’ tool mapping â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -233,16 +232,11 @@ export default function AuditWizard() {
   const [monthlySpend, setMonthlySpend] = useState("");
 
   // Phase 5
-  const [auditId, setAuditId] = useState<string | null>(null);
   const [report, setReport] = useState<AuditReport | null>(null);
   const [apiDone, setApiDone] = useState(false);
   const [barDone, setBarDone] = useState(false);
   const [apiError, setApiError] = useState("");
   const [loadingLineIndex, setLoadingLineIndex] = useState(0);
-
-  // Auth modal / save state
-  const [showAuth, setShowAuth] = useState(false);
-  const [reportSaved, setReportSaved] = useState(false);
 
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -383,8 +377,6 @@ export default function AuditWizard() {
         // Non-fatal â€" continue without DB row
       }
     }
-
-    setAuditId(currentAuditId);
 
     // Call Claude
     try {
@@ -1075,94 +1067,41 @@ export default function AuditWizard() {
                     marginTop: "1rem",
                   }}
                 >
-                  {reportSaved ? (
-                    <div style={{ textAlign: "center" }}>
-                      <p style={{ color: "var(--accent)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>✓</p>
-                      <p style={{ color: "var(--text-primary)", fontFamily: "var(--font-poppins)", fontWeight: 600, marginBottom: "0.5rem" }}>
-                        Your report is saved.
-                      </p>
-                      <a
-                        href="https://calendly.com/fractionalbusinesscompanion/wst"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "var(--accent)", fontFamily: "var(--font-poppins)", fontSize: "0.9rem", textDecoration: "underline" }}
-                      >
-                        Book a call to go deeper
-                      </a>
-                    </div>
-                  ) : (
-                    <div>
-                      <h2
-                        style={{
-                          fontFamily: "var(--font-poppins)",
-                          color: "var(--text-primary)",
-                          fontSize: "1.25rem",
-                          fontWeight: 700,
-                          marginBottom: "0.6rem",
-                        }}
-                      >
-                        Want the full picture?
-                      </h2>
-                      <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-poppins)", marginBottom: "1.5rem" }}>
-                        This is an estimate. A full audit goes deeper: line-by-line tool analysis, usage data, team interviews, and a redesign plan. Save your report first, then book a call.
-                      </p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                        <button
-                          onClick={() => setShowAuth(true)}
-                          style={ctaButton}
-                        >
-                          Save My Report
-                        </button>
-                        <a
-                          href="https://calendly.com/fractionalbusinesscompanion/wst"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: "block",
-                            textAlign: "center",
-                            padding: "0.875rem 1.25rem",
-                            border: "1.5px solid var(--accent)",
-                            borderRadius: 8,
-                            color: "var(--accent)",
-                            fontFamily: "var(--font-poppins)",
-                            fontSize: "0.975rem",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                            transition: "background 0.15s ease",
-                          }}
-                        >
-                          Book a Call
-                        </a>
-                      </div>
-                      <p style={{ textAlign: "center", color: "var(--text-secondary)", fontSize: "0.8rem", marginTop: "1rem", fontFamily: "var(--font-poppins)" }}>
-                        Already have an account?{" "}
-                        <button
-                          onClick={() => setShowAuth(true)}
-                          style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.8rem", padding: 0, textDecoration: "underline" }}
-                        >
-                          Log in to save.
-                        </button>
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <h2
+                      style={{
+                        fontFamily: "var(--font-poppins)",
+                        color: "var(--text-primary)",
+                        fontSize: "1.25rem",
+                        fontWeight: 700,
+                        marginBottom: "0.6rem",
+                      }}
+                    >
+                      Want the full picture?
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "var(--font-poppins)", marginBottom: "1.5rem" }}>
+                      This is an estimate. A full audit goes deeper: line-by-line tool analysis, usage data, team interviews, and a redesign plan.
+                    </p>
+                    <a
+                      href="https://calendly.com/fractionalbusinesscompanion/wst"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "block",
+                        textAlign: "center",
+                        textDecoration: "none",
+                        ...ctaButton,
+                      }}
+                    >
+                      Book a Call
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         )}
       </div>
-
-      {/* Auth modal overlay */}
-      {showAuth && auditId !== null && (
-        <AuthModal
-          auditId={auditId}
-          onSuccess={() => {
-            setShowAuth(false);
-            setReportSaved(true);
-          }}
-          onClose={() => setShowAuth(false)}
-        />
-      )}
     </div>
   );
 }

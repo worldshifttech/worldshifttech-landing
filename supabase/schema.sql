@@ -220,3 +220,71 @@ CREATE TABLE build_cost_entries (
   logged_at   timestamptz,
   created_at  timestamptz DEFAULT now()
 );
+
+-- MIGRATION: Session 46 — retire client accounts, rebuild project backend around a roadmap model
+--
+-- Client accounts are gone everywhere (projects wizard, audit save-flow). Drew is the only
+-- login (Supabase Auth, unchanged). Clients reach a project via a direct link, either open
+-- or gated by a per-project password (see lib/project-access.ts — salted hash + signed
+-- cookie, no Supabase Auth involved). The old wizard/status-queue projects table is archived,
+-- not dropped.
+
+ALTER TABLE projects RENAME TO projects_archive_2026;
+
+CREATE TABLE projects (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug text NOT NULL UNIQUE,
+  client_name text,
+  title text NOT NULL,
+  percent_complete integer NOT NULL DEFAULT 0,
+  next_update_note text,
+  next_due_date date,
+  access_mode text NOT NULL DEFAULT 'password' CHECK (access_mode IN ('public', 'password')),
+  access_password_hash text,
+  budget_type text NOT NULL DEFAULT 'none' CHECK (budget_type IN ('none', 'hourly')),
+  budget_hours_cap numeric,
+  hourly_rate numeric,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+-- No RLS — no client accounts to scope rows to. Access is mediated entirely by
+-- server-side route handlers: /admin's Supabase Auth check, or the per-project
+-- password cookie enforced in app/projects/[slug]/page.tsx.
+
+CREATE TABLE project_milestones (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id uuid REFERENCES projects(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  description text,
+  status text NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'done')),
+  target_date date,
+  completed_at timestamptz,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Tables for Sessions 47–48 — created now so the schema lands in one migration;
+-- no UI reads/writes them yet.
+CREATE TABLE project_files (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id uuid REFERENCES projects(id) ON DELETE CASCADE,
+  file_name text NOT NULL,
+  storage_path text NOT NULL,
+  uploaded_by text NOT NULL DEFAULT 'client' CHECK (uploaded_by IN ('client', 'drew')),
+  note text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE project_feedback (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id uuid REFERENCES projects(id) ON DELETE CASCADE,
+  milestone_id uuid REFERENCES project_milestones(id) ON DELETE SET NULL,
+  message text NOT NULL,
+  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'resolved')),
+  created_at timestamptz DEFAULT now()
+);
+
+-- Links build-cost telemetry to a real project. Not backfilled or populated yet
+-- (Session 49) — ingest-build-cost still only writes project_slug for now.
+ALTER TABLE build_cost_entries ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES projects(id);

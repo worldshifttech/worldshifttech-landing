@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import AuthModal from "@/app/components/AuthModal";
 
 export const metadata = {
   title: "Your Team & AI — World Shift Technologies",
@@ -40,9 +38,6 @@ export default function YourTeamAndAIPage() {
             >
               Your Team &amp; AI
             </Link>
-            <Suspense fallback={null}>
-              <AuthModal />
-            </Suspense>
           </div>
         </div>
       </nav>

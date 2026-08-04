@@ -30,7 +30,7 @@ export default async function AuditKnowledgePage({
   } = await supabase.auth.getSession();
 
   if (!session || session.user.email !== ADMIN_EMAIL) {
-    redirect("/");
+    redirect("/admin/login");
   }
 
   const params = await searchParams;
