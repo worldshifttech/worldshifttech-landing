@@ -62,18 +62,58 @@ const KIND_BADGE: Record<ReviewItem["kind"], { label: string; bg: string; text: 
   },
 };
 
+// ─── Decision buttons (production_risk_flag / kb_entry_draft) ────────────────
+// These two kinds have no open_questions to answer — they need a decision, not
+// a freeform blob. consolidated_review keeps the plain textarea fallback for
+// the (rare) case it has zero open_questions too.
+
+type DecisionOption = { value: string; label: string; style: "primary" | "neutral" | "danger" };
+
+const DECISION_OPTIONS: Partial<Record<ReviewItem["kind"], DecisionOption[]>> = {
+  production_risk_flag: [
+    { value: "Acknowledged & Proceed", label: "Acknowledge & Proceed", style: "primary" },
+    { value: "Stop / Needs Changes", label: "Stop / Needs Changes", style: "danger" },
+  ],
+  kb_entry_draft: [
+    { value: "Approved", label: "Approve", style: "primary" },
+    { value: "Edit", label: "Edit", style: "neutral" },
+    { value: "Discarded", label: "Discard", style: "danger" },
+  ],
+};
+
+const DECISION_BUTTON_STYLE: Record<DecisionOption["style"], string> = {
+  primary: "bg-[#4B858E] text-white border border-[#4B858E]",
+  neutral: "border border-[#00205C]/25 text-[#00205C]",
+  danger: "border border-red-400 text-red-500",
+};
+
+const DECISION_BUTTON_STYLE_UNSELECTED: Record<DecisionOption["style"], string> = {
+  primary: "border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10",
+  neutral: "border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C]",
+  danger: "border border-red-300 text-red-400 hover:bg-red-50",
+};
+
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: string, updated: Partial<ReviewItem>) => void }) {
   const badge = KIND_BADGE[item.kind] ?? KIND_BADGE.consolidated_review;
   const [answers, setAnswers] = useState<string[]>(item.open_questions.map((q) => q.answer || ""));
   const [drewResponse, setDrewResponse] = useState(item.drew_response ?? "");
+  const [decision, setDecision] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState(item.proposed_content ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const hasQuestions = item.open_questions.length > 0;
+  const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
+  const isEditing = item.kind === "kb_entry_draft" && decision === "Edit";
+
   const allQuestionsAnswered = answers.every((a) => a.trim().length > 0);
-  const canSubmit = hasQuestions ? allQuestionsAnswered : drewResponse.trim().length > 0;
+  const canSubmit = hasQuestions
+    ? allQuestionsAnswered
+    : decisionOptions
+    ? decision !== null && (!isEditing || editedContent.trim().length > 0)
+    : drewResponse.trim().length > 0;
 
   function setAnswer(i: number, value: string) {
     setAnswers((prev) => prev.map((a, idx) => (idx === i ? value : a)));
@@ -99,6 +139,10 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
       answer: answers[i],
     }));
 
+    const finalResponse = decisionOptions
+      ? `${decision}${drewResponse ? `\n\n${drewResponse}` : ""}`
+      : drewResponse;
+
     try {
       const res = await fetch(`/api/admin-reviews/${item.id}`, {
         method: "PATCH",
@@ -108,7 +152,8 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
         },
         body: JSON.stringify({
           open_questions: hasQuestions ? updatedQuestions : undefined,
-          drew_response: drewResponse || undefined,
+          drew_response: finalResponse || undefined,
+          proposed_content: isEditing ? editedContent : undefined,
         }),
       });
 
@@ -121,7 +166,8 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
       onAnswered(item.id, {
         status: "answered",
         open_questions: hasQuestions ? updatedQuestions : item.open_questions,
-        drew_response: drewResponse || null,
+        drew_response: finalResponse || null,
+        proposed_content: isEditing ? editedContent : item.proposed_content,
       });
     } catch {
       setError("Something went wrong. Please try again.");
@@ -145,7 +191,7 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
 
       <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
-      {item.proposed_content && (
+      {item.proposed_content && (item.status !== "pending" || !isEditing) && (
         <pre className="max-h-96 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] whitespace-pre-wrap font-mono">
           {item.proposed_content}
         </pre>
@@ -183,9 +229,42 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
             </div>
           )}
 
+          {decisionOptions && (
+            <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {decisionOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setDecision(opt.value)}
+                    className={`text-xs font-semibold px-4 py-2 rounded-full transition-colors ${
+                      decision === opt.value
+                        ? DECISION_BUTTON_STYLE[opt.style]
+                        : DECISION_BUTTON_STYLE_UNSELECTED[opt.style]
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {isEditing && (
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Edit the draft</label>
+                  <textarea
+                    value={editedContent}
+                    onChange={(e) => setEditedContent(e.target.value)}
+                    rows={8}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-xs text-[#00205C] font-mono focus:outline-none focus:border-[#4B858E]/60"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="border-t border-[#00205C]/[0.08] pt-4">
             <label className="block text-xs font-medium text-[#76777A] mb-1.5">
-              {hasQuestions ? "Anything else (optional)" : "Your response"}
+              {hasQuestions ? "Anything else (optional)" : decisionOptions ? "Notes (optional)" : "Your response"}
             </label>
             <textarea
               value={drewResponse}

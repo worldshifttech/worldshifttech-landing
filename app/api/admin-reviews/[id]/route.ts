@@ -27,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = (await req.json()) as {
     open_questions?: OpenQuestionInput[];
     drew_response?: string;
+    proposed_content?: string;
   };
 
   const supabase = getSupabase();
@@ -41,6 +42,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (typeof body.drew_response === "string") {
     updateFields.drew_response = body.drew_response || null;
+  }
+  if (typeof body.proposed_content === "string") {
+    updateFields.proposed_content = body.proposed_content;
   }
 
   const { error } = await supabase.from("review_items").update(updateFields).eq("id", id);

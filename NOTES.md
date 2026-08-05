@@ -86,6 +86,23 @@ warning that the `repos` seed INSERT isn't idempotent (no unique constraint on
 data. Drew ran the leftover `agent_sessions` + `review_items` inserts by hand to finish
 seeding.
 
+**Second same-day follow-up:** hand-testing the review inbox surfaced a real gap —
+`production_risk_flag` and `kb_entry_draft` cards only had a generic "your response"
+textarea, and Drew's own test answers ("Not sure what this does") confirmed it wasn't
+clear what either kind was actually asking for. `ReviewInboxClient.tsx` now renders
+decision buttons instead of a blank textarea for these two kinds: Acknowledge & Proceed /
+Stop for `production_risk_flag`; Approve / Edit / Discard for `kb_entry_draft`, where Edit
+reveals an editable copy of `proposed_content` (an optional notes textarea stays available
+under both). `drew_response` is built as `"{decision}\n\n{notes}"` on submit.
+`app/api/admin-reviews/[id]/route.ts` extended to accept an optional `proposed_content` so
+the Edit path can persist the revised draft, not just record that an edit happened. Also
+wrote up Drew's other idea from this same testing pass — a per-card "Ask AI" help chat —
+into `ORCHESTRATOR_DESIGN.md` §5 as a proposed Phase 2+ feature, not built yet (needs its
+own design pass: what context the assistant gets, whether it drafts answers or only
+explains, what route it hits). The two test rows (`production_risk_flag`,
+`kb_entry_draft`) were reset back to `status = 'pending'` via direct Supabase write so the
+new buttons could be tried against real data instead of just a clean build.
+
 ---
 
 ## Recent Changes (Session 47, August 5, 2026)

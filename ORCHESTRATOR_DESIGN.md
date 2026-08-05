@@ -208,6 +208,16 @@ shouldn't by default.
 Build session review cards are simpler: PR link, preview URL, a one-line summary of what
 shipped. Merging the PR is the approval action.
 
+**Proposed, not yet designed (raised by Drew during Session 48 hand-testing):** an "Ask AI"
+helper on each review card — a button that opens a small chat scoped to that one card,
+so Drew can ask what a `production_risk_flag` or `kb_entry_draft` is actually asking for
+before answering it, rather than guessing. Real questions this needs answered before it's
+buildable: what context the assistant gets (just the card's own fields, or the source
+repo too), whether it can draft an answer into the response field directly or only
+explain, and whether it's a new Claude API route or reuses something existing. Natural
+fit for Phase 2 or later, once real agent-generated cards exist to test it against — don't
+build this speculatively off the Phase 1 seed data.
+
 ---
 
 ## 6. Knowledge base loop
