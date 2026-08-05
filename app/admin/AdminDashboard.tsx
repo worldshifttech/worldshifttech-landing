@@ -192,6 +192,20 @@ export default function AdminDashboard({
               Audit KB
             </Link>
             <Link
+              href="/admin/repos"
+              className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Repos
+            </Link>
+            <Link
+              href="/admin/reviews"
+              className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Reviews
+            </Link>
+            <Link
               href="/"
               className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
               style={{ fontFamily: "var(--font-poppins)" }}

@@ -298,3 +298,125 @@ ALTER TABLE build_cost_entries ADD COLUMN IF NOT EXISTS project_id uuid REFERENC
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('project-files', 'project-files', false, 26214400)
 on conflict (id) do nothing;
+
+-- MIGRATION: Session 48 — WST Orchestrator Phase 1 (control plane)
+--
+-- Four new tables backing the multi-repo orchestration system described in
+-- ORCHESTRATOR_DESIGN.md. `framework_type` / `auth_convention` on `repos` replace the
+-- single `stack_type` field from the design doc's own draft schema — ORCHESTRATOR_DESIGN.md
+-- §2 flags that a single enum wrongly conflates framework choice with auth convention
+-- (three distinct auth conventions exist across the fleet), so this splits them. No RLS on
+-- any of the four tables — service-role only, same convention as build_cost_entries. Access
+-- is mediated by the /admin auth gate now, and will also be mediated by
+-- WST_ORCHESTRATOR_SECRET once Phase 2 adds machine-to-machine routes.
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE IF NOT EXISTS repos (
+  id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name                        text NOT NULL,
+  local_path                  text NOT NULL,
+  github_owner                text NOT NULL,
+  github_repo                 text NOT NULL,
+  vercel_project_id           text,
+  framework_type              text NOT NULL DEFAULT 'other',  -- 'nextjs' | 'vite' | 'other'
+  auth_convention             text NOT NULL DEFAULT 'none',   -- 'supabase_auth' | 'shared_secret' | 'none' | 'other'
+  client_project_id           uuid REFERENCES projects(id),
+  automation_enabled          boolean NOT NULL DEFAULT false,
+  planning_interval_hours     integer,
+  last_planning_session_at    timestamptz,
+  github_app_installation_id  bigint,
+  created_at                  timestamptz NOT NULL DEFAULT now(),
+  updated_at                  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS agent_sessions (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  repo_id            uuid NOT NULL REFERENCES repos(id),
+  session_type       text NOT NULL,               -- 'planning' | 'build'
+  status             text NOT NULL DEFAULT 'open', -- 'open' | 'awaiting_review' | 'approved' | 'running' | 'awaiting_verification' | 'done' | 'failed'
+  brief              text NOT NULL,
+  build_prompt       text,
+  pr_url             text,
+  pr_preview_url     text,
+  merged_commit_sha  text,
+  github_run_id      bigint,
+  created_at         timestamptz NOT NULL DEFAULT now(),
+  updated_at         timestamptz NOT NULL DEFAULT now(),
+  completed_at       timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS review_items (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id        uuid NOT NULL REFERENCES agent_sessions(id),
+  kind              text NOT NULL,                     -- 'consolidated_review' | 'production_risk_flag' | 'kb_entry_draft'
+  summary           text NOT NULL,
+  open_questions    jsonb NOT NULL DEFAULT '[]'::jsonb, -- [{ question, suggested_options: [...], answer: null | text }]
+  proposed_content  text,
+  drew_response     text,
+  status            text NOT NULL DEFAULT 'pending',    -- 'pending' | 'answered'
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  answered_at       timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS knowledge_base_entries (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title                 text NOT NULL,
+  problem_solved        text NOT NULL,
+  tags                  text[] NOT NULL DEFAULT '{}',
+  tech_stack            text[] NOT NULL DEFAULT '{}',
+  artifact_description  text NOT NULL,
+  artifact_location     text,
+  source_repo_id        uuid REFERENCES repos(id),
+  source_session_id     uuid REFERENCES agent_sessions(id),
+  embedding             vector(1024),
+  reuse_count           integer NOT NULL DEFAULT 0,
+  created_at            timestamptz NOT NULL DEFAULT now()
+);
+
+-- Seed data: the 5 known fleet repos from ORCHESTRATOR_DESIGN.md §2. Safe to run once.
+-- github_owner assumed 'worldshifttech' for all 5 (confirmed explicitly in the doc for
+-- forgotten-realms-dm and wst-build-manager only) — edit before running if any differ.
+INSERT INTO repos (name, local_path, github_owner, github_repo, framework_type, auth_convention) VALUES
+('worldshifttech-landing', 'C:\Users\drewg\worldshifttech-landing', 'worldshifttech', 'worldshifttech-landing', 'nextjs', 'supabase_auth'),
+('entos-group-website', 'C:\Users\drewg\entos-group-website', 'worldshifttech', 'entos-group-website', 'vite', 'none'),
+('drew-griffiths-speak-easy', 'C:\Users\drewg\drew-griffiths-speak-easy', 'worldshifttech', 'drew-griffiths-speak-easy', 'vite', 'shared_secret'),
+('forgotten-realms-dm', 'C:\Users\drewg\Documents\forgotten-realms-dm', 'worldshifttech', 'forgotten-realms-dm', 'vite', 'supabase_auth'),
+('wst-build-manager', 'C:\Users\drewg\wst-build-manager', 'worldshifttech', 'wst-build-manager', 'other', 'none');
+-- entos-group-website is client work per the doc's fleet notes — client_project_id left
+-- NULL here; link it to a real projects row via /admin/repos/[id] if one exists.
+
+-- Optional test data: one review_items row per kind, so /admin/reviews can be confirmed
+-- by hand before any real agent exists. Delete these three once Phase 2 produces real ones.
+INSERT INTO agent_sessions (repo_id, session_type, status, brief)
+VALUES (
+  (SELECT id FROM repos WHERE github_repo = 'worldshifttech-landing'),
+  'planning', 'awaiting_review', 'Test session seeded for Phase 1 UI verification'
+);
+
+INSERT INTO review_items (session_id, kind, summary, open_questions, proposed_content, status)
+VALUES (
+  (SELECT id FROM agent_sessions WHERE brief = 'Test session seeded for Phase 1 UI verification' ORDER BY created_at DESC LIMIT 1),
+  'consolidated_review',
+  'Explored the repo, drafted a build prompt for the client feedback UI. One open question before finishing.',
+  '[{"question": "Should client feedback be visible to Drew only, or also echoed back to the client as a confirmation?", "suggested_options": ["Drew only", "Echo back to client"], "answer": null}]'::jsonb,
+  E'Read README.md and NOTES.md first, then read app/projects/[slug]/page.tsx before touching anything.\nSession 48 (example) — Client feedback UI',
+  'pending'
+);
+
+INSERT INTO review_items (session_id, kind, summary, status)
+VALUES (
+  (SELECT id FROM agent_sessions WHERE brief = 'Test session seeded for Phase 1 UI verification' ORDER BY created_at DESC LIMIT 1),
+  'production_risk_flag',
+  'Flagged: this migration touches build_cost_entries, a table already in production use. Confirm the ALTER is additive-only before this session proceeds.',
+  'pending'
+);
+
+INSERT INTO review_items (session_id, kind, summary, proposed_content, status)
+VALUES (
+  (SELECT id FROM agent_sessions WHERE brief = 'Test session seeded for Phase 1 UI verification' ORDER BY created_at DESC LIMIT 1),
+  'kb_entry_draft',
+  'Drafted a reusable pattern for the signed-URL upload flow used in Session 47.',
+  E'Title: Two-step signed upload URL pattern\nProblem: browser uploads bypass Vercel function payload limits\nArtifact: lib/project-files.ts + app/api/project-files/upload-url/route.ts',
+  'pending'
+);

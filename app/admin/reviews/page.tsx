@@ -1,0 +1,74 @@
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { getSupabase } from "@/lib/supabase";
+import ReviewInboxClient, { type ReviewItem } from "./ReviewInboxClient";
+
+const ADMIN_EMAIL = "drew@worldshifttech.com";
+
+type RawReviewRow = {
+  id: string;
+  session_id: string;
+  kind: string;
+  summary: string;
+  open_questions: { question: string; suggested_options?: string[]; answer: string | null }[] | null;
+  proposed_content: string | null;
+  drew_response: string | null;
+  status: string;
+  created_at: string;
+  answered_at: string | null;
+  agent_sessions: {
+    session_type: string;
+    repos: { name: string } | null;
+  } | null;
+};
+
+export default async function AdminReviewsPage() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {},
+      },
+    }
+  );
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session || session.user.email !== ADMIN_EMAIL) {
+    redirect("/admin/login");
+  }
+
+  const serviceClient = getSupabase();
+
+  const { data: rawRows } = await serviceClient
+    .from("review_items")
+    .select("*, agent_sessions(session_type, repos(name))")
+    .order("created_at", { ascending: false });
+
+  const rows = (rawRows ?? []) as unknown as RawReviewRow[];
+
+  const reviewItems: ReviewItem[] = rows.map((r) => ({
+    id: r.id,
+    kind: r.kind as ReviewItem["kind"],
+    summary: r.summary,
+    open_questions: (r.open_questions ?? []).map((q) => ({
+      question: q.question,
+      suggested_options: q.suggested_options ?? [],
+      answer: q.answer ?? "",
+    })),
+    proposed_content: r.proposed_content,
+    drew_response: r.drew_response,
+    status: r.status as ReviewItem["status"],
+    created_at: r.created_at,
+    repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
+    session_type: r.agent_sessions?.session_type ?? "planning",
+  }));
+
+  return <ReviewInboxClient initialItems={reviewItems} />;
+}

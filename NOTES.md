@@ -1,4 +1,81 @@
-﻿Last session: 47
+﻿Last session: 48
+
+## Recent Changes (Session 48, August 5, 2026)
+
+**WST Orchestrator Phase 1 (control plane)**
+
+First implementation session for the multi-repo Claude Code orchestration system designed
+in `ORCHESTRATOR_DESIGN.md`. Scoped strictly to Phase 1: the four control-plane tables plus
+two admin surfaces, testable by hand with seeded rows. No GitHub App, no runner repo, no
+dispatch flow, no pgvector search, no scheduler — those are Phases 2 through 4.
+
+**Two deviations from the design doc's literal schema draft, both intentional:**
+1. `repos.stack_type` (single enum) was split into `framework_type` ('nextjs' | 'vite' |
+   'other') and `auth_convention` ('supabase_auth' | 'shared_secret' | 'none' | 'other').
+   ORCHESTRATOR_DESIGN.md §2 itself flags this as needed — three distinct auth conventions
+   exist across the fleet, and folding them into one enum with the frontend framework choice
+   was already called out as wrong before any code was written.
+2. `review_items.open_questions` items now carry an `answer` field inline (each question
+   answered individually, not one shared blob). Decided with Drew before this session was
+   billed: structured per-question answers over a single shared textarea, since it's cleaner
+   for a future agent dispatch to consume "question → answer" pairs directly. `drew_response`
+   remains as a fallback field for kinds with no open_questions (production_risk_flag,
+   kb_entry_draft) or general notes alongside answered questions.
+
+**Supabase migration, run in SQL editor (see `supabase/schema.sql`):** creates `repos`,
+`agent_sessions`, `review_items`, `knowledge_base_entries` (no RLS on any — service-role
+only, same convention as `build_cost_entries`), enables the `vector` extension for
+`knowledge_base_entries.embedding` (Phase 3 will actually populate/query it). Seeds the 5
+known fleet repos from ORCHESTRATOR_DESIGN.md §2 — `github_owner` assumed `worldshifttech`
+for all 5 (only confirmed explicitly for forgotten-realms-dm and wst-build-manager in the
+doc); `entos-group-website`'s `client_project_id` left NULL, link it via `/admin/repos/[id]`
+if a real projects row exists for that client. Also seeds one test `review_items` row per
+`kind` (consolidated_review / production_risk_flag / kb_entry_draft) so `/admin/reviews`
+could be confirmed by hand before any real agent exists — delete those three once Phase 2
+produces real ones.
+
+**`app/api/admin-repos/route.ts`** (new, POST) and **`app/api/admin-repos/[id]/route.ts`**
+(new, PATCH): same `verifyAdmin` bearer-token pattern as `admin-projects`.
+
+**`app/admin/repos/page.tsx` + `RepoFleetClient.tsx`** (new): fleet list (name,
+github_owner/repo, framework, auth convention, automation badge, last planning session) +
+inline "New Repo" form, same split as `admin/audit-knowledge`. `FRAMEWORK_OPTIONS` and
+`AUTH_OPTIONS` are exported from `RepoFleetClient.tsx` and reused by the detail page rather
+than duplicated.
+
+**`app/admin/repos/[id]/page.tsx` + `RepoDetailClient.tsx`** (new): full field edit
+(name, local_path, github_owner/repo, vercel_project_id, framework_type, auth_convention,
+client_project_id via a dropdown of existing `projects`, automation_enabled toggle,
+planning_interval_hours, github_app_installation_id). No "Run Planning Session" button yet
+— left a `{/* Phase 2: Run Planning Session */}` comment marking where it lands.
+
+**`app/api/admin-reviews/[id]/route.ts`** (new, PATCH): same `verifyAdmin` pattern. Accepts
+`{ open_questions?, drew_response? }`, overwrites whichever is provided, sets
+`status = 'answered'` and `answered_at`.
+
+**`app/admin/reviews/page.tsx` + `ReviewInboxClient.tsx`** (new): Pending/Answered tabs.
+Page does a nested Supabase select (`review_items` → `agent_sessions` → `repos`) to get the
+repo name and session type per card without extra round trips. Each card: kind badge (3
+colors), repo + session type, summary, `proposed_content` in a monospace block (same
+styling as the build-prompt block in `AdminDashboard.tsx`), one input per open question with
+its `suggested_options` as chips that append into that question's own input, a
+`drew_response` textarea (required when a card has zero open_questions, optional
+otherwise), "Submit Answers" disabled until every question has an answer. Answered cards
+render read-only with each answer shown beneath its question.
+
+**`app/admin/AdminDashboard.tsx`**: added "Repos" and "Reviews" nav links next to "Audit
+KB". Nothing else in this file touched.
+
+Verified with `npx tsc --noEmit` (clean) and `npm run build` (clean, all new routes listed).
+Both new pages confirmed to hit the same auth redirect as the existing `/admin` pages
+(307 → `/admin/login`) via local dev server logs — the authenticated UI itself needs Drew's
+own login to check by eye, no way to verify that part headlessly.
+
+**Next: Phase 2 — `wst-orchestrator-runner` repo, GitHub App token exchange, one manual
+"Run Planning Session" button wired end-to-end to a real repo, real review card, real
+approved build prompt, real PR (ORCHESTRATOR_DESIGN.md §10).**
+
+---
 
 ## Recent Changes (Session 47, August 5, 2026)
 

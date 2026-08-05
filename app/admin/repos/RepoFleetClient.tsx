@@ -1,0 +1,348 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import SignOutButton from "@/app/components/SignOutButton";
+import { getSupabaseBrowser } from "@/lib/supabase";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type Repo = {
+  id: string;
+  name: string;
+  local_path: string;
+  github_owner: string;
+  github_repo: string;
+  vercel_project_id: string | null;
+  framework_type: string;
+  auth_convention: string;
+  client_project_id: string | null;
+  automation_enabled: boolean;
+  planning_interval_hours: number | null;
+  last_planning_session_at: string | null;
+};
+
+export type ProjectOption = { id: string; title: string };
+
+export const FRAMEWORK_OPTIONS = [
+  { value: "nextjs", label: "Next.js" },
+  { value: "vite", label: "Vite" },
+  { value: "other", label: "Other" },
+];
+
+export const AUTH_OPTIONS = [
+  { value: "supabase_auth", label: "Supabase Auth" },
+  { value: "shared_secret", label: "Shared secret" },
+  { value: "none", label: "None" },
+  { value: "other", label: "Other" },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function relativeDate(dateStr: string | null): string {
+  if (!dateStr) return "Never";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
+function frameworkLabel(value: string): string {
+  return FRAMEWORK_OPTIONS.find((f) => f.value === value)?.label ?? value;
+}
+
+function authLabel(value: string): string {
+  return AUTH_OPTIONS.find((a) => a.value === value)?.label ?? value;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function RepoFleetClient({
+  initialRepos,
+}: {
+  initialRepos: Repo[];
+  projects: ProjectOption[];
+}) {
+  const router = useRouter();
+  const [repos] = useState<Repo[]>(initialRepos);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newLocalPath, setNewLocalPath] = useState("");
+  const [newGithubOwner, setNewGithubOwner] = useState("worldshifttech");
+  const [newGithubRepo, setNewGithubRepo] = useState("");
+  const [newFramework, setNewFramework] = useState("nextjs");
+  const [newAuth, setNewAuth] = useState("supabase_auth");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/admin-repos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: newName,
+          local_path: newLocalPath,
+          github_owner: newGithubOwner,
+          github_repo: newGithubRepo,
+          framework_type: newFramework,
+          auth_convention: newAuth,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCreateError(data.error ?? "Failed to create repo");
+        return;
+      }
+
+      router.push(`/admin/repos/${data.id}`);
+    } catch {
+      setCreateError("Something went wrong. Please try again.");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Nav */}
+      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-5">
+          <Link href="/">
+            <Image
+              src="/World_shift_tech_LOGO_PRIMARY.png"
+              alt="World Shift Technologies"
+              width={160}
+              height={38}
+              className="object-contain"
+              priority
+            />
+          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/admin"
+              className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              &larr; Dashboard
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Back to Site
+            </Link>
+            <SignOutButton />
+          </div>
+        </div>
+      </nav>
+
+      {/* Main */}
+      <main className="flex-1 px-6 py-16">
+        <div className="w-full max-w-5xl mx-auto">
+          <h1
+            className="text-4xl sm:text-5xl font-bold text-[#00205C] mb-6"
+            style={{ fontFamily: "var(--font-poppins)" }}
+          >
+            Repo Fleet
+          </h1>
+
+          <div className="flex items-center justify-between mb-8">
+            <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
+              {repos.length} repo{repos.length !== 1 ? "s" : ""}
+            </p>
+            <button
+              onClick={() => setShowNewForm((v) => !v)}
+              className="text-xs font-semibold px-4 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              {showNewForm ? "Cancel" : "+ New Repo"}
+            </button>
+          </div>
+
+          {showNewForm && (
+            <form
+              onSubmit={handleCreate}
+              className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 mb-6 space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Name</label>
+                  <input
+                    required
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Local Path</label>
+                  <input
+                    required
+                    value={newLocalPath}
+                    onChange={(e) => setNewLocalPath(e.target.value)}
+                    placeholder="C:\Users\drewg\..."
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">GitHub Owner</label>
+                  <input
+                    required
+                    value={newGithubOwner}
+                    onChange={(e) => setNewGithubOwner(e.target.value)}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">GitHub Repo</label>
+                  <input
+                    required
+                    value={newGithubRepo}
+                    onChange={(e) => setNewGithubRepo(e.target.value)}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Framework</label>
+                  <select
+                    value={newFramework}
+                    onChange={(e) => setNewFramework(e.target.value)}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  >
+                    {FRAMEWORK_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Auth Convention</label>
+                  <select
+                    value={newAuth}
+                    onChange={(e) => setNewAuth(e.target.value)}
+                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                  >
+                    {AUTH_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {createError && (
+                <p className="text-red-400 text-xs" style={{ fontFamily: "var(--font-poppins)" }}>
+                  {createError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={creating}
+                className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{ fontFamily: "var(--font-poppins)" }}
+              >
+                {creating ? "Creating..." : "Create Repo"}
+              </button>
+            </form>
+          )}
+
+          {repos.length === 0 ? (
+            <p className="text-[#00205C] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
+              No repos yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {repos.map((repo) => (
+                <Link
+                  key={repo.id}
+                  href={`/admin/repos/${repo.id}`}
+                  className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 border border-[#00205C]/[0.12] rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
+                      {repo.name}
+                    </p>
+                    <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
+                      {repo.github_owner}/{repo.github_repo}
+                    </p>
+                  </div>
+
+                  <span
+                    className="hidden sm:block text-[#76777A] text-xs flex-shrink-0"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {frameworkLabel(repo.framework_type)}
+                  </span>
+
+                  <span
+                    className="hidden md:block text-[#76777A] text-xs flex-shrink-0"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {authLabel(repo.auth_convention)}
+                  </span>
+
+                  <span
+                    className="hidden md:block text-[#76777A] text-xs flex-shrink-0"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    Last run: {relativeDate(repo.last_planning_session_at)}
+                  </span>
+
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
+                      repo.automation_enabled
+                        ? "border border-[#4B858E] text-[#4B858E]"
+                        : "bg-[#00205C]/[0.05] text-[#76777A] border border-[#00205C]/15"
+                    }`}
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {repo.automation_enabled ? "Automation on" : "Paused"}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="border-t border-[#00205C]/[0.10] py-6 px-6">
+        <div className="max-w-5xl mx-auto text-center text-[#76777A] text-xs">
+          &copy; {new Date().getFullYear()} World Shift Technologies
+        </div>
+      </footer>
+    </div>
+  );
+}

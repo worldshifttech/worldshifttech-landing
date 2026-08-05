@@ -9,6 +9,11 @@ Next.js marketing site at worldshifttech.com. Personalized front door: visitors 
 - `WST_BRAND_GUIDE_2026.md` — brand colors, fonts, tone
 - `AGENTS.md` — Next.js version warnings (read before writing any framework code)
 
+**Orchestrator work:** read `ORCHESTRATOR_DESIGN.md` before touching `/admin/repos`,
+`/admin/reviews`, or the `repos` / `agent_sessions` / `review_items` /
+`knowledge_base_entries` tables — it's the source of truth for the multi-repo Claude Code
+orchestration system (design locked, Phase 1 of 6 built as of Session 48).
+
 ---
 
 ## Session Modes
@@ -106,8 +111,9 @@ npm run dev  # http://localhost:3000
 - [x] `/admin/projects/[id]` — full project management: core fields, milestone editor, budget cap vs. logged hours
 - [x] `/projects/[slug]` — public client roadmap page, no login; open or gated by a per-project password (`lib/project-access.ts`)
 - [x] Session 47 — file uploads, both sides. Private Supabase Storage bucket (`project-files`), signed upload/download URLs, Turnstile-gated on the public client form, Slack ping on client uploads, admin can delete
-- [x] Client feedback is scaffolded in the schema (`project_feedback`) but has no UI yet — Session 48
-- [x] `build_cost_entries.project_id` column exists but isn't populated or surfaced against the budget cap yet — Session 49
+- [x] Session 48 — WST Orchestrator Phase 1 (control plane). `repos`, `agent_sessions`, `review_items`, `knowledge_base_entries` tables (no RLS, service-role only). `/admin/repos` — fleet list, New Repo form, `/admin/repos/[id]` full edit. `/admin/reviews` — Pending/Answered inbox with structured per-question answers. See `ORCHESTRATOR_DESIGN.md`. No GitHub App integration, dispatch flow, pgvector search, or scheduler yet (Phases 2-4).
+- [x] Client feedback is scaffolded in the schema (`project_feedback`) but has no UI yet — a future session
+- [x] `build_cost_entries.project_id` column exists but isn't populated or surfaced against the budget cap yet — a future session
 - [x] `/audit` — 5-phase AI waste estimate wizard (guest-only; the account-creation "save your report" flow was retired in Session 46 — CTA is Book a Call only)
 - [x] `/api/generate-audit` — Claude audit report with tool-registry knowledge base
 - [x] `content/tool-registry.json` — ~80 tool knowledge base with waste patterns
