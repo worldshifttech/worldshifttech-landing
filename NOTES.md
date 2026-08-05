@@ -1,4 +1,78 @@
-﻿Last session: 48
+﻿Last session: 49
+
+## Recent Changes (Session 49, August 5, 2026)
+
+**WST Orchestrator Phase 2a — dispatch + result ingestion (this repo's half)**
+
+This repo's side of the first real end-to-end orchestrator loop. The other half —
+`wst-orchestrator-runner`'s own GitHub Actions workflow — is a separate repo, not built
+this session (it didn't exist locally yet when this session ran). Nothing in this session
+is testable end-to-end until that repo exists and Drew has confirmed the GitHub App
+installation covers it.
+
+**Design decision, applied without asking (defensible, flagged here per the established
+pattern):** one shared GitHub App installation across the runner repo and all 5 fleet
+repos, rather than a separate installation per repo. `lib/github-app.ts`'s
+`getInstallationToken(installationId)` takes whichever installation ID is on the *target*
+repo's `repos` row and uses that same token both to fire `repository_dispatch` on the
+runner and (later, inside the runner's own workflow) to clone/push the target repo. This
+only works if Drew installs the App as one shared installation — if he ends up installing
+it separately per repo instead, `dispatch/route.ts` needs a second lookup for whichever
+installation actually covers the runner repo.
+
+**`lib/github-app.ts`** (new): `getInstallationToken(installationId: number): Promise<string>`
+via `@octokit/auth-app`'s `createAppAuth`, reading `WST_GITHUB_APP_ID` /
+`WST_GITHUB_APP_PRIVATE_KEY`. New dependency (`@octokit/auth-app`) — deliberate, over
+hand-rolling RS256 JWT signing, given how easy the claim set and clock-skew handling are to
+get subtly wrong for something that gates real repo write access.
+
+**`app/api/orchestrator/dispatch/route.ts`** (new, POST): same `verifyAdmin` bearer pattern
+as `admin-repos`. Looks up the target repo's `github_owner`/`github_repo`/
+`github_app_installation_id` (400 if the installation ID isn't set yet — surfaces cleanly
+in the UI rather than failing deep in a token exchange), creates an `agent_sessions` row
+(`status: 'running'`), mints an installation token, POSTs `repository_dispatch` to
+`WST_ORCHESTRATOR_RUNNER_REPO` with `{ repo_id, session_id, session_type, brief,
+github_owner, github_repo, resume_context: null }` as `client_payload`. Marks the session
+`failed` if the GitHub API call itself fails (network error or non-2xx) rather than leaving
+it stuck on `running` forever. On a successful planning dispatch, also stamps
+`repos.last_planning_session_at` — feeds the "Last run" column `/admin/repos` already had
+from Session 48 with no changes needed there.
+
+**`app/api/orchestrator/session-result/route.ts`** (new, POST): bearer-secret auth against
+`WST_ORCHESTRATOR_SECRET` (plain string comparison, same shape as `ingest-build-cost`, not
+the Supabase-auth `verifyAdmin` pattern — this one's called by the runner, not the browser).
+Updates the `agent_sessions` row (status, build_prompt, PR fields, sets `completed_at` on
+`done`/`failed`), optionally inserts one `review_items` row from a `review` object in the
+body. `status` is typed as a bare string, not a literal union — the schema has no CHECK
+constraint on `agent_sessions.status`, so the route shouldn't be stricter than the table.
+
+**`app/admin/repos/[id]/RepoDetailClient.tsx`**: replaced the Session 48 placeholder
+comment with a real "Run Planning Session" section — brief textarea, dispatch button
+(disabled until a `github_app_installation_id` is set on the repo, with an inline hint
+telling Drew to set one), redirects to `/admin/reviews` on success rather than staying on
+the page waiting for something that won't resolve for minutes.
+
+**New Vercel env vars (not yet set — Drew has the App ID and private key ready but they
+still need to land in Vercel):** `WST_GITHUB_APP_ID`, `WST_GITHUB_APP_PRIVATE_KEY`,
+`WST_ORCHESTRATOR_SECRET` (new, distinct from `WST_INGEST_SECRET`),
+`WST_ORCHESTRATOR_RUNNER_REPO` (`worldshifttech/wst-orchestrator-runner`).
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, new routes listed) and a
+local dev-server check that `/admin/repos/[id]` still hits the same auth redirect as every
+other `/admin` page — the actual dispatch flow can't be verified further until
+`wst-orchestrator-runner` exists and both halves are deployed.
+
+**Next: Phase 2b — the `wst-orchestrator-runner` repo itself.** Plain manual repo (not
+routed through `wst-build-manager` — it's CI-only, no app layer, no need for the
+Supabase/Vercel/ClickUp provisioning that tool does for real client builds). Build prompt
+for its first session already drafted in this session's planning conversation: one GitHub
+Actions workflow triggered on `repository_dispatch`, branching on `session_type` —
+`planning` runs the bare `claude` CLI with a read-only `--allowedTools` (matching this
+repo's own Planning Mode, which never writes files or runs commands), `build` runs
+`anthropics/claude-code-action@v1` with a scoped `--allowedTools` allowlist (Drew's choice
+over `--dangerously-skip-permissions`) and lets the Action handle commit/push/PR natively.
+
+---
 
 ## Recent Changes (Session 48, August 5, 2026)
 

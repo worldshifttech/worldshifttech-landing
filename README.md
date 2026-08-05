@@ -89,6 +89,7 @@ npm run dev  # http://localhost:3000
 - **AI:** Anthropic SDK v0.90 — model `claude-sonnet-4-20250514`
 - **Email:** Resend
 - **Bot protection:** Cloudflare Turnstile
+- **GitHub App auth:** `@octokit/auth-app` — exchanges the WST orchestrator's GitHub App for installation tokens (`lib/github-app.ts`)
 - **Hosting:** Vercel (auto-deploy on push)
 
 > **Important:** This is Next.js 16 — APIs and conventions differ from training data. Read `AGENTS.md` before writing any Next.js code.
@@ -112,6 +113,7 @@ npm run dev  # http://localhost:3000
 - [x] `/projects/[slug]` — public client roadmap page, no login; open or gated by a per-project password (`lib/project-access.ts`)
 - [x] Session 47 — file uploads, both sides. Private Supabase Storage bucket (`project-files`), signed upload/download URLs, Turnstile-gated on the public client form, Slack ping on client uploads, admin can delete
 - [x] Session 48 — WST Orchestrator Phase 1 (control plane). `repos`, `agent_sessions`, `review_items`, `knowledge_base_entries` tables (no RLS, service-role only). `/admin/repos` — fleet list, New Repo form, `/admin/repos/[id]` full edit. `/admin/reviews` — Pending/Answered inbox with structured per-question answers. See `ORCHESTRATOR_DESIGN.md`. No GitHub App integration, dispatch flow, pgvector search, or scheduler yet (Phases 2-4).
+- [x] Session 49 — WST Orchestrator Phase 2a (this repo's half of the dispatch loop). `lib/github-app.ts` exchanges the GitHub App for an installation token. `/api/orchestrator/dispatch` (admin-only) creates an `agent_sessions` row and fires `repository_dispatch` on `wst-orchestrator-runner`. `/api/orchestrator/session-result` (bearer-secret, `WST_ORCHESTRATOR_SECRET`) ingests the runner's result into `agent_sessions` + a `review_items` row. "Run Planning Session" button live on `/admin/repos/[id]`. Not yet wired end-to-end — needs the `wst-orchestrator-runner` repo's own workflow (separate repo, not built this session).
 - [x] Client feedback is scaffolded in the schema (`project_feedback`) but has no UI yet — a future session
 - [x] `build_cost_entries.project_id` column exists but isn't populated or surfaced against the budget cap yet — a future session
 - [x] `/audit` — 5-phase AI waste estimate wizard (guest-only; the account-creation "save your report" flow was retired in Session 46 — CTA is Book a Call only)
@@ -147,6 +149,10 @@ npm run dev  # http://localhost:3000
 | `ANTHROPIC_ADMIN_KEY` | Set |
 | `WST_INGEST_SECRET` | Set |
 | `WST_COOKIE_SECRET` | **Needs to be added** (Session 46) — signs the per-project password-gate cookie in `lib/project-access.ts`. Any long random string. |
+| `WST_GITHUB_APP_ID` | (Session 49) — the WST Orchestrator's GitHub App ID, used by `lib/github-app.ts` to mint installation tokens. |
+| `WST_GITHUB_APP_PRIVATE_KEY` | (Session 49) — same App's private key (PEM). Paste with literal newlines, no `\n` escaping needed in Vercel's env var UI. |
+| `WST_ORCHESTRATOR_SECRET` | (Session 49) — bearer secret for `/api/orchestrator/session-result`, same shape as `WST_INGEST_SECRET` but a distinct value. Must match the `wst-orchestrator-runner` repo's own Actions secret of the same name. |
+| `WST_ORCHESTRATOR_RUNNER_REPO` | (Session 49) — `worldshifttech/wst-orchestrator-runner`. Read from env in `/api/orchestrator/dispatch` rather than hardcoded. |
 
 ---
 

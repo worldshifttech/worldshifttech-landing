@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabase";
@@ -33,6 +34,7 @@ export default function RepoDetailClient({
   repo: RepoFields;
   projects: ProjectOption[];
 }) {
+  const router = useRouter();
   const [name, setName] = useState(repo.name);
   const [localPath, setLocalPath] = useState(repo.local_path);
   const [githubOwner, setGithubOwner] = useState(repo.github_owner);
@@ -52,6 +54,48 @@ export default function RepoDetailClient({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const [planningBrief, setPlanningBrief] = useState("");
+  const [dispatching, setDispatching] = useState(false);
+  const [dispatchError, setDispatchError] = useState("");
+
+  async function handleRunPlanningSession() {
+    setDispatching(true);
+    setDispatchError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/orchestrator/dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          repo_id: repo.id,
+          session_type: "planning",
+          brief: planningBrief,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDispatchError(data.error ?? "Failed to dispatch");
+        return;
+      }
+
+      router.push("/admin/reviews");
+    } catch {
+      setDispatchError("Something went wrong. Please try again.");
+    } finally {
+      setDispatching(false);
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -263,7 +307,33 @@ export default function RepoDetailClient({
             </div>
           </div>
 
-          {/* Phase 2: Run Planning Session */}
+          {/* Run Planning Session */}
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              Run Planning Session
+            </span>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Brief</label>
+              <textarea
+                value={planningBrief}
+                onChange={(e) => setPlanningBrief(e.target.value)}
+                placeholder="What should this planning session focus on?"
+                rows={3}
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 resize-none"
+              />
+            </div>
+            {dispatchError && <p className="text-red-400 text-xs">{dispatchError}</p>}
+            <button
+              onClick={handleRunPlanningSession}
+              disabled={dispatching || !planningBrief.trim() || !repo.github_app_installation_id}
+              className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {dispatching ? "Dispatching..." : "Run Planning Session"}
+            </button>
+            {!repo.github_app_installation_id && (
+              <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
+            )}
+          </div>
 
           {/* Save */}
           <div className="flex items-center gap-4 pb-12">
