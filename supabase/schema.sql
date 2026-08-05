@@ -288,3 +288,13 @@ CREATE TABLE project_feedback (
 -- Links build-cost telemetry to a real project. Not backfilled or populated yet
 -- (Session 49) — ingest-build-cost still only writes project_slug for now.
 ALTER TABLE build_cost_entries ADD COLUMN IF NOT EXISTS project_id uuid REFERENCES projects(id);
+
+-- MIGRATION: Session 47 — private storage bucket for project files
+--
+-- No storage.objects RLS policies: every read and write goes through the
+-- service-role client via signed URLs (createSignedUploadUrl / createSignedUrl),
+-- generated only after a route handler verifies admin auth or the project's
+-- public/password access rule. Nothing touches the bucket directly from the browser.
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('project-files', 'project-files', false, 26214400)
+on conflict (id) do nothing;

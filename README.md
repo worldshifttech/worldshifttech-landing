@@ -105,7 +105,8 @@ npm run dev  # http://localhost:3000
 - [x] `/admin` — project list (title, client, % complete, next update, access badge) + "New Project"
 - [x] `/admin/projects/[id]` — full project management: core fields, milestone editor, budget cap vs. logged hours
 - [x] `/projects/[slug]` — public client roadmap page, no login; open or gated by a per-project password (`lib/project-access.ts`)
-- [x] File uploads and client feedback are scaffolded in the schema (`project_files`, `project_feedback`) but have no UI yet — Sessions 47–48
+- [x] Session 47 — file uploads, both sides. Private Supabase Storage bucket (`project-files`), signed upload/download URLs, Turnstile-gated on the public client form, Slack ping on client uploads, admin can delete
+- [x] Client feedback is scaffolded in the schema (`project_feedback`) but has no UI yet — Session 48
 - [x] `build_cost_entries.project_id` column exists but isn't populated or surfaced against the budget cap yet — Session 49
 - [x] `/audit` — 5-phase AI waste estimate wizard (guest-only; the account-creation "save your report" flow was retired in Session 46 — CTA is Book a Call only)
 - [x] `/api/generate-audit` — Claude audit report with tool-registry knowledge base

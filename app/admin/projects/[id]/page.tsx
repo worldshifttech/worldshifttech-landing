@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabase } from "@/lib/supabase";
+import { BUCKET } from "@/lib/project-files";
 import ProjectDetailClient from "./ProjectDetailClient";
 
 const ADMIN_EMAIL = "drew@worldshifttech.com";
@@ -60,6 +61,26 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
   );
   const costLogged = (costRows ?? []).reduce((sum, r) => sum + (Number(r.total_cost) || 0), 0);
 
+  const { data: fileRows } = await serviceClient
+    .from("project_files")
+    .select("*")
+    .eq("project_id", id)
+    .order("created_at", { ascending: false });
+
+  const files = await Promise.all(
+    (fileRows ?? []).map(async (f) => {
+      const { data: signed } = await serviceClient.storage.from(BUCKET).createSignedUrl(f.storage_path, 3600);
+      return {
+        id: f.id,
+        file_name: f.file_name,
+        uploaded_by: f.uploaded_by,
+        note: f.note,
+        created_at: f.created_at,
+        downloadUrl: signed?.signedUrl ?? null,
+      };
+    })
+  );
+
   return (
     <ProjectDetailClient
       project={{
@@ -83,6 +104,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
       }))}
       hoursLogged={hoursLogged}
       costLogged={costLogged}
+      files={files}
     />
   );
 }

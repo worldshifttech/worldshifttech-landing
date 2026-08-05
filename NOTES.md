@@ -1,4 +1,30 @@
-﻿Last session: 46
+﻿Last session: 47
+
+## Recent Changes (Session 47, August 5, 2026)
+
+**File uploads, both sides**
+
+Files live in a private Supabase Storage bucket (`project-files`, 25MB cap), never a public one, so a password-protected project's files stay behind the same gate as the page itself. Every read and write goes through the service-role client via signed URLs, there are no `storage.objects` RLS policies. Judgment calls made without asking, flagged here per the Session 46 pattern: shared two-way file list (Drew's uploads and the client's both show in one list, not just client-to-Drew), no client-side delete, Slack notification fires only on client uploads.
+
+**`lib/project-files.ts`** (new): `BUCKET` constant, `MAX_FILE_SIZE` (25MB), `buildStoragePath(projectId, fileName)` — randomized path, never guessable from the original filename.
+
+**`app/api/project-files/upload-url/route.ts`** (new, POST): issues a signed upload URL. Dual auth: `uploadedBy: "drew"` requires the admin bearer token (same pattern as `admin-projects`); `uploadedBy: "client"` requires a valid Turnstile token (verified against Cloudflare's siteverify endpoint, same pattern as `/api/personalize`) plus project access (public project, or a valid `wst_pa_{slug}` cookie for password-protected ones).
+
+**`app/api/project-files/route.ts`** (new, POST): records the `project_files` row after the browser finishes uploading to the signed URL. Re-runs the same access check as the route above, does not re-verify `turnstileToken` since Cloudflare tokens are single-use and already spent. Fires a fire-and-forget POST to `/api/notify-slack` (`type: "file_upload"`) when `uploaded_by === "client"`, using `req.nextUrl.origin` to build the absolute URL since a server-side `fetch` can't resolve a relative path.
+
+**`app/api/project-files/[id]/route.ts`** (new, DELETE): admin-only, removes the storage object then the row.
+
+**`app/api/notify-slack/route.ts`**: added a `file_upload` branch ahead of the existing `audit`/`resubmission`/default chain.
+
+**`app/projects/[slug]/FileUploads.tsx`** (new): client-facing file list + upload form. Turnstile widget rendered explicitly, same pattern as `app/meet/page.tsx`; submit disabled until a token exists. Upload flow: request signed URL, `uploadToSignedUrl` straight from the browser to Supabase Storage (bypasses Vercel's function payload limit entirely), confirm via the POST route, `router.refresh()`. `app/projects/[slug]/page.tsx`: fetches `project_files` + a fresh `createSignedUrl` (1 hour expiry) per file, renders `<FileUploads>` in place of the old placeholder. Feedback placeholder (Session 48) untouched.
+
+**`app/admin/projects/[id]/FileUploads.tsx`** (new): same list, no Turnstile (already behind the admin login), adds a delete (×) per row. `app/admin/projects/[id]/page.tsx` and `ProjectDetailClient.tsx`: fetch/pass `files`, render `<FileUploads>` in place of the old placeholder.
+
+**Supabase migration, run in SQL editor (see `supabase/schema.sql`):** creates the private `project-files` storage bucket with a 25MB `file_size_limit`. No new tables, `project_files` already existed from Session 46.
+
+**Next sessions:** 48 (client feedback, both sides), 49 (wire `ingest-build-cost` to resolve `project_id`, surface real hours/cost against budget caps).
+
+---
 
 ## Recent Changes (Session 46, August 4, 2026)
 

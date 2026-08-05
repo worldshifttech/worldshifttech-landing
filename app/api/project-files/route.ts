@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase";
+import { verifyAccessToken, accessCookieName } from "@/lib/project-access";
+
+const ADMIN_EMAIL = "drew@worldshifttech.com";
+
+async function verifyAdmin(req: NextRequest): Promise<boolean> {
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.replace("Bearer ", "").trim();
+  if (!token) return false;
+  const supabase = getSupabase();
+  const { data, error } = await supabase.auth.getUser(token);
+  return !error && data.user?.email === ADMIN_EMAIL;
+}
+
+async function verifyClientAccess(req: NextRequest, slug: string): Promise<boolean> {
+  const supabase = getSupabase();
+  const { data: project } = await supabase.from("projects").select("access_mode").eq("slug", slug).single();
+
+  if (!project) return false;
+  if (project.access_mode === "public") return true;
+
+  const token = req.cookies.get(accessCookieName(slug))?.value;
+  return !!token && verifyAccessToken(slug, token);
+}
+
+// Records the project_files row once the browser has finished uploading to the
+// signed URL from /api/project-files/upload-url. Re-runs the same access check
+// as that route for defense in depth, but does not re-verify turnstileToken —
+// Cloudflare tokens are single-use and were already spent there.
+export async function POST(req: NextRequest) {
+  const body = (await req.json()) as {
+    projectId?: string;
+    slug?: string;
+    storagePath?: string;
+    fileName?: string;
+    uploadedBy?: "client" | "drew";
+    note?: string;
+  };
+
+  const { projectId, slug, storagePath, fileName, uploadedBy, note } = body;
+
+  if (!projectId || !slug || !storagePath || !fileName || !uploadedBy) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (uploadedBy === "drew") {
+    if (!(await verifyAdmin(req))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  } else {
+    if (!(await verifyClientAccess(req, slug))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("project_files")
+    .insert({
+      project_id: projectId,
+      file_name: fileName,
+      storage_path: storagePath,
+      uploaded_by: uploadedBy,
+      note: note || null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: error?.message ?? "Could not save file" }, { status: 500 });
+  }
+
+  if (uploadedBy === "client") {
+    const { data: project } = await supabase.from("projects").select("title").eq("id", projectId).single();
+    fetch(new URL("/api/notify-slack", req.nextUrl.origin), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "file_upload",
+        fileName,
+        projectTitle: project?.title ?? "Untitled",
+        projectId,
+      }),
+    }).catch(() => {});
+  }
+
+  return NextResponse.json({ ok: true, id: data.id });
+}

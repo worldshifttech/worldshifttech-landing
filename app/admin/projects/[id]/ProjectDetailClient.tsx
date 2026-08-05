@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabase";
 import SignOutButton from "@/app/components/SignOutButton";
+import FileUploads from "./FileUploads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,15 @@ type Milestone = {
   target_date: string | null;
 };
 
+type ProjectFile = {
+  id: string;
+  file_name: string;
+  uploaded_by: "client" | "drew";
+  note: string | null;
+  created_at: string;
+  downloadUrl: string | null;
+};
+
 const STATUS_OPTIONS: { value: Milestone["status"]; label: string }[] = [
   { value: "not_started", label: "Not started" },
   { value: "in_progress", label: "In progress" },
@@ -42,11 +52,13 @@ export default function ProjectDetailClient({
   initialMilestones,
   hoursLogged,
   costLogged,
+  files,
 }: {
   project: ProjectFields;
   initialMilestones: Milestone[];
   hoursLogged: number;
   costLogged: number;
+  files: ProjectFile[];
 }) {
   const [title, setTitle] = useState(project.title);
   const [clientName, setClientName] = useState(project.client_name ?? "");
@@ -375,10 +387,9 @@ export default function ProjectDetailClient({
             )}
           </div>
 
-          {/* Placeholders — Sessions 47–48 */}
-          <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm">
-            File uploads — coming in a future session
-          </div>
+          <FileUploads projectId={project.id} slug={project.slug} files={files} />
+
+          {/* Placeholder — Session 48 */}
           <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm">
             Client feedback — coming in a future session
           </div>

@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabase";
 import { verifyAccessToken, accessCookieName } from "@/lib/project-access";
+import { BUCKET } from "@/lib/project-files";
 import PasswordGate from "./PasswordGate";
+import FileUploads from "./FileUploads";
 
 const STATUS_LABEL: Record<string, string> = {
   not_started: "Not started",
@@ -65,6 +67,26 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
       ? `${hoursUsed.toFixed(1)} of ${project.budget_hours_cap} hours used`
       : `${hoursUsed.toFixed(1)} hours logged`;
   }
+
+  const { data: fileRows } = await supabase
+    .from("project_files")
+    .select("*")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false });
+
+  const files = await Promise.all(
+    (fileRows ?? []).map(async (f) => {
+      const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(f.storage_path, 3600);
+      return {
+        id: f.id,
+        file_name: f.file_name,
+        uploaded_by: f.uploaded_by,
+        note: f.note,
+        created_at: f.created_at,
+        downloadUrl: signed?.signedUrl ?? null,
+      };
+    })
+  );
 
   const nextDue = formatDate(project.next_due_date);
 
@@ -158,10 +180,11 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Placeholders — Sessions 47–48 */}
-          <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm mb-4">
-            File uploads — coming in a future session
+          <div className="mb-4">
+            <FileUploads projectId={project.id} slug={slug} files={files} />
           </div>
+
+          {/* Placeholder — Session 48 */}
           <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm">
             Client feedback — coming in a future session
           </div>
