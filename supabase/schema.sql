@@ -374,7 +374,10 @@ CREATE TABLE IF NOT EXISTS knowledge_base_entries (
   created_at            timestamptz NOT NULL DEFAULT now()
 );
 
--- Seed data: the 5 known fleet repos from ORCHESTRATOR_DESIGN.md §2. Safe to run once.
+-- Seed data: the 5 known fleet repos from ORCHESTRATOR_DESIGN.md §2. Safe to run once —
+-- github_repo has no unique constraint, so running this INSERT a second time duplicates
+-- every row rather than erroring. If repos already has 5 rows, skip straight to the test
+-- data below instead of re-running this block.
 -- github_owner assumed 'worldshifttech' for all 5 (confirmed explicitly in the doc for
 -- forgotten-realms-dm and wst-build-manager only) — edit before running if any differ.
 INSERT INTO repos (name, local_path, github_owner, github_repo, framework_type, auth_convention) VALUES
@@ -390,7 +393,7 @@ INSERT INTO repos (name, local_path, github_owner, github_repo, framework_type, 
 -- by hand before any real agent exists. Delete these three once Phase 2 produces real ones.
 INSERT INTO agent_sessions (repo_id, session_type, status, brief)
 VALUES (
-  (SELECT id FROM repos WHERE github_repo = 'worldshifttech-landing'),
+  (SELECT id FROM repos WHERE github_repo = 'worldshifttech-landing' LIMIT 1),
   'planning', 'awaiting_review', 'Test session seeded for Phase 1 UI verification'
 );
 

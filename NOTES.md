@@ -75,6 +75,17 @@ own login to check by eye, no way to verify that part headlessly.
 "Run Planning Session" button wired end-to-end to a real repo, real review card, real
 approved build prompt, real PR (ORCHESTRATOR_DESIGN.md §10).**
 
+**Same-day follow-up:** the migration failed partway on first real run — `repos` seeded
+correctly (5 rows), but the `agent_sessions` test-row insert threw `ERROR: 21000: more than
+one row returned by a subquery used as an expression` on
+`(SELECT id FROM repos WHERE github_repo = 'worldshifttech-landing')`, which had no
+`LIMIT 1`. `review_items`/`knowledge_base_entries` were created but stayed empty as a
+result. Fixed in `supabase/schema.sql`: added `LIMIT 1` to that subquery, and a comment
+warning that the `repos` seed INSERT isn't idempotent (no unique constraint on
+`github_repo`) — don't re-run it if `repos` already has rows, skip straight to the test
+data. Drew ran the leftover `agent_sessions` + `review_items` inserts by hand to finish
+seeding.
+
 ---
 
 ## Recent Changes (Session 47, August 5, 2026)
