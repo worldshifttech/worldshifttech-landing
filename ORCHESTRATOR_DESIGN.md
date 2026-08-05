@@ -33,12 +33,20 @@ Two things live outside code entirely and are load-bearing for everything else:
 | worldshifttech-landing | `C:\Users\drewg\worldshifttech-landing` | yes | Next.js + Supabase | Supabase Auth (single admin) | no (predates the tool) |
 | entos-group-website | `C:\Users\drewg\entos-group-website` | yes | Vite + Vercel functions + Supabase | none needed (public marketing site) | yes |
 | drew-griffiths-speak-easy | `C:\Users\drewg\drew-griffiths-speak-easy` | yes | Vite + Vercel functions + Supabase (pgvector) | shared-secret `x-app-token` | yes |
-| forgotten-realms-dm | `C:\Users\drewg\Documents\forgotten-realms-dm` | **no — not a git repo** | Vite + Vercel functions + Supabase | Supabase Auth | no (personal, predates tool) |
-| wst-build-manager | `C:\Users\drewg\wst-build-manager` | unknown, treat as target repo once confirmed | Node CLI, no framework | n/a (local tool) | n/a — it's the tool itself |
+| forgotten-realms-dm | `C:\Users\drewg\Documents\forgotten-realms-dm` | yes — `worldshifttech/forgotten-realms-dm` | Vite + Vercel functions + Supabase | Supabase Auth | no (personal, predates tool) |
+| wst-build-manager | `C:\Users\drewg\wst-build-manager` | yes — `worldshifttech/wst-build-manager` | Node CLI, no framework | n/a (local tool) | n/a — it's the tool itself |
 
-**Action item, independent of this project:** `forgotten-realms-dm` needs `git init` +
-push to a private GitHub repo before it can be automated at all, and honestly before
-it's safe against laptop loss regardless of this project.
+Both `forgotten-realms-dm` and `wst-build-manager` were git-initialized and pushed during
+Phase 0 (previously neither had any version control at all). `.gitignore` was verified
+clean on both before committing — no `.env`/`.env.local` in either repo's history.
+
+Three more client repos surfaced under the `worldshifttech` org while installing the
+GitHub App that weren't in the original audit: `mt-courses-training`,
+`carri-cameron-ai-social-media-manager`, `c4vl-intake-api`. Not yet folded into the fleet
+— decide later whether they join `repos`.
+
+Per Drew: all repos here are his own except `entos-group-website`, which is client work
+(currently just a marketing site, no app layer yet).
 
 **Three auth conventions exist across the fleet, not one** — `stack_type` needs to record
 auth convention as its own field, not fold it into a single enum with the frontend
