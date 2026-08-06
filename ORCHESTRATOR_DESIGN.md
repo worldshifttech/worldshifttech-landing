@@ -161,9 +161,14 @@ the sites it provisions.
 
 **Repo access — GitHub App**, installed on every managed repo (including the runner repo
 itself, so the control plane can dispatch to it):
-- Permissions: Contents (read/write), Pull requests (read/write), Metadata (read),
-  Actions (write, to trigger `repository_dispatch`) — exact permission set to be
-  finalized against GitHub's current App permission list at implementation time.
+- Permissions, confirmed empirically during Phase 2 (see worldshifttech-landing's
+  NOTES.md, Session 49 follow-up, for the debugging trail): Contents (write), Actions
+  (write), Workflows (write), Pull requests (write), Metadata (read). Both Actions *and*
+  Workflows are required to actually turn an accepted `repository_dispatch` into a
+  workflow run — Contents (write) alone is enough for the dispatch call itself to return
+  204, which made this genuinely hard to diagnose. GitHub's own docs frame `Workflows` as
+  being for updating workflow YAML files, not for triggering runs, but granting it is
+  what unblocked things here.
 - The App's ID and private key live as secrets in `worldshifttech-landing`'s Vercel
   environment (to dispatch) and the runner repo's Actions secrets (to exchange for a
   clone/push token inside the workflow).

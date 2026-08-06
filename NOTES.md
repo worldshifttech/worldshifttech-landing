@@ -72,6 +72,78 @@ repo's own Planning Mode, which never writes files or runs commands), `build` ru
 `anthropics/claude-code-action@v1` with a scoped `--allowedTools` allowlist (Drew's choice
 over `--dangerously-skip-permissions`) and lets the Action handle commit/push/PR natively.
 
+**Same-day follow-up: Phase 2 wired end-to-end and proven working (Planning Mode).**
+`wst-orchestrator-runner` was built (separate repo, see its own NOTES.md), and getting a
+real "Run Planning Session" click to actually produce a review card took a long debugging
+session. Recording the full root-cause chain here since none of it was obvious and most of
+it will bite again if this pattern gets reused for another repo's orchestrator setup.
+
+*Root causes found, in the order they were hit:*
+
+1. **Three of four Vercel env vars saved as empty strings.** The dashboard's paste into a
+   multi-line-capable textarea silently didn't register for `WST_GITHUB_APP_ID`,
+   `WST_GITHUB_APP_PRIVATE_KEY`, and `WST_ORCHESTRATOR_RUNNER_REPO` — `vercel env ls` still
+   showed them as "Encrypted" (that only means *a* value exists, even an empty one).
+   Fix: re-add via `vercel env add <name> production < file` (pipes the value in directly,
+   sidesteps the dashboard textarea entirely) rather than trusting a browser paste.
+2. **The regenerated `WST_ORCHESTRATOR_SECRET` had an invisible trailing newline.** Generated
+   it with `node -e "console.log(...)"` and piped the whole file into `vercel env add` —
+   `console.log` always appends `\n`, so the stored secret was
+   `<value>\n`, which never matches a clean copy-paste of what gets displayed. Any secret
+   generated for a strict-equality bearer-token check needs `process.stdout.write(...)`
+   instead of `console.log`, or the trailing newline rides along silently.
+3. **The custom GitHub App was missing the `Actions` repository permission entirely.**
+   ORCHESTRATOR_DESIGN.md §4 called this out from the start ("Actions (write, to trigger
+   `repository_dispatch`)") but it didn't make it into the App's actual permission
+   configuration — easy to miss since it's a separate checkbox from Contents/Issues/PRs.
+   Symptom: `repository_dispatch` returned a clean `204` every time (that endpoint only
+   checks `Contents: write`), so the request always looked successful, but zero workflow
+   runs were ever created and `GET /actions/workflows` / `GET /actions/runs` on the
+   installation token both came back `403 Resource not accessible by integration`.
+4. **The `Workflows` repository permission was *also* required, separately from `Actions`.**
+   Even after granting and approving `Actions: write`, dispatches kept getting accepted
+   (204) without ever producing a run — for over an hour, across multiple accounts (both
+   Drew's real dispatches through the app and direct API test scripts). Adding
+   `Workflows: read and write` and approving it on the installation is what actually
+   unblocked things. This isn't how GitHub's own docs frame the permission (they describe
+   `Workflows` as being for *updating workflow YAML files*, not for triggering runs) — but
+   empirically, granting it is what fixed it. Once granted, GitHub appears to have
+   processed the whole backlog of previously-accepted-but-never-triggered dispatches
+   (several from earlier in the session finally turned into runs), not just new ones sent
+   after the fix.
+5. Approving a permission change with the "accept updated permissions" prompt is a
+   **separate step** from changing the App's declared permissions — `GET /app` reflects the
+   new permission immediately, but installation tokens keep using the old scope until the
+   org admin explicitly approves the upgrade.
+
+**Confirmed working GitHub App permission set for this integration:**
+`Contents: write`, `Actions: write`, `Workflows: write`, `Pull requests: write`,
+`Metadata: read`. Repository access: one shared installation covering the runner repo and
+every managed target repo (not per-repo installations) — see the Session 49 main entry
+above for why that matters for the token-scoping design.
+
+**First real end-to-end proof:** a "Run Planning Session" click against
+`entos-group-website` produced `agent_sessions` row (status `done`) with a real
+`review_items` row — Claude Code read the actual repo, found two genuine mobile-viewport
+bugs (a `@media (hover: none)` rule forcing desktop-sized tile heights on collapsed mobile
+grids, and a sub-16px form input triggering iOS Safari's auto-zoom), and produced a
+scoped, numbered build prompt referencing real files. The mechanism works.
+
+**Left over, not cleaned up:** four `agent_sessions` rows from before the `Workflows` fix
+(`87650c40`, `181d70b0`, `406c0479`, `7238fd5d`) are permanently stuck at `status: 'running'`
+— their dispatches were accepted by GitHub but never turned into runs, and once the
+permission was fixed GitHub processed the backlog for *some* pending dispatches but not
+these four specifically. Harmless (nothing reads a stuck `running` row except a human
+looking at the table), left as-is rather than force-closed.
+
+**Not yet tested: Build Mode.** Everything proven above is the `planning` job only. The
+`build` job (checks out the target repo, runs `anthropics/claude-code-action@v1`, expects
+it to commit/push/open a PR) has never actually been exercised — no PR has been created by
+this system yet. Given how much permission-configuration pain Planning Mode surfaced, Build
+Mode (which needs push access to a real branch and PR-creation, not just read access) may
+well have its own undiscovered gap. Recommended before calling Phase 2 fully closed per
+ORCHESTRATOR_DESIGN.md §10's own definition ("a real approved build prompt, a real PR").
+
 ---
 
 ## Recent Changes (Session 48, August 5, 2026)
