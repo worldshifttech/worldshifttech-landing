@@ -18,6 +18,7 @@ type RawReviewRow = {
   created_at: string;
   answered_at: string | null;
   agent_sessions: {
+    repo_id: string;
     session_type: string;
     repos: { name: string } | null;
   } | null;
@@ -48,7 +49,7 @@ export default async function AdminReviewsPage() {
 
   const { data: rawRows } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions(session_type, repos(name))")
+    .select("*, agent_sessions(repo_id, session_type, repos(name))")
     .order("created_at", { ascending: false });
 
   const rows = (rawRows ?? []) as unknown as RawReviewRow[];
@@ -66,6 +67,7 @@ export default async function AdminReviewsPage() {
     drew_response: r.drew_response,
     status: r.status as ReviewItem["status"],
     created_at: r.created_at,
+    repo_id: r.agent_sessions?.repo_id ?? null,
     repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
     session_type: r.agent_sessions?.session_type ?? "planning",
   }));

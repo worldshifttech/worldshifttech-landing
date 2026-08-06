@@ -1,4 +1,63 @@
-﻿Last session: 49
+﻿Last session: 50
+
+## Recent Changes (Session 50, August 6, 2026)
+
+**Wire the Build dispatch path in the Reviews inbox**
+
+Planning Mode dispatches work end to end (Session 49) — `/api/orchestrator/dispatch`
+already accepted `session_type: "build"` from the day it was written, but nothing in the
+UI could reach it: the Reviews inbox query never selected `repo_id`, so the client had
+nothing to target a build dispatch at, and no button anywhere called dispatch with
+`session_type: "build"`. This session closes that gap. Code changes only — no live build
+dispatch was fired during this session, see "Next" below.
+
+**`app/admin/reviews/page.tsx`**: Supabase select changed from
+`"*, agent_sessions(session_type, repos(name))"` to
+`"*, agent_sessions(repo_id, session_type, repos(name))"`. `RawReviewRow.agent_sessions`
+gained a `repo_id: string` field, mapped into a new `repo_id` field on each `ReviewItem`.
+
+**`app/admin/reviews/ReviewInboxClient.tsx`**: `ReviewItem` type gained
+`repo_id: string | null`. `ReviewCard`'s answered-state branch now renders a "Build"
+section when `kind === "consolidated_review" && proposed_content && repo_id` — a "Run
+Build Session" button that POSTs to `/api/orchestrator/dispatch` with
+`{ repo_id, session_type: "build", brief: proposed_content }`, same admin-bearer-token
+pattern as `RepoDetailClient.tsx`'s `handleRunPlanningSession`. On success it shows the
+returned `session_id` in place of the button; on failure, an inline error in the same
+style as the rest of the card.
+
+**Two judgment calls made without asking, flagged here per the established pattern:**
+1. No double-dispatch guard, and no persisted "already dispatched" state — the
+   confirmation after a successful dispatch is local component state only, so a page
+   refresh re-shows the button and lets Drew fire it again. This is a manual click Drew
+   controls directly, not something automation can spam, so a DB column to track it felt
+   like schema growth the feature doesn't earn yet.
+2. The button lives on **answered** `consolidated_review` cards only, with no new
+   decision-button layer added (unlike `production_risk_flag`/`kb_entry_draft`, which got
+   explicit Approve/Discard-style buttons in Session 48). Flipping a card to "answered" —
+   by resolving its open questions or filling in a response — is treated as the approval
+   gesture itself; ORCHESTRATOR_DESIGN.md §5 already describes this case ("if nothing's
+   blocking, the finished build prompt ready for a straight approve").
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/admin/reviews` and
+`/api/orchestrator/dispatch` both listed). The dispatch flow itself — whether a real
+`session_type: "build"` dispatch actually turns into a PR — is still unverified; that
+needs a real click against deployed production, not something this session's local
+tooling can exercise.
+
+**Next: the actual first live Build Mode test.** Go to `/admin/reviews`, find the
+`entos-group-website` `consolidated_review` card from Session 49's planning proof (or, if
+it's gone, dispatch a fresh "Run Planning Session" against `entos-group-website` from
+`/admin/repos/[id]` to generate a new one). Answer it, then click "Run Build Session."
+Watch `wst-orchestrator-runner`'s Actions tab for the `build` job, and
+`entos-group-website`'s pull requests for the result. Record whatever happens — clean
+success, or the next permission/config gap — as a same-day follow-up here, matching the
+Session 49 debugging-trail pattern. Two things flagged as genuinely unverified in
+`wst-orchestrator-runner`'s own NOTES.md going into this: whether `--permission-mode
+dontAsk` behaves the same way under `claude-code-action` as it does for the bare CLI, and
+whether `gh pr create` reliably infers the right repo from the checked-out working
+directory.
+
+---
 
 ## Recent Changes (Session 49, August 5, 2026)
 

@@ -23,6 +23,7 @@ export type ReviewItem = {
   drew_response: string | null;
   status: "pending" | "answered";
   created_at: string;
+  repo_id: string | null;
   repo_name: string;
   session_type: string;
 };
@@ -103,6 +104,9 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
   const [editedContent, setEditedContent] = useState(item.proposed_content ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [buildDispatching, setBuildDispatching] = useState(false);
+  const [buildDispatchError, setBuildDispatchError] = useState("");
+  const [buildSessionId, setBuildSessionId] = useState<string | null>(null);
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
@@ -173,6 +177,50 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  // Fires a real "build" dispatch using this card's own proposed_content as the brief —
+  // the first UI path that can reach session_type: "build" at all. Confirmation state is
+  // local only (not persisted), so a page refresh re-shows the button; no double-dispatch
+  // guard, this is a manual click Drew controls. See NOTES.md Session 50.
+  async function handleRunBuildSession() {
+    if (!item.repo_id || !item.proposed_content) return;
+
+    setBuildDispatching(true);
+    setBuildDispatchError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/orchestrator/dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          repo_id: item.repo_id,
+          session_type: "build",
+          brief: item.proposed_content,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setBuildDispatchError(data.error ?? "Failed to dispatch");
+        return;
+      }
+
+      setBuildSessionId(data.session_id);
+    } catch {
+      setBuildDispatchError("Something went wrong. Please try again.");
+    } finally {
+      setBuildDispatching(false);
     }
   }
 
@@ -285,20 +333,48 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
           </button>
         </>
       ) : (
-        <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
-          {item.open_questions.map((q, i) => (
-            <div key={i}>
-              <p className="text-[#00205C] text-sm font-medium">{q.question}</p>
-              <p className="text-[#4B858E] text-sm mt-1">{q.answer || "—"}</p>
-            </div>
-          ))}
-          {item.drew_response && (
-            <div>
-              <p className="text-[#76777A] text-xs uppercase tracking-wide mb-1">Response</p>
-              <p className="text-[#00205C]/80 text-sm">{item.drew_response}</p>
+        <>
+          <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
+            {item.open_questions.map((q, i) => (
+              <div key={i}>
+                <p className="text-[#00205C] text-sm font-medium">{q.question}</p>
+                <p className="text-[#4B858E] text-sm mt-1">{q.answer || "—"}</p>
+              </div>
+            ))}
+            {item.drew_response && (
+              <div>
+                <p className="text-[#76777A] text-xs uppercase tracking-wide mb-1">Response</p>
+                <p className="text-[#00205C]/80 text-sm">{item.drew_response}</p>
+              </div>
+            )}
+          </div>
+
+          {item.kind === "consolidated_review" && item.proposed_content && item.repo_id && (
+            <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-2">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Build
+              </span>
+              {buildSessionId ? (
+                <p className="text-[#4B858E] text-sm">
+                  Build session dispatched (session {buildSessionId.slice(0, 8)}). Check
+                  wst-orchestrator-runner&apos;s Actions tab and this repo&apos;s pull requests for
+                  progress.
+                </p>
+              ) : (
+                <>
+                  {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
+                  <button
+                    onClick={handleRunBuildSession}
+                    disabled={buildDispatching}
+                    className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {buildDispatching ? "Dispatching..." : "Run Build Session"}
+                  </button>
+                </>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
