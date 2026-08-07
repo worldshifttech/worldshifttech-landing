@@ -3,6 +3,10 @@
     {
       "path": "/api/orchestrator/scheduler-tick",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/orchestrator/drift-check",
+      "schedule": "0 */6 * * *"
     }
   ]
 }

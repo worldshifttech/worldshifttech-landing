@@ -119,6 +119,9 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
         // Never the raw value — see lib/feedback-adapters.ts / NOTES.md Session 51 for
         // why this field never leaves the server as anything but a boolean.
         has_target_supabase_service_role_key: Boolean(repo.target_supabase_service_role_key),
+        deployed_sha: repo.deployed_sha ?? null,
+        github_head_sha: repo.github_head_sha ?? null,
+        drift_checked_at: repo.drift_checked_at ?? null,
       }}
       projects={projects}
       reviewItems={reviewItems}

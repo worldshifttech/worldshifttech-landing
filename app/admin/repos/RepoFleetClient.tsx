@@ -23,6 +23,9 @@ export type Repo = {
   planning_interval_hours: number | null;
   last_planning_session_at: string | null;
   open_review_count: number;
+  deployed_sha: string | null;
+  github_head_sha: string | null;
+  drift_checked_at: string | null;
 };
 
 export type ProjectOption = { id: string; title: string };
@@ -61,6 +64,13 @@ function frameworkLabel(value: string): string {
 
 function authLabel(value: string): string {
   return AUTH_OPTIONS.find((a) => a.value === value)?.label ?? value;
+}
+
+// "Drifted" is computed here, not stored as its own column — avoids a boolean that
+// could get out of sync with the two SHAs it's derived from. Only meaningful once both
+// SHAs have actually been checked at least once.
+function isDrifted(repo: Repo): boolean {
+  return Boolean(repo.deployed_sha && repo.github_head_sha && repo.deployed_sha !== repo.github_head_sha);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -382,6 +392,15 @@ export default function RepoFleetClient({
                           style={{ fontFamily: "var(--font-poppins)" }}
                         >
                           {repo.open_review_count} open review{repo.open_review_count !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {isDrifted(repo) && (
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-500 border border-red-500/30 flex-shrink-0"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                          title={`Production: ${repo.deployed_sha?.slice(0, 7)} · GitHub main: ${repo.github_head_sha?.slice(0, 7)}`}
+                        >
+                          Drift
                         </span>
                       )}
                     </div>

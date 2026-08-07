@@ -452,3 +452,14 @@ CREATE TABLE IF NOT EXISTS orchestrator_settings (
 INSERT INTO orchestrator_settings (automation_paused)
 SELECT false
 WHERE NOT EXISTS (SELECT 1 FROM orchestrator_settings);
+
+-- ============================================================
+-- MIGRATION: repos deployment-drift columns (Session 54 — WST Orchestrator Phase 6)
+-- Populated by /api/orchestrator/drift-check, on its own cron separate from
+-- scheduler-tick (checking deployment status is a different concern from dispatching
+-- sessions). "Is drifted" is computed as deployed_sha !== github_head_sha at read time,
+-- not stored as its own redundant boolean. See NOTES.md Session 54.
+-- ============================================================
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS deployed_sha text;
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS github_head_sha text;
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS drift_checked_at timestamptz;

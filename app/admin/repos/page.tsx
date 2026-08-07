@@ -63,6 +63,9 @@ export default async function AdminReposPage() {
     planning_interval_hours: (r.planning_interval_hours as number | null) ?? null,
     last_planning_session_at: (r.last_planning_session_at as string | null) ?? null,
     open_review_count: openReviewCounts[r.id as string] ?? 0,
+    deployed_sha: (r.deployed_sha as string | null) ?? null,
+    github_head_sha: (r.github_head_sha as string | null) ?? null,
+    drift_checked_at: (r.drift_checked_at as string | null) ?? null,
   }));
 
   const { data: rawProjects } = await serviceClient

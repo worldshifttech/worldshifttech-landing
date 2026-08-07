@@ -1,4 +1,70 @@
-﻿Last session: 53
+﻿Last session: 54
+
+## Recent Changes (Session 54, August 7, 2026)
+
+**WST Orchestrator Phase 6 — Deployment drift/verification**
+
+The design doc's own one-line description for this phase: an ongoing check that each
+repo's live Vercel deployment matches its GitHub `main` HEAD, surfaced as a badge.
+Motivated directly by this same session's own manual verification work (checking
+`vercel ls`/PR merge state by hand for entos-group-website) — this automates exactly
+that check instead of Drew running it himself each time.
+
+**Data source, chosen over one alternative:** knowing what's live can only come from
+Vercel itself — GitHub alone can't answer "did the deploy actually happen." Two ways to
+ask Vercel: a new `VERCEL_API_TOKEN` calling its own Deployments API directly, or the
+GitHub Deployments API (which Vercel's integration also populates), reusing the existing
+GitHub App token but needing a new `Deployments: read` permission granted *and* approved
+on the installation — the same class of gap that caused the Session 49 saga, this time
+for a lower-stakes feature. Drew picked the new token, consistent with the same call he
+made for the preview-URL problem in Session 53.
+
+**Verified the exact API shape before writing code** rather than guessing: fetched
+Vercel's own REST API docs for `GET /v7/deployments` (not `/v6` — worth checking, since
+the docs describe it that way now) and confirmed via a second search that
+`meta.githubCommitSha` is the correct field, auto-populated by Vercel's GitHub
+integration — not assumed from memory.
+
+**`app/api/orchestrator/drift-check/route.ts`** (new, GET): `CRON_SECRET`-gated, same
+pattern as `scheduler-tick`. Deliberately its **own** cron entry, not folded into
+`scheduler-tick` — checking deployment status and deciding whether to dispatch a
+session are different concerns, not worth conflating into one route just because both
+iterate `repos`. For every repo with both `vercel_project_id` and
+`github_app_installation_id` set: fetches Vercel's most recent production deployment
+(`target=production&limit=1`) for `meta.githubCommitSha`, fetches GitHub's `main` HEAD
+via the existing installation-token pattern (`GET /repos/{owner}/{repo}/commits/main`),
+stores both plus a timestamp on `repos`. Default branch is hardcoded to `main` — every
+repo in the fleet uses it as of this session; a repo on a different default branch would
+need this made configurable, not worth a new column for a fleet that's currently 100%
+consistent.
+
+**`repos.deployed_sha` / `github_head_sha` / `drift_checked_at`** (new columns):
+"drifted" is computed at read time (`deployed_sha !== github_head_sha`, both non-null)
+rather than stored as its own boolean, so it can't get out of sync with the two values
+it's derived from.
+
+**`vercel.json`**: second cron entry, `drift-check` on a 6-hourly schedule
+(`0 */6 * * *`) — deployment drift doesn't need hourly granularity the way dispatch
+timing does, and this keeps API call volume against both Vercel and GitHub reasonable.
+
+**UI**: a red "Drift" badge on `/admin/repos`' fleet list, next to the existing
+open-reviews badge, hover-title showing both short SHAs. Repo detail page's Settings tab
+gets a read-only "Deployment" line showing both SHAs and in-sync/drifted status, or "Not
+checked yet" before the cron has run once. Also fixed a small stale comment while in
+there — the Automation checkbox's label still said "nothing reads this until Phase 4's
+scheduler," which stopped being true two sessions ago.
+
+**`VERCEL_TEAM_ID`** set directly (not sensitive — an org identifier, not a credential,
+same reasoning as why `WST_ORCHESTRATOR_RUNNER_REPO` is a plain env var rather than a
+secret). `VERCEL_API_TOKEN` still needs Drew to generate it from his own Vercel account
+settings — that one has to come from him, same as every other real credential in this
+system.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/api/orchestrator/drift-check`
+listed). Unverified end-to-end — needs `VERCEL_API_TOKEN` set and the cron to actually
+fire before any repo shows real drift data.
+
+---
 
 ## Recent Changes (Session 53, August 7, 2026)
 

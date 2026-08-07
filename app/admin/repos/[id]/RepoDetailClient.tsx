@@ -26,6 +26,9 @@ type RepoFields = {
   github_app_installation_id: number | null;
   target_supabase_url: string | null;
   has_target_supabase_service_role_key: boolean;
+  deployed_sha: string | null;
+  github_head_sha: string | null;
+  drift_checked_at: string | null;
 };
 
 type FeedbackItem = {
@@ -448,7 +451,7 @@ export default function RepoDetailClient({
                   checked={automationEnabled}
                   onChange={(e) => setAutomationEnabled(e.target.checked)}
                 />
-                Automation enabled (per-repo pause switch — nothing reads this until Phase 4's scheduler)
+                Automation enabled (per-repo pause switch — the scheduler skips this repo when off)
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -475,6 +478,31 @@ export default function RepoDetailClient({
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Deployment drift — populated by /api/orchestrator/drift-check, on its own
+                6-hourly cron. Read-only, nothing to save here. */}
+            <div className="border-t border-[#00205C]/[0.08] pt-5">
+              <label className="block text-xs font-medium text-[#76777A] mb-2">Deployment</label>
+              {repo.drift_checked_at ? (
+                <p
+                  className={`text-sm ${
+                    repo.deployed_sha && repo.github_head_sha && repo.deployed_sha !== repo.github_head_sha
+                      ? "text-red-500"
+                      : "text-[#00205C]"
+                  }`}
+                >
+                  Production: <span className="font-mono">{repo.deployed_sha?.slice(0, 7) ?? "—"}</span> · GitHub
+                  main: <span className="font-mono">{repo.github_head_sha?.slice(0, 7) ?? "—"}</span>
+                  {repo.deployed_sha && repo.github_head_sha && repo.deployed_sha !== repo.github_head_sha
+                    ? " — drifted"
+                    : " — in sync"}
+                </p>
+              ) : (
+                <p className="text-[#76777A] text-sm">
+                  Not checked yet — needs `vercel_project_id` set above and the drift-check cron to run.
+                </p>
+              )}
             </div>
           </div>
 
