@@ -64,6 +64,29 @@ Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/api/orchestr
 listed). Unverified end-to-end — needs `VERCEL_API_TOKEN` set and the cron to actually
 fire before any repo shows real drift data.
 
+**Same-day follow-up: full setup closed out.** `VERCEL_API_TOKEN` generated from Drew's
+own Vercel account (team-scoped to `worldshifttech's projects`, not full-account —
+least-privilege, and it's all this needs) and piped directly into `vercel env add`
+without ever being echoed, same handling as every other real credential this session.
+`VERCEL_TEAM_ID` was already set. The `deployed_sha`/`github_head_sha`/`drift_checked_at`
+migration run. All four setup pieces (code, both env vars, schema) are in place — nothing
+left to configure. Still genuinely unverified end-to-end: the cron hasn't fired yet
+(next at the nearest UTC 00:00/06:00/12:00/18:00), and there was no way to trigger it
+manually to check sooner — the `CRON_SECRET` needed to hit the route directly was
+generated the same never-displayed way, so there's no copy of it available to construct
+a manual test request. First real signal will be either a repo showing real SHAs on
+`/admin/repos`, or Vercel's own Cron Jobs execution log.
+
+**WST Orchestrator phase status entering the next session:** Phases 0, 1, 2, 4, and 6 are
+done. **Phase 3 (knowledge base — pgvector/Voyage capture-retrieve loop)** and **Phase 5
+(`wst-build-manager` upgrade — idempotency, starter template, auto-registration)** are
+the two phases left from the original roadmap in `ORCHESTRATOR_DESIGN.md` §10. Neither is
+inherently next in line over the other — Phase 4 already jumped the original ordering
+once at Drew's own call. Whichever gets picked, read `ORCHESTRATOR_DESIGN.md` in full before starting — Phase 3
+has its own dedicated section (§6, "Knowledge base loop") and Phase 5 does too (§8,
+"wst-build-manager upgrade"), both with more detail than this file carries. Phase 6 had
+no such section and had to be designed fresh this session; 3 and 5 don't need that.
+
 ---
 
 ## Recent Changes (Session 53, August 7, 2026)
