@@ -180,6 +180,25 @@ worked — Drew confirmed all 21 audit reference entries are showing in
 success first, delete second, not the reverse that caused the first follow-up above.
 Verified with `tsc`/`npm run build` after the deletion.
 
+**Sixth same-day follow-up: Phase 3 closed the rest of the way, in `wst-orchestrator-runner`.**
+Drew asked to close Phase 3 all the way rather than leave the runner-side half open. That
+repo's own Session 2 (see its NOTES.md there, not duplicated here) wired both remaining
+pieces: the planning job now reads `client_payload.knowledge_context` into its prompt when
+present, and the build job's wrapper prompt asks Claude, before opening the PR, whether
+anything built this session is a genuinely reusable pattern — if so, it writes a validated
+`/tmp/kb-draft.json` and a new workflow step POSTs it as a second `kb_entry_draft` review
+against the same session, using `session-result`'s already-existing support for an
+arbitrary `review.kind` per call (no control-plane change needed here for that). Verified
+there only as valid YAML — no real planning or build dispatch has exercised either new path
+yet, so this is genuinely unverified end-to-end, same caveat as everything else in this
+session's saga until a real dispatch proves it.
+
+**WST Orchestrator phase status entering the next session:** Phases 0, 1, 2, 3, 4, and 6 are
+now done (control-plane + runner code for all of them). **Phase 5
+(`wst-build-manager` upgrade — idempotency, starter template, auto-registration)** is the
+only phase left from the original roadmap in `ORCHESTRATOR_DESIGN.md` §10. Read that doc's
+§8 before starting, same as always.
+
 ---
 
 ## Recent Changes (Session 54, August 7, 2026)
