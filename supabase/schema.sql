@@ -423,3 +423,15 @@ VALUES (
   E'Title: Two-step signed upload URL pattern\nProblem: browser uploads bypass Vercel function payload limits\nArtifact: lib/project-files.ts + app/api/project-files/upload-url/route.ts',
   'pending'
 );
+
+-- ============================================================
+-- MIGRATION: repos.target_supabase_url / target_supabase_service_role_key (Session 51)
+-- Lets the control plane read/resolve a target repo's own feedback backlog directly.
+-- The key column is write-only from the app's side (see lib/feedback-adapters.ts,
+-- app/api/admin-repos/[id]/target-credentials/route.ts) — no route ever returns it, only
+-- a derived boolean. Same no-RLS/service-role-only convention as every other column on
+-- this table; this is the first one that holds a raw credential for a different live
+-- system rather than this project's own metadata. See NOTES.md Session 51.
+-- ============================================================
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS target_supabase_url text;
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS target_supabase_service_role_key text;
