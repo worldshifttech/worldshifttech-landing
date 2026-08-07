@@ -26,6 +26,49 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
 // Title and category are parsed straight out of each doc's own header line (every file
 // follows "# Name — WST Audit Reference" then "**Category:** X | **Infrastructure:** Y")
 // rather than hand-maintained here — one less thing to keep in sync with the content.
+//
+// Same-day follow-up: the first real run against the live deploy only got through 3 of
+// 21 files (silently — no per-file error, since a function timeout kills the process,
+// it doesn't throw a catchable JS exception) — 21 fully sequential Voyage + Supabase
+// round trips ran past Vercel's default execution limit. maxDuration below plus batched
+// concurrency (instead of one file at a time) fixes both the ceiling and the pace. Still
+// idempotent either way — re-running only ever processes what's missing. See NOTES.md.
+export const maxDuration = 60;
+
+const BATCH_SIZE = 5;
+
+type FileResult = { slug: string; status: "inserted" | "skipped" | "failed"; error?: string };
+
+async function processFile(dir: string, file: string): Promise<FileResult> {
+  const slug = file.replace(/\.md$/, "");
+
+  try {
+    const content = fs.readFileSync(path.join(dir, file), "utf-8");
+    const titleMatch = content.match(/^#\s+(.+?)\s+—\s+WST Audit Reference/m);
+    const categoryMatch = content.match(/\*\*Category:\*\*\s*([^|]+)\|/);
+    const title = titleMatch?.[1]?.trim() ?? slug;
+    const category = categoryMatch?.[1]?.trim() ?? "Reference";
+
+    const embedding = await embedText(content);
+
+    const { error: insertError } = await getSupabase().from("knowledge_base_entries").insert({
+      category: "audit_reference",
+      title,
+      tool_slug: slug,
+      tags: [category],
+      reference_doc: content,
+      embedding,
+    });
+
+    if (insertError) {
+      return { slug, status: "failed", error: insertError.message };
+    }
+    return { slug, status: "inserted" };
+  } catch (err) {
+    return { slug, status: "failed", error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
+
 export async function POST(req: NextRequest) {
   if (!(await verifyAdmin(req))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -55,42 +98,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const results: { slug: string; status: "inserted" | "skipped" | "failed"; error?: string }[] = [];
+  const toProcess = files.filter((f) => !existingSlugs.has(f.replace(/\.md$/, "")));
+  const skipped: FileResult[] = files
+    .filter((f) => existingSlugs.has(f.replace(/\.md$/, "")))
+    .map((f) => ({ slug: f.replace(/\.md$/, ""), status: "skipped" as const }));
 
-  for (const file of files) {
-    const slug = file.replace(/\.md$/, "");
+  const results: FileResult[] = [...skipped];
 
-    if (existingSlugs.has(slug)) {
-      results.push({ slug, status: "skipped" });
-      continue;
-    }
-
-    try {
-      const content = fs.readFileSync(path.join(dir, file), "utf-8");
-      const titleMatch = content.match(/^#\s+(.+?)\s+—\s+WST Audit Reference/m);
-      const categoryMatch = content.match(/\*\*Category:\*\*\s*([^|]+)\|/);
-      const title = titleMatch?.[1]?.trim() ?? slug;
-      const category = categoryMatch?.[1]?.trim() ?? "Reference";
-
-      const embedding = await embedText(content);
-
-      const { error: insertError } = await supabase.from("knowledge_base_entries").insert({
-        category: "audit_reference",
-        title,
-        tool_slug: slug,
-        tags: [category],
-        reference_doc: content,
-        embedding,
-      });
-
-      if (insertError) {
-        results.push({ slug, status: "failed", error: insertError.message });
-      } else {
-        results.push({ slug, status: "inserted" });
-      }
-    } catch (err) {
-      results.push({ slug, status: "failed", error: err instanceof Error ? err.message : "Unknown error" });
-    }
+  for (let i = 0; i < toProcess.length; i += BATCH_SIZE) {
+    const batch = toProcess.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(batch.map((file) => processFile(dir, file)));
+    results.push(...batchResults);
   }
 
   return NextResponse.json({ ok: true, results });

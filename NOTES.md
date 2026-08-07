@@ -135,6 +135,19 @@ follow-up commit — not delete-then-migrate, no matter how confident the code l
 clean `npm run build` (a local build never re-triggers a route's filesystem reads the way
 clicking it on the real deploy does).
 
+**Second same-day follow-up: retried with the files restored, only got 3 of 21.** Silent
+partial success, no error shown — `/admin/knowledge-base` read 3 entries after the retry,
+alphabetically the first 3 files (`ai-notetaker`, `airtable`, `aws`). Root cause: the
+route processed all 21 files as one fully sequential loop of Voyage-embed-then-
+Supabase-insert round trips, with no `maxDuration` set — it ran past Vercel's default
+execution limit and got killed mid-loop. A timeout kill isn't a catchable JS exception, so
+none of the per-file `try/catch` blocks ever saw it or recorded a "failed" result — it just
+stopped. Fixed in `app/api/admin/migrate-audit-knowledge/route.ts`: `export const
+maxDuration = 60`, plus the remaining files now process in concurrent batches of 5
+(`Promise.all` per batch) instead of one at a time, cutting wall-clock enough to comfortably
+clear the limit. Still idempotent regardless — the route already skips any `tool_slug`
+already present, so clicking it again after a partial run only processes what's missing.
+
 ---
 
 ## Recent Changes (Session 54, August 7, 2026)
