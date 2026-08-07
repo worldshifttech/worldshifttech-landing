@@ -117,6 +117,33 @@ Feedback tab now handles its own loading/not-configured/populated states inline 
 of the whole section just not rendering; Reviews unchanged internally, just moved. No
 route or data-shape changes, UI-only. Verified with `tsc`/`npm run build`.
 
+**Same-day follow-up: Phase 2 fully closed — first real Build Mode PR.** Everything
+proven end-to-end so far had been Planning Mode only (Session 49). Drew ran a fresh
+planning session against `entos-group-website` (post "start fresh" cleanup earlier this
+session), answered the resulting review, and clicked "Run Build Session." Verified
+directly via `gh` (installed this session specifically to check — see below): the
+`build` job completed successfully in 19m39s (vs. 3-5 min for planning runs, consistent
+with a real checkout → edit → build → push → PR cycle under the `bypassPermissions`
+change from earlier today), and produced
+[entos-group-website#1](https://github.com/worldshifttech/entos-group-website/pull/1) —
+open, mergeable, clean build. Real scoped work (a heading-orphan CSS bug across two
+pages), verified programmatically by the build session itself (`getClientRects()`
+measurements across 7 viewports, counterfactual testing), plus a sitewide sweep that
+correctly logged 49 similar instances to `docs/open-items.md` rather than fixing them
+unprompted. Updated that repo's own README/NOTES.md per its documentation convention.
+Per its own PR description: no live production check was possible (unattended CI, no
+`vercel --prod`) — that's still owed by a human after merge.
+
+**This closes Phase 2 per `ORCHESTRATOR_DESIGN.md` §10's own definition** ("a real
+approved build prompt, a real PR"). Both planning and build are now proven working
+end-to-end against a real repo, not just planning.
+
+**Tooling note:** `gh` CLI wasn't available in this environment — installed via
+`winget install --id GitHub.cli` specifically to verify this. Not on PATH for
+already-running shell sessions (Windows doesn't refresh a running process's environment
+after an installer runs); invoked by full path (`C:\Program Files\GitHub CLI\gh.exe`)
+for the rest of this session. A fresh terminal picks it up normally.
+
 ---
 
 ## Recent Changes (Session 50, August 6, 2026)
