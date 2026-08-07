@@ -16,7 +16,7 @@ export type OpenQuestion = {
 
 export type ReviewItem = {
   id: string;
-  kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft";
+  kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft" | "build_result";
   summary: string;
   open_questions: OpenQuestion[];
   proposed_content: string | null;
@@ -26,6 +26,8 @@ export type ReviewItem = {
   repo_id: string | null;
   repo_name: string;
   session_type: string;
+  pr_url: string | null;
+  pr_preview_url: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -60,6 +62,12 @@ const KIND_BADGE: Record<ReviewItem["kind"], { label: string; bg: string; text: 
     bg: "bg-[#91B6BB]/15",
     text: "text-[#00205C]",
     border: "border-[#91B6BB]/40",
+  },
+  build_result: {
+    label: "Build Result",
+    bg: "bg-[#4B858E]/10",
+    text: "text-[#4B858E]",
+    border: "border-[#4B858E]/30",
   },
 };
 
@@ -117,6 +125,10 @@ export function ReviewCard({
   const [buildSessionId, setBuildSessionId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [merging, setMerging] = useState(false);
+  const [mergeError, setMergeError] = useState("");
+  const [discarding, setDiscarding] = useState(false);
+  const [discardError, setDiscardError] = useState("");
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
@@ -267,6 +279,158 @@ export function ReviewCard({
     } finally {
       setDeleting(false);
     }
+  }
+
+  // The one genuinely irreversible action anywhere in this inbox — squash-merges the
+  // build session's PR straight to the target repo's default branch, which triggers
+  // Vercel's normal auto-deploy. Same admin-auth gate as everything else, no extra
+  // confirmation dialog beyond the button's own label — the whole point of this card
+  // existing is that Drew already reviewed the preview before clicking it.
+  async function handleMerge() {
+    setMerging(true);
+    setMergeError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}/merge`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setMergeError(data.error ?? "Merge failed");
+        return;
+      }
+
+      onAnswered(item.id, { status: "answered", drew_response: "Merged to production" });
+    } catch {
+      setMergeError("Something went wrong. Please try again.");
+    } finally {
+      setMerging(false);
+    }
+  }
+
+  // Marks a build result as reviewed-and-not-shipped, without touching GitHub at all —
+  // the PR stays open on GitHub for Drew to deal with separately if he wants.
+  async function handleDiscardBuild() {
+    setDiscarding(true);
+    setDiscardError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ drew_response: "Discarded — not merged" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDiscardError(data.error ?? "Failed to discard");
+        return;
+      }
+
+      onAnswered(item.id, { status: "answered", drew_response: "Discarded — not merged" });
+    } catch {
+      setDiscardError("Something went wrong. Please try again.");
+    } finally {
+      setDiscarding(false);
+    }
+  }
+
+  // build_result cards don't fit the open-questions/decision-buttons/textarea shape at
+  // all — a real PR either gets merged or it doesn't. Kept as its own early return
+  // rather than threading a third conditional shape through the render below.
+  if (item.kind === "build_result") {
+    return (
+      <div className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`text-xs font-bold px-2.5 py-1 rounded-full border uppercase tracking-wide ${badge.bg} ${badge.text} ${badge.border}`}
+          >
+            {badge.label}
+          </span>
+          <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
+          <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs font-medium text-red-400 hover:text-red-500 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+
+        {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
+
+        <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
+
+        <div className="flex flex-wrap gap-3">
+          {item.pr_url && (
+            <a
+              href={item.pr_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-semibold text-[#4B858E] hover:underline"
+            >
+              View PR &rarr;
+            </a>
+          )}
+          {item.pr_preview_url && (
+            <a
+              href={item.pr_preview_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-semibold text-[#4B858E] hover:underline"
+            >
+              View Preview &rarr;
+            </a>
+          )}
+        </div>
+
+        {item.status === "pending" ? (
+          <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
+            {mergeError && <p className="text-red-400 text-xs">{mergeError}</p>}
+            {discardError && <p className="text-red-400 text-xs">{discardError}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleMerge}
+                disabled={merging || discarding || !item.pr_url}
+                className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {merging ? "Merging..." : "Merge to Production"}
+              </button>
+              <button
+                onClick={handleDiscardBuild}
+                disabled={merging || discarding}
+                className="text-sm font-semibold px-6 py-2.5 rounded-full border border-red-300 text-red-400 hover:bg-red-50 disabled:opacity-50 transition-colors"
+              >
+                {discarding ? "Discarding..." : "Discard"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="border-t border-[#00205C]/[0.08] pt-4">
+            <p className="text-[#4B858E] text-sm font-medium">{item.drew_response}</p>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

@@ -18,6 +18,8 @@ type RawReviewRow = {
   agent_sessions: {
     repo_id: string;
     session_type: string;
+    pr_url: string | null;
+    pr_preview_url: string | null;
     repos: { name: string } | null;
   } | null;
 };
@@ -72,7 +74,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
   // shape as app/admin/reviews/page.tsx's global query, just narrowed to one repo_id.
   const { data: rawReviewRows } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions!inner(repo_id, session_type, repos(name))")
+    .select("*, agent_sessions!inner(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
     .eq("agent_sessions.repo_id", id)
     .order("created_at", { ascending: false });
 
@@ -94,6 +96,8 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
     repo_id: r.agent_sessions?.repo_id ?? null,
     repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
     session_type: r.agent_sessions?.session_type ?? "planning",
+    pr_url: r.agent_sessions?.pr_url ?? null,
+    pr_preview_url: r.agent_sessions?.pr_preview_url ?? null,
   }));
 
   return (

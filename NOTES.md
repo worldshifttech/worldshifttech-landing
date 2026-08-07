@@ -1,4 +1,60 @@
-﻿Last session: 52
+﻿Last session: 53
+
+## Recent Changes (Session 53, August 7, 2026)
+
+**Build result cards + Merge to Production**
+
+Drew noticed PR #1's fix wasn't showing on entos-group-website's live site, which
+surfaced two real gaps in the same breath: (1) there was no dashboard surface for a
+finished build session at all — only planning sessions ever produced a `review_items`
+card, so the only way to know a build finished was checking GitHub/Vercel by hand
+(exactly what we'd been doing manually all session); (2) even once you found the PR,
+merging it required leaving the dashboard entirely. This session closes both.
+
+`agent_sessions.pr_preview_url` (and `merged_commit_sha`) have existed as columns since
+the Session 48 schema but nothing ever populated or displayed them. `wst-orchestrator-runner`
+now resolves the Vercel preview URL by reading it off Vercel's own PR comment (see that
+repo's own NOTES.md for why — no new secret, no new GitHub App permission, deliberately
+chosen over two options that would've needed either) and posts a new review kind,
+`build_result`, alongside its existing `pr_url` report.
+
+**`app/api/orchestrator/session-result/route.ts`**: `ReviewInput.kind` widened to
+include `"build_result"`. No schema change needed — `review_items.kind` has always been
+plain `text`, never a CHECK-constrained enum.
+
+**`app/api/admin-reviews/[id]/merge/route.ts`** (new, POST): the actual "push to
+production" action, and the one genuinely irreversible thing anywhere in this inbox.
+Looks up the review's session → repo, exchanges the GitHub App installation token (same
+`lib/github-app.ts` helper every other orchestrator route already uses), parses the PR
+number off `pr_url`, and calls GitHub's merge API directly (`PUT .../pulls/{n}/merge`).
+Squash merge — a judgment call, not a requirement, made to keep each target repo's
+`main` history to one commit per session rather than whatever intermediate commits a
+build session made along the way. On success, stamps `agent_sessions.merged_commit_sha`
+(another Session-48 column that's never been populated until now) and marks the review
+`answered` with `drew_response: "Merged to production"`.
+
+**`app/admin/reviews/ReviewInboxClient.tsx`**: `build_result` gets its own early-return
+render branch in `ReviewCard` — the open-questions/decision-buttons/textarea shape
+every other kind uses doesn't fit "a PR either gets merged or it doesn't." Shows PR
+link + preview link (when the runner found one) and, on a pending card, **"Merge to
+Production"** / **"Discard"** buttons. Discard doesn't touch GitHub at all — it's the
+existing `PATCH /api/admin-reviews/[id]` route with a `drew_response` of "Discarded —
+not merged," same mechanism every other kind's decision already uses; the PR stays open
+on GitHub for Drew to deal with separately if he wants. `ReviewItem` gained `pr_url` /
+`pr_preview_url` fields, threaded through both `/admin/reviews/page.tsx`'s global query
+and `/admin/repos/[id]/page.tsx`'s repo-scoped one (both already joined `agent_sessions`
+for other fields — just extending the existing `select()`).
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/api/admin-reviews/[id]/merge`
+listed alongside the existing orchestrator routes). The actual merge flow is unverified
+end-to-end — needs a real `build_result` card from a real dispatch under the runner's
+new code, which hasn't run yet as of this commit.
+
+**Next:** watch the next real build dispatch (entos-group-website is automation-enabled
+now, or trigger one manually) and confirm a `build_result` card actually appears with a
+working preview link, then try the Merge button for real.
+
+---
 
 ## Recent Changes (Session 52, August 7, 2026)
 

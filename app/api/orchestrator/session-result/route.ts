@@ -8,7 +8,7 @@ type OpenQuestionInput = {
 };
 
 type ReviewInput = {
-  kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft";
+  kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft" | "build_result";
   summary: string;
   open_questions?: OpenQuestionInput[];
   proposed_content?: string;

@@ -20,6 +20,8 @@ type RawReviewRow = {
   agent_sessions: {
     repo_id: string;
     session_type: string;
+    pr_url: string | null;
+    pr_preview_url: string | null;
     repos: { name: string } | null;
   } | null;
 };
@@ -49,7 +51,7 @@ export default async function AdminReviewsPage() {
 
   const { data: rawRows } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions(repo_id, session_type, repos(name))")
+    .select("*, agent_sessions(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
     .order("created_at", { ascending: false });
 
   const rows = (rawRows ?? []) as unknown as RawReviewRow[];
@@ -70,6 +72,8 @@ export default async function AdminReviewsPage() {
     repo_id: r.agent_sessions?.repo_id ?? null,
     repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
     session_type: r.agent_sessions?.session_type ?? "planning",
+    pr_url: r.agent_sessions?.pr_url ?? null,
+    pr_preview_url: r.agent_sessions?.pr_preview_url ?? null,
   }));
 
   return <ReviewInboxClient initialItems={reviewItems} />;
