@@ -121,6 +121,20 @@ injection has never fired against a real planning dispatch either. The `wst-orch
 runner` follow-up above is required before knowledge_context does anything even once (2)
 and this session's own code are both done.
 
+**Same-day follow-up: shipped a real bug, caught by Drew clicking the button for real.**
+Ran the SQL, then clicked "Migrate Audit Docs" on the deployed site — it failed
+immediately: `ENOENT: no such file or directory, scandir '/var/task/content/audit-knowledge'`.
+Root cause: `content/audit-knowledge/*.md` was deleted in the *same* commit as the
+migration route that reads those files. Once deployed, the files were already gone before
+the route ever got a chance to run — a straightforward sequencing bug (delete-then-migrate
+instead of migrate-then-delete), not a Vercel bundling quirk. Fixed by restoring all 21
+files from `4e2b4e0` (the commit before the deletion) and redeploying. **Correct order,
+for real this time:** run the migration, confirm the 21 rows actually landed in
+`knowledge_base_entries` via `/admin/knowledge-base`, *then* delete the source files in a
+follow-up commit — not delete-then-migrate, no matter how confident the code looks on a
+clean `npm run build` (a local build never re-triggers a route's filesystem reads the way
+clicking it on the real deploy does).
+
 ---
 
 ## Recent Changes (Session 54, August 7, 2026)
