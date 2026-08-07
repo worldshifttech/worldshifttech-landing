@@ -80,13 +80,18 @@ pattern as `PATCH`. Deletes only the `review_items` row, not its parent `agent_s
 row — that stays as the historical record that a dispatch happened, same reasoning
 already applied to the stuck-`running` rows left alone in Session 49.
 
-**`app/admin/reviews/ReviewInboxClient.tsx`**: a small "Delete" text link on **pending**
-cards only (any kind, not just `consolidated_review`) — an answered card is a decision on
-record, not something to casually erase, so the control doesn't appear there.
-`window.confirm()` gate before the request fires, since this one's not reversible the way
-"answer" is. On success, the card is filtered out of local state immediately.
+**`app/admin/reviews/ReviewInboxClient.tsx`**: a small "Delete" text link on every card
+(any kind, any status), `window.confirm()` gated before the request fires. On success, the
+card is filtered out of local state immediately.
 
 Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+**Same-day follow-up to the follow-up:** Drew asked for Delete on answered cards too —
+the reasoning above about answered cards being "a decision on record" was this session's
+own judgment call, not something Drew had actually asked for narrowly; he wanted it
+everywhere. Removed the `status === "pending"` gate so the control is unconditional.
+`window.confirm()` is the only guard on both states — no separate stronger warning for
+answered cards specifically. Verified clean again with `tsc`/`npm run build`.
 
 ---
 

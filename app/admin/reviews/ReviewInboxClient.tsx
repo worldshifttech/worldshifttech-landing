@@ -280,16 +280,14 @@ function ReviewCard({
         <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
         <span className="text-[#76777A] text-xs">{item.session_type}</span>
         <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
-        {item.status === "pending" && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-xs font-medium text-red-400 hover:text-red-500 disabled:opacity-50 transition-colors"
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="text-xs font-medium text-red-400 hover:text-red-500 disabled:opacity-50 transition-colors"
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
       </div>
 
       {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
