@@ -95,6 +95,18 @@ export default function RepoDetailClient({
   const [feedbackError, setFeedbackError] = useState("");
   const [resolvingId, setResolvingId] = useState<string | null>(null);
 
+  // Client Portal — the linked project's own client-facing URL + password. Keyed off
+  // the dropdown's current value, not a separate "is this saved yet" check: the
+  // /projects/[slug] link works regardless of whether repos.client_project_id itself has
+  // been saved, so there's no reason to hide it behind an extra click. generatedPassword
+  // is React state only, shown once — the API route never returns it a second time and
+  // nothing persists it beyond this component's lifetime. See NOTES.md.
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [generatingPassword, setGeneratingPassword] = useState(false);
+  const [genPasswordError, setGenPasswordError] = useState("");
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -129,6 +141,11 @@ export default function RepoDetailClient({
       cancelled = true;
     };
   }, [repo.id]);
+
+  const linkedProject = projects.find((p) => p.id === clientProjectId) ?? null;
+  const clientPortalUrl = linkedProject
+    ? `https://worldshifttech.com/projects/${linkedProject.slug}`
+    : null;
 
   async function handleSaveCredentials() {
     setCredsSaving(true);
@@ -170,6 +187,49 @@ export default function RepoDetailClient({
       setCredsError("Something went wrong. Please try again.");
     } finally {
       setCredsSaving(false);
+    }
+  }
+
+  async function handleGeneratePassword() {
+    if (!linkedProject) return;
+    setGeneratingPassword(true);
+    setGenPasswordError("");
+    setPasswordCopied(false);
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-projects/${linkedProject.id}/generate-password`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setGenPasswordError(data.error ?? "Failed to generate password");
+        return;
+      }
+
+      setGeneratedPassword(data.password);
+    } catch {
+      setGenPasswordError("Something went wrong. Please try again.");
+    } finally {
+      setGeneratingPassword(false);
+    }
+  }
+
+  async function handleCopy(text: string, onCopied: (v: boolean) => void) {
+    try {
+      await navigator.clipboard.writeText(text);
+      onCopied(true);
+      setTimeout(() => onCopied(false), 2000);
+    } catch {
+      // Clipboard API can be denied/unavailable — the value is still visible on screen
+      // to copy by hand, so this fails silently rather than showing an error.
     }
   }
 
@@ -505,6 +565,81 @@ export default function RepoDetailClient({
               )}
             </div>
           </div>
+
+          {/* Client Portal — the linked project's own client-facing link + password.
+              Renders whenever the "Linked Client Project" dropdown above resolves to a
+              real project, saved or not — the link itself works either way. */}
+          {linkedProject && clientPortalUrl && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Client Portal
+              </span>
+              <p className="text-[#76777A] text-xs">
+                Send this link to {linkedProject.title} to bookmark. They enter the password once;
+                a signed cookie remembers them after that.
+              </p>
+
+              <div>
+                <label className="block text-xs font-medium text-[#76777A] mb-1.5">Client Link</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={clientPortalUrl}
+                    onClick={(e) => e.currentTarget.select()}
+                    className="flex-1 bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] font-mono focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(clientPortalUrl, setLinkCopied)}
+                    className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors flex-shrink-0"
+                  >
+                    {linkCopied ? "Copied ✓" : "Copy Link"}
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-[#76777A]">
+                {linkedProject.access_mode === "password"
+                  ? linkedProject.has_password
+                    ? "Password protected."
+                    : "Set to password-protected, but no password generated yet — the link won't work until you generate one."
+                  : "Currently public — no password required. Generating one below switches it to password-protected."}
+              </p>
+
+              {genPasswordError && <p className="text-red-400 text-xs">{genPasswordError}</p>}
+
+              {generatedPassword ? (
+                <div className="border-t border-[#00205C]/[0.08] pt-4">
+                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                    New Password — copy it now, it won&apos;t be shown again
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      readOnly
+                      value={generatedPassword}
+                      onClick={(e) => e.currentTarget.select()}
+                      className="flex-1 bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] font-mono focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(generatedPassword, setPasswordCopied)}
+                      className="text-xs font-semibold px-4 py-2 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors flex-shrink-0"
+                    >
+                      {passwordCopied ? "Copied ✓" : "Copy Password"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGeneratePassword}
+                  disabled={generatingPassword}
+                  className="text-sm font-semibold px-6 py-2.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
+                >
+                  {generatingPassword ? "Generating..." : linkedProject.has_password ? "Generate New Password" : "Generate Password"}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Target Supabase Credentials */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">

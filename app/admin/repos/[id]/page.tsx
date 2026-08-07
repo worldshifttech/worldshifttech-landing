@@ -62,12 +62,15 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
 
   const { data: rawProjects } = await serviceClient
     .from("projects")
-    .select("id, title")
+    .select("id, title, slug, access_mode, access_password_hash")
     .order("title", { ascending: true });
 
   const projects: ProjectOption[] = (rawProjects ?? []).map((p) => ({
     id: p.id as string,
     title: p.title as string,
+    slug: p.slug as string,
+    access_mode: p.access_mode as string,
+    has_password: Boolean(p.access_password_hash),
   }));
 
   // This repo's own review items, scoped via !inner so .eq() on the joined table's

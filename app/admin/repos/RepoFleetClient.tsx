@@ -28,7 +28,16 @@ export type Repo = {
   drift_checked_at: string | null;
 };
 
-export type ProjectOption = { id: string; title: string };
+// slug/access_mode/has_password added for the repo detail page's Client Portal section —
+// access_password_hash itself is never sent to the client, only the derived boolean, same
+// write-only-credential convention as repos.has_target_supabase_service_role_key.
+export type ProjectOption = {
+  id: string;
+  title: string;
+  slug: string;
+  access_mode: string;
+  has_password: boolean;
+};
 
 export const FRAMEWORK_OPTIONS = [
   { value: "nextjs", label: "Next.js" },

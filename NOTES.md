@@ -1,4 +1,49 @@
-﻿Last session: 56
+﻿Last session: 57
+
+## Recent Changes (Session 57, August 7, 2026)
+
+**Client Portal link + password generation on the repo dashboard**
+
+Requested with `entos-group-website` as the sample while Drew was independently watching
+Session 55's live build dispatch come back. Turned out most of the client-facing
+infrastructure already existed (Session 46's `/projects/[slug]` roadmap page,
+`PasswordGate`, `lib/project-access.ts`) — the actual gap was that `repos` and `projects`
+are deliberately separate tables (Session 48's own design call) with no surface on the
+repo dashboard showing the link between them, and no way to generate a client password
+without leaving `/admin/repos/[id]` for the separate project-editing screen.
+
+**`app/api/admin-projects/[id]/generate-password/route.ts`** (new, POST): generates a
+12-character unambiguous-charset password (no `0`/`O`/`1`/`l`/`I`), hashes it via the
+existing `hashPassword()`, sets `access_mode: 'password'` unconditionally (generating a
+password only makes sense as a move toward requiring one), and returns the **plaintext
+once** — same one-time-reveal pattern as a provider showing a freshly-generated API key.
+Nothing persists the plaintext beyond that single response; only the hash lands in the DB.
+
+**`RepoFleetClient.tsx`'s `ProjectOption`** widened from `{id, title}` to also carry
+`slug`/`access_mode`/`has_password` — the last one derived server-side from
+`access_password_hash`, never the raw hash itself, same write-only-credential convention
+already used for `has_target_supabase_service_role_key`. Both `app/admin/repos/page.tsx`
+and `app/admin/repos/[id]/page.tsx` widened their existing `projects` queries accordingly.
+
+**`RepoDetailClient.tsx`**: new **Client Portal** card, rendered whenever the existing
+"Linked Client Project" dropdown resolves to a real project — keyed off the dropdown's
+live value, not whether the repo-level link has been saved yet, since the `/projects/[slug]`
+link itself works independent of that. Shows the copyable client URL, current
+public/password-protected status, and a "Generate (New) Password" button that reveals the
+plaintext once with its own copy button and an explicit "won't be shown again" label.
+
+Found while investigating: `entos-group-website`'s own `repos` row has `client_project_id`
+still null — no project linked yet. A "Client Onboarding" project already exists tagged to
+Entos (`client_name: "Entos"`, currently `access_mode: 'public'`), but whether that's the
+real intended client portal or leftover test data from earlier sessions wasn't something to
+guess at — left for Drew to pick (or replace) via the dropdown himself now that it's visible.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean,
+`/api/admin-projects/[id]/generate-password` listed). Not yet clicked for real — same
+auth-wall limitation as every other admin-gated feature this session: needs Drew's own
+login to exercise end-to-end.
+
+---
 
 ## Recent Changes (Session 56, August 7, 2026)
 
