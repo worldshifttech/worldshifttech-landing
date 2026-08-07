@@ -1,4 +1,38 @@
-﻿Last session: 57
+﻿Last session: 58
+
+## Recent Changes (Session 58, August 7, 2026)
+
+**Run Custom Build Session**
+
+Prompted by a real failure: a build dispatch against `worldshifttech-landing` itself
+(Session 56's 7-part client-feedback-milestones prompt) ran `is_error: true` after 76
+turns / ~9.3 min / $3.29, against the workflow's own `--max-turns 60` — no PR, nothing
+survived. Recommended splitting it into two smaller build sessions instead of a blind
+retry (cheaper in total and far more likely to each actually land a PR than one oversized
+prompt burning turns to a dead end). That surfaced a real gap: the only way to fire a
+build dispatch was the fixed "Run Build Session" button on an answered
+`consolidated_review` card in `/admin/reviews`, which always sends that card's full,
+unmodified `proposed_content` — no way to dispatch a hand-split or edited brief.
+
+**`RepoDetailClient.tsx`**: new "Run Custom Build Session" card on the Settings tab,
+directly mirroring the existing "Run Planning Session" free-text section — a textarea +
+dispatch button POSTing `{ repo_id, session_type: "build", brief }` to the same
+`/api/orchestrator/dispatch` route the fixed button already uses. No route changes needed
+— `dispatch` has accepted `session_type: "build"` since it was written, nothing in the UI
+could just reach it with a custom brief until now.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean). Not yet used for a real
+split-and-dispatch — that's the next actual step, once Drew hand-splits the Session 56
+build prompt into its two halves (changes 1–4, then 5–7) and runs each through this.
+
+Also same discussion: Drew is switching his own Claude Code subscription from Max to Pro.
+Worth being explicit here since it could otherwise read as related to this system's
+spend — it isn't. Every orchestrator dispatch (planning and build) authenticates via a
+plain `ANTHROPIC_API_KEY` GitHub Actions secret in `wst-orchestrator-runner`, pay-per-token,
+entirely separate from Drew's own interactive Claude Code subscription tier. That was true
+before this conversation and remains true regardless of Max vs. Pro.
+
+---
 
 ## Recent Changes (Session 57, August 7, 2026)
 

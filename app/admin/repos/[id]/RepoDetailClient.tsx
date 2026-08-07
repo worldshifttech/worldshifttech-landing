@@ -76,6 +76,16 @@ export default function RepoDetailClient({
   const [dispatching, setDispatching] = useState(false);
   const [dispatchError, setDispatchError] = useState("");
 
+  // Custom Build Session — same free-text-brief pattern as planning above, for
+  // session_type: "build". The only other way to fire a build was the fixed
+  // "Run Build Session" button on an answered consolidated_review card in
+  // /admin/reviews, which always sends that card's full, unmodified proposed_content —
+  // no way to dispatch a shorter, hand-split brief when a plan comes back too large for
+  // one build session's turn budget. See NOTES.md.
+  const [buildBrief, setBuildBrief] = useState("");
+  const [buildDispatching, setBuildDispatching] = useState(false);
+  const [buildDispatchError, setBuildDispatchError] = useState("");
+
   // Target Supabase credentials — deliberately separate save action, separate route, and
   // the key field is never pre-filled with the stored value (only a "set/not set"
   // indicator is). See NOTES.md Session 51 for why.
@@ -298,6 +308,44 @@ export default function RepoDetailClient({
       setDispatchError("Something went wrong. Please try again.");
     } finally {
       setDispatching(false);
+    }
+  }
+
+  async function handleRunCustomBuildSession() {
+    setBuildDispatching(true);
+    setBuildDispatchError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/orchestrator/dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          repo_id: repo.id,
+          session_type: "build",
+          brief: buildBrief,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setBuildDispatchError(data.error ?? "Failed to dispatch");
+        return;
+      }
+
+      router.push("/admin/reviews");
+    } catch {
+      setBuildDispatchError("Something went wrong. Please try again.");
+    } finally {
+      setBuildDispatching(false);
     }
   }
 
@@ -704,6 +752,41 @@ export default function RepoDetailClient({
               className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {dispatching ? "Dispatching..." : "Run Planning Session"}
+            </button>
+            {!repo.github_app_installation_id && (
+              <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
+            )}
+          </div>
+
+          {/* Run Custom Build Session — a free-text alternative to the fixed "Run Build
+              Session" button on an answered review card in /admin/reviews, which always
+              sends that card's full proposed_content unmodified. Use this to dispatch a
+              hand-split or otherwise edited build brief instead. */}
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              Run Custom Build Session
+            </span>
+            <p className="text-[#76777A] text-xs">
+              For a hand-edited or hand-split build prompt — the review inbox&apos;s own
+              &quot;Run Build Session&quot; button always sends a card&apos;s full, unmodified text.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Build Prompt</label>
+              <textarea
+                value={buildBrief}
+                onChange={(e) => setBuildBrief(e.target.value)}
+                placeholder="Paste the (split) build prompt to execute exactly as written..."
+                rows={8}
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-xs text-[#00205C] font-mono focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
+            <button
+              onClick={handleRunCustomBuildSession}
+              disabled={buildDispatching || !buildBrief.trim() || !repo.github_app_installation_id}
+              className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {buildDispatching ? "Dispatching..." : "Run Custom Build Session"}
             </button>
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
