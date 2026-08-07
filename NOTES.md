@@ -111,15 +111,15 @@ first, a stale type-check cache still referenced the just-deleted `/admin/audit-
 page — all new routes listed: `/admin/knowledge-base`, `/api/admin-reviews/[id]/
 approve-kb-entry`, `/api/admin/migrate-audit-knowledge`).
 
-**Unverified end-to-end, needs Drew:** (1) run this session's SQL migration (see
-`supabase/schema.sql`'s bottom block); (2) call `POST /api/admin/migrate-audit-knowledge`
-once, with the admin bearer token, to actually populate the 21 audit_reference rows —
-`/admin/knowledge-base` will show zero Audit Reference entries until this runs; (3) no real
-`kb_entry_draft` has gone through the new Approve flow yet — the whole capture path is
-proven by code review and a clean build, not a real end-to-end click; (4) the retrieve
-injection has never fired against a real planning dispatch either. The `wst-orchestrator-
-runner` follow-up above is required before knowledge_context does anything even once (2)
-and this session's own code are both done.
+**Unverified end-to-end, needs Drew:** ~~(1) run this session's SQL migration~~ done.
+~~(2) call `POST /api/admin/migrate-audit-knowledge`~~ done — all 21 `audit_reference` rows
+confirmed in `/admin/knowledge-base`, after four same-day fixes (see the follow-ups above:
+delete-before-migrate ordering, a silent timeout, a vanished retry button, then a
+concurrency-related partial failure). (3) no real `kb_entry_draft` has gone through the new
+Approve flow yet — the whole capture path is proven by code review and a clean build, not a
+real end-to-end click; (4) the retrieve injection has never fired against a real planning
+dispatch either. The `wst-orchestrator-runner` follow-up above is required before
+`knowledge_context` does anything even once (4) and this session's own code are both done.
 
 **Same-day follow-up: shipped a real bug, caught by Drew clicking the button for real.**
 Ran the SQL, then clicked "Migrate Audit Docs" on the deployed site — it failed
@@ -172,6 +172,13 @@ limit (not a systemic bug, given 3 of the 5-per-batch did succeed) — dropped t
 as a defensive mitigation, still comfortably inside `maxDuration = 60` even worst-case (21
 files ÷ 3 ≈ 7 batches). Unconfirmed until the next real run — if it fails again, the actual
 error text will finally be visible rather than requiring another guess.
+
+**Fifth same-day follow-up: all 21 confirmed synced.** The `BATCH_SIZE=3` + pause fix
+worked — Drew confirmed all 21 audit reference entries are showing in
+`/admin/knowledge-base`. Migration genuinely done this time, not just "loop completed."
+`content/audit-knowledge/*.md` deleted for real now — the correct order this time: confirm
+success first, delete second, not the reverse that caused the first follow-up above.
+Verified with `tsc`/`npm run build` after the deletion.
 
 ---
 
