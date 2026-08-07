@@ -1,4 +1,78 @@
-﻿Last session: 51
+﻿Last session: 52
+
+## Recent Changes (Session 52, August 7, 2026)
+
+**WST Orchestrator Phase 4 — Scheduler**
+
+Everything before this session required Drew to click "Run Planning Session" by hand.
+This session wires the scheduler `ORCHESTRATOR_DESIGN.md` §7 describes: Vercel Cron ticks
+hourly, checks every repo with `automation_enabled = true` and a `planning_interval_hours`
+set, and dispatches a planning session automatically once that interval has elapsed and
+no session is already open for that repo. The review still lands in the inbox exactly
+like a manual dispatch — nothing about this session auto-approves anything or skips human
+review anywhere; it only skips *remembering to click the first button*.
+
+**One thing Phase 4 asked for that already existed:** "a per-session runtime/cost ceiling
+in the runner workflow so a stuck session can't run indefinitely" — `timeout-minutes` (20
+planning / 45 build) and `--max-turns` (30 / 60) have been on both jobs since
+`wst-orchestrator-runner`'s Session 1. Nothing new needed there.
+
+**`lib/orchestrator-dispatch.ts`** (new): `dispatchOrchestratorSession()` — the exact
+dispatch logic (`agent_sessions` insert, GitHub App token exchange, `repository_dispatch`
+fire, `last_planning_session_at` stamp) extracted out of `/api/orchestrator/dispatch` so
+the scheduler can call the identical code path rather than a second copy that could
+drift. `/api/orchestrator/dispatch/route.ts` is now a thin wrapper: `verifyAdmin`, parse
+body, call the helper, translate the result to a response — no behavior change for the
+existing "Run Planning/Build Session" buttons.
+
+**`app/api/orchestrator/scheduler-tick/route.ts`** (new, GET): the actual cron target.
+Auth is `Authorization: Bearer $CRON_SECRET` — Vercel sends this automatically on
+cron-triggered requests when `CRON_SECRET` is set on the project, which is the documented
+way to confirm a hit on this otherwise-unauthenticated, guessable URL actually came from
+Vercel's own scheduler. Checks `orchestrator_settings.automation_paused` first (global
+kill switch, short-circuits everything if true); then for each eligible repo, checks for
+an open `agent_sessions` row (`status NOT IN ('done','failed')` — the design doc's own
+prose says "open," but the schema's actual status values in practice are `running` /
+`awaiting_review` / `approved` / `awaiting_verification`, so "open" is read here as "not
+yet terminal," not a literal match against the schema's `'open'` enum value) and whether
+`planning_interval_hours` has elapsed since `last_planning_session_at` (never-run repos
+are due immediately). Dispatches with a generic, deliberately non-leading brief — see the
+`SCHEDULED_PLANNING_BRIEF` constant — that explicitly tells the agent it's fine to report
+"nothing worth doing" rather than manufacturing busywork every single tick. Returns a
+per-repo `dispatched`/`skipped` summary, useful for reading Vercel's own cron invocation
+logs when debugging.
+
+**`app/api/admin-orchestrator-settings/route.ts`** (new, GET + PATCH): `verifyAdmin`-gated
+read/write of the one `orchestrator_settings` row (singleton table, seeded by the
+migration below).
+
+**`app/admin/repos/page.tsx` + `RepoFleetClient.tsx`**: fleet page now fetches and
+displays the global pause state at the top, above the repo list — "Automation running" /
+"Automation paused sitewide" with a toggle button. Per-repo pause is unchanged and
+untouched: that's still `automation_enabled` on each repo's own detail page, exactly as
+it's worked since Session 48.
+
+**`vercel.json`** (new): `crons: [{ path: "/api/orchestrator/scheduler-tick", schedule:
+"0 * * * *" }]` — hourly, per the design doc's own suggested interval. Untested whether
+the account's Vercel plan tier actually permits hourly cron frequency (some tiers
+restrict cron to daily) — will surface clearly in the Vercel dashboard if not; not
+something worth guessing about here.
+
+**New required Vercel env var: `CRON_SECRET`** — any long random string, must be set for
+`scheduler-tick`'s auth check to mean anything (Vercel reads this same env var name to
+know what to send itself). Not yet set — Drew needs to add it before the scheduler can
+actually authenticate its own cron hits.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, all four routes
+listed — the two new ones plus the two existing orchestrator routes, unchanged
+behavior confirmed by inspection since the refactor is a pure extraction).
+
+**Next:** the scheduler is built but inert until `CRON_SECRET` is set and at least one
+repo has both `automation_enabled = true` and a real `planning_interval_hours` — right
+now every repo has the latter unset ("blank = never" per the UI's own placeholder), so
+even once deployed, nothing fires until Drew opts a repo in deliberately.
+
+---
 
 ## Recent Changes (Session 51, August 7, 2026)
 

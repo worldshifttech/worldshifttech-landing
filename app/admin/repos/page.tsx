@@ -75,5 +75,17 @@ export default async function AdminReposPage() {
     title: p.title as string,
   }));
 
-  return <RepoFleetClient initialRepos={repos} projects={projects} />;
+  const { data: settings } = await serviceClient
+    .from("orchestrator_settings")
+    .select("automation_paused")
+    .limit(1)
+    .maybeSingle();
+
+  return (
+    <RepoFleetClient
+      initialRepos={repos}
+      projects={projects}
+      initialAutomationPaused={Boolean(settings?.automation_paused)}
+    />
+  );
 }

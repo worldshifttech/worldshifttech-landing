@@ -67,12 +67,17 @@ function authLabel(value: string): string {
 
 export default function RepoFleetClient({
   initialRepos,
+  initialAutomationPaused,
 }: {
   initialRepos: Repo[];
   projects: ProjectOption[];
+  initialAutomationPaused: boolean;
 }) {
   const router = useRouter();
   const [repos] = useState<Repo[]>(initialRepos);
+  const [automationPaused, setAutomationPaused] = useState(initialAutomationPaused);
+  const [pauseSaving, setPauseSaving] = useState(false);
+  const [pauseError, setPauseError] = useState("");
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLocalPath, setNewLocalPath] = useState("");
@@ -126,6 +131,43 @@ export default function RepoFleetClient({
     }
   }
 
+  // Global kill switch, checked before every scheduler tick — independent of each repo's
+  // own automation_enabled, which is the per-repo pause. See NOTES.md Session 52.
+  async function handleTogglePause() {
+    const next = !automationPaused;
+    setPauseSaving(true);
+    setPauseError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/admin-orchestrator-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ automation_paused: next }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPauseError(data.error ?? "Failed to save");
+        return;
+      }
+
+      setAutomationPaused(next);
+    } catch {
+      setPauseError("Something went wrong. Please try again.");
+    } finally {
+      setPauseSaving(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
@@ -170,6 +212,43 @@ export default function RepoFleetClient({
           >
             Repo Fleet
           </h1>
+
+          {/* Global automation kill switch — checked before every scheduler tick,
+              independent of each repo's own automation_enabled toggle */}
+          <div
+            className={`flex items-center justify-between gap-4 mb-6 px-5 py-4 rounded-2xl border ${
+              automationPaused
+                ? "bg-orange-500/10 border-orange-500/30"
+                : "bg-white border-[#00205C]/10"
+            }`}
+          >
+            <div>
+              <p
+                className="text-sm font-semibold text-[#00205C]"
+                style={{ fontFamily: "var(--font-poppins)" }}
+              >
+                {automationPaused ? "Automation paused sitewide" : "Automation running"}
+              </p>
+              <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
+                {automationPaused
+                  ? "The scheduler skips every repo, regardless of each repo's own setting, until unpaused."
+                  : "The scheduler dispatches planning sessions on schedule for any repo with automation enabled."}
+              </p>
+              {pauseError && <p className="text-red-400 text-xs mt-1">{pauseError}</p>}
+            </div>
+            <button
+              onClick={handleTogglePause}
+              disabled={pauseSaving}
+              className={`text-xs font-bold px-4 py-2.5 rounded-full flex-shrink-0 transition-colors disabled:opacity-50 ${
+                automationPaused
+                  ? "bg-[#4B858E] text-white hover:bg-[#5a9aa4]"
+                  : "border border-orange-400 text-orange-500 hover:bg-orange-50"
+              }`}
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              {pauseSaving ? "Saving..." : automationPaused ? "Resume Automation" : "Pause All Automation"}
+            </button>
+          </div>
 
           <div className="flex items-center justify-between mb-8">
             <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>

@@ -435,3 +435,20 @@ VALUES (
 -- ============================================================
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS target_supabase_url text;
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS target_supabase_service_role_key text;
+
+-- ============================================================
+-- MIGRATION: orchestrator_settings (Session 52 — WST Orchestrator Phase 4, scheduler)
+-- Singleton table — always exactly one row. Holds the global automation kill switch,
+-- checked by /api/orchestrator/scheduler-tick before every cron tick, independent of
+-- each repo's own automation_enabled (the per-repo pause). No RLS, service-role only,
+-- same convention as every other table here. See NOTES.md Session 52.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS orchestrator_settings (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  automation_paused  boolean NOT NULL DEFAULT false,
+  updated_at         timestamptz NOT NULL DEFAULT now()
+);
+
+INSERT INTO orchestrator_settings (automation_paused)
+SELECT false
+WHERE NOT EXISTS (SELECT 1 FROM orchestrator_settings);
