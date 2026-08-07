@@ -12,6 +12,7 @@ type RawReviewRow = {
   summary: string;
   open_questions: { question: string; suggested_options?: string[]; answer: string | null }[] | null;
   proposed_content: string | null;
+  kb_draft: { title?: string; problem_solved?: string; tags?: string[]; tech_stack?: string[]; artifact_location?: string } | null;
   drew_response: string | null;
   status: string;
   created_at: string;
@@ -90,6 +91,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
       answer: q.answer ?? "",
     })),
     proposed_content: r.proposed_content,
+    kb_draft: r.kb_draft,
     drew_response: r.drew_response,
     status: r.status as ReviewItem["status"],
     created_at: r.created_at,

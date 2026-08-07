@@ -1,4 +1,127 @@
-﻿Last session: 54
+﻿Last session: 55
+
+## Recent Changes (Session 55, August 7, 2026)
+
+**WST Orchestrator Phase 3 (knowledge base) + Audit Knowledge Base consolidation**
+
+Planning session started as Phase 3 alone (`ORCHESTRATOR_DESIGN.md` §6: pgvector/Voyage
+capture-retrieve loop). Drew then asked to fold the existing "Audit Knowledge Base" into
+the same table rather than build a second, separate KB. Investigating that before writing
+any code surfaced it wasn't actually one system to fold in — it was three disconnected
+fragments: `content/audit-knowledge/*.md` (21 docs, read straight off disk by
+`/admin/audit-knowledge`), the `audit_knowledge` Supabase table (`lib/audit-knowledge.ts`'s
+`getAuditKnowledge()` — **zero callers anywhere in the app**, and not even present in
+`supabase/schema.sql`, so it was created outside the tracked migration history), and
+`content/tool-registry.json` (a completely different structured-facts file that's what
+actually drives the live `/audit` report via `app/api/generate-audit/route.ts`). Drew's
+call: fully migrate the first two into the new unified table and retire them outright;
+leave `tool-registry.json` alone but flag it as a future retire/fold candidate (comment
+added at the top of `generate-audit/route.ts`).
+
+**`knowledge_base_entries`** (existing table from the Session 48 schema, altered, not
+recreated): gained `category` (`'audit_reference' | 'build_artifact'`), `tool_slug`,
+`reference_doc`; `problem_solved`/`artifact_description` relaxed from `NOT NULL` since
+audit_reference rows don't set them. One table, two shapes, sharing `title`/`tags`/
+`tech_stack`/`embedding`/`reuse_count` — deliberately not two tables, and not five more
+narrow nullable columns split further than that: `reference_doc` holds the entirety of an
+audit doc's prose (matches how it was actually consumed — one rendered block, never split
+into sub-fields), `artifact_description`/`artifact_location`/`problem_solved` cover a build
+artifact. **`match_knowledge_base_entries`** (new RPC) does cosine-similarity search across
+both categories at once — a planning session's brief benefits from relevant audit
+knowledge, not just past build artifacts, a real emergent win from merging rather than
+just tidiness. **`increment_kb_reuse_count`** (new RPC) bumps `reuse_count` for whatever
+gets surfaced into a planning session's context — "offered to an agent" is the usage
+signal used, not "a human later confirmed it helped." **`review_items.kb_draft`** (new,
+jsonb) holds a `kb_entry_draft` review's structured metadata (title/problem_solved/tags/
+tech_stack/artifact_location) ahead of promotion; `proposed_content` continues to carry
+the long-form description, unchanged from its original schema comment.
+
+**`lib/voyage.ts`** (new): `embedText()`, a plain `fetch` wrapper, no SDK — same
+hand-rolled-REST convention as `lib/github-app.ts`. Model pinned to `voyage-3`, verified
+against Voyage's own docs (not assumed) to be fixed at 1024 dimensions — not configurable,
+unlike the newer `voyage-3.5`/`voyage-4` families — matching `vector(1024)` exactly.
+`VOYAGE_API_KEY` was already set in Vercel (Phase 0, undocumented until now) — nothing new
+to configure there.
+
+**`lib/knowledge-base.ts`** (new): `searchKnowledgeBase()` (embed + RPC, best-effort —
+returns `[]` on any Voyage/Supabase failure rather than throwing, so a hiccup never blocks
+a dispatch) and `formatKnowledgeForPrompt()` (same shape as the now-retired
+`lib/audit-knowledge.ts`'s `formatKnowledgeForPrompt()`, just backed by similarity instead
+of a keyword-to-slug map).
+
+**Capture (kb_entry_draft → a real KB row):** `session-result`'s `ReviewInput` widened to
+accept an optional `kb_draft` object, stored as-is on the new column — no behavior change
+for any other review kind. **`/api/admin-reviews/[id]/approve-kb-entry`** (new, POST) is
+the actual gap this phase closes: **the "Approve" button on a kb_entry_draft card has
+existed since Session 48 but never wrote anything into `knowledge_base_entries` — that
+table had zero writers before this session.** Takes title/problem_solved/tags/tech_stack/
+artifact_location/artifact_description straight from the request body (whatever Drew last
+edited in the card, not a re-read of the original draft), embeds the composed text, inserts
+a `category: 'build_artifact'` row, marks the review answered. Mirrors `[id]/merge`'s
+structure — same category of one genuinely new, semi-irreversible action per inbox.
+**`ReviewInboxClient.tsx`**: `kb_entry_draft` got its own early-return render branch (like
+`build_result` already had) instead of the shared open-questions/decision-buttons/textarea
+path — always-editable Title/Problem solved/Description/Tags/Tech stack/Artifact location
+fields, "Approve & Add to Knowledge Base" / "Discard" buttons. This replaces the old
+Approve/Edit/Discard decision-button flow from Session 48 (Edit only ever touched
+`proposed_content`; there's more structured metadata to review now, so editing is just
+always on rather than a separate mode). `handleDiscardBuild` generalized to
+`handleDiscard(message)`, shared by `build_result` and `kb_entry_draft`'s Discard buttons.
+Both review pages (`admin/reviews/page.tsx`, `admin/repos/[id]/page.tsx`) thread `kb_draft`
+through — both already did `select("*")` on `review_items`, so only the row-mapping and
+type needed updating, no query change.
+
+**Retrieve (planning dispatch → injected context):** `lib/orchestrator-dispatch.ts`, for
+`session_type: "planning"` only (a build session executes an already-fully-specified
+prompt — no second injection needed), embeds `brief`, searches the KB, adds
+`knowledge_context: string | null` to the `client_payload` sent to
+`wst-orchestrator-runner`. Best-effort end to end — a Voyage/Supabase failure degrades to
+`knowledge_context: null`, never fails the dispatch. `reuse_count` bump runs in its own
+try/catch, awaited rather than fire-and-forget (a serverless function can be torn down
+before an un-awaited promise resolves), and a failure there never marks the whole session
+failed.
+
+**Migration + new UI (audit consolidation):** **`/api/admin/migrate-audit-knowledge`**
+(new, POST, one-time, idempotent — skips any `tool_slug` already present) reads all 21
+`content/audit-knowledge/*.md` files, parses title and category straight out of each doc's
+own header line (`# Name — WST Audit Reference` / `**Category:** X | **Infrastructure:**
+Y`) rather than hand-maintaining a duplicate mapping, embeds the full doc, inserts as
+`category: 'audit_reference'`. **`/admin/knowledge-base`** (new, replaces
+`/admin/audit-knowledge` in `AdminDashboard.tsx`'s nav) — the browsable "what have I
+collected" view Drew asked for: sidebar grouped by Build Artifacts / audit category (search
+across title/tags/tech_stack), detail pane rendering `reference_doc` for audit entries or
+the structured fields for build artifacts, plus reuse count and source repo. View-only this
+phase — editing an already-approved entry is a reasonable fast-follow, not built.
+
+**Retired:** `app/admin/audit-knowledge/` (page + client), `lib/audit-knowledge.ts`,
+`content/audit-knowledge/*.md` (21 files) — all deleted outright, not deprecated in place,
+per Drew's "fully migrate" call. Confirmed nothing else imported `lib/audit-knowledge.ts`
+before deleting it.
+
+**Left for a separate `wst-orchestrator-runner` session** (read that repo's actual README
+before starting, don't guess): the planning job's `claude` CLI call needs to read
+`client_payload.knowledge_context` and inject it; the build job's wrapper (not the target
+repo's own build prompt) needs a "before opening the PR, evaluate reusability, and if so
+POST a second `kb_entry_draft` review" instruction — `session-result` already supports a
+second POST with a different `review.kind` against the same `session_id`, no control-plane
+change needed for that half.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean — `.next` had to be wiped
+first, a stale type-check cache still referenced the just-deleted `/admin/audit-knowledge`
+page — all new routes listed: `/admin/knowledge-base`, `/api/admin-reviews/[id]/
+approve-kb-entry`, `/api/admin/migrate-audit-knowledge`).
+
+**Unverified end-to-end, needs Drew:** (1) run this session's SQL migration (see
+`supabase/schema.sql`'s bottom block); (2) call `POST /api/admin/migrate-audit-knowledge`
+once, with the admin bearer token, to actually populate the 21 audit_reference rows —
+`/admin/knowledge-base` will show zero Audit Reference entries until this runs; (3) no real
+`kb_entry_draft` has gone through the new Approve flow yet — the whole capture path is
+proven by code review and a clean build, not a real end-to-end click; (4) the retrieve
+injection has never fired against a real planning dispatch either. The `wst-orchestrator-
+runner` follow-up above is required before knowledge_context does anything even once (2)
+and this session's own code are both done.
+
+---
 
 ## Recent Changes (Session 54, August 7, 2026)
 

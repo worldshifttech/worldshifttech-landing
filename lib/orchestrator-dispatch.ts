@@ -5,6 +5,7 @@
 
 import { getSupabase } from "@/lib/supabase";
 import { getInstallationToken } from "@/lib/github-app";
+import { searchKnowledgeBase, formatKnowledgeForPrompt } from "@/lib/knowledge-base";
 
 export type DispatchResult =
   | { ok: true; sessionId: string }
@@ -62,6 +63,32 @@ export async function dispatchOrchestratorSession({
   try {
     const installationToken = await getInstallationToken(repo.github_app_installation_id);
 
+    // Retrieve step (Phase 3): only for planning — a build session executes an
+    // already-fully-specified prompt, it doesn't need a second injection. Best-effort,
+    // via lib/knowledge-base.ts which fails open to [] / null on any Voyage/Supabase
+    // hiccup rather than blocking dispatch. Surfaced entries count as "used" for
+    // reuse_count purposes the moment they're offered to an agent, not only once a human
+    // confirms they were actually applied — a cheap, good-enough usage signal.
+    let knowledgeContext: string | null = null;
+    if (sessionType === "planning") {
+      const matches = await searchKnowledgeBase(brief);
+      knowledgeContext = formatKnowledgeForPrompt(matches);
+      if (matches.length > 0) {
+        // Best-effort counter bump in its own try/catch, not the outer one — this is a
+        // serverless function, so a fire-and-forget call risks being cut off before it
+        // completes once the response goes out; awaiting it here, but a failure must
+        // never mark the whole session failed over a reuse_count hiccup.
+        try {
+          const { error } = await supabase.rpc("increment_kb_reuse_count", {
+            entry_ids: matches.map((m) => m.id),
+          });
+          if (error) console.error("[orchestrator-dispatch] reuse_count bump failed:", error.message);
+        } catch (err) {
+          console.error("[orchestrator-dispatch] reuse_count bump failed:", err);
+        }
+      }
+    }
+
     const dispatchRes = await fetch(`https://api.github.com/repos/${runnerRepo}/dispatches`, {
       method: "POST",
       headers: {
@@ -79,6 +106,7 @@ export async function dispatchOrchestratorSession({
           github_owner: repo.github_owner,
           github_repo: repo.github_repo,
           resume_context: null,
+          knowledge_context: knowledgeContext,
         },
       }),
     });

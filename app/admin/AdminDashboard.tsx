@@ -185,11 +185,11 @@ export default function AdminDashboard({
           </Link>
           <div className="flex items-center gap-6">
             <Link
-              href="/admin/audit-knowledge"
+              href="/admin/knowledge-base"
               className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
               style={{ fontFamily: "var(--font-poppins)" }}
             >
-              Audit KB
+              Knowledge Base
             </Link>
             <Link
               href="/admin/repos"

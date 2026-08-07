@@ -463,3 +463,67 @@ WHERE NOT EXISTS (SELECT 1 FROM orchestrator_settings);
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS deployed_sha text;
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS github_head_sha text;
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS drift_checked_at timestamptz;
+
+-- ============================================================
+-- MIGRATION: unified knowledge_base_entries (Session 55 — WST Orchestrator Phase 3 +
+-- Audit Knowledge Base consolidation)
+-- Folds the previously-disconnected audit reference library (content/audit-knowledge/*.md,
+-- read straight off disk by /admin/audit-knowledge, plus the old `audit_knowledge` table
+-- which had zero callers anywhere in the app) into the same table Phase 3 already needed
+-- for build-session reusable artifacts. One browsable, embedded knowledge base instead of
+-- two unrelated systems — see NOTES.md Session 55 for the full reasoning.
+-- `category` distinguishes the two shapes sharing this table. problem_solved and
+-- artifact_description are relaxed from NOT NULL since audit_reference rows don't set
+-- them — they use tool_slug/reference_doc instead, which build_artifact rows leave null.
+-- ============================================================
+ALTER TABLE knowledge_base_entries ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'build_artifact';
+ALTER TABLE knowledge_base_entries ADD COLUMN IF NOT EXISTS tool_slug text;
+ALTER TABLE knowledge_base_entries ADD COLUMN IF NOT EXISTS reference_doc text;
+ALTER TABLE knowledge_base_entries ALTER COLUMN problem_solved DROP NOT NULL;
+ALTER TABLE knowledge_base_entries ALTER COLUMN artifact_description DROP NOT NULL;
+
+-- review_items.kb_draft holds the structured fields a kb_entry_draft review needs
+-- (title/problem_solved/tags/tech_stack/artifact_location) ahead of Drew's Approve
+-- promoting them into a real knowledge_base_entries row. proposed_content continues to
+-- carry the long-form description, per its own original schema comment ("e.g. the build
+-- prompt, or a drafted KB entry").
+ALTER TABLE review_items ADD COLUMN IF NOT EXISTS kb_draft jsonb;
+
+-- Cosine-similarity search across both categories at once — a planning session's brief
+-- benefits from relevant audit reference knowledge just as much as a past build artifact.
+-- Standard Supabase pgvector RPC pattern: supabase-js passes query_embedding as a plain
+-- JS number array, which PostgREST casts to `vector` on the way in.
+CREATE OR REPLACE FUNCTION match_knowledge_base_entries(
+  query_embedding vector(1024),
+  match_count int DEFAULT 3
+)
+RETURNS TABLE (
+  id uuid,
+  category text,
+  title text,
+  problem_solved text,
+  tags text[],
+  tech_stack text[],
+  artifact_description text,
+  artifact_location text,
+  reference_doc text,
+  similarity float
+)
+LANGUAGE sql STABLE
+AS $$
+  SELECT id, category, title, problem_solved, tags, tech_stack, artifact_description,
+         artifact_location, reference_doc, 1 - (embedding <=> query_embedding) AS similarity
+  FROM knowledge_base_entries
+  WHERE embedding IS NOT NULL
+  ORDER BY embedding <=> query_embedding
+  LIMIT match_count;
+$$;
+
+-- Bumps reuse_count for every entry surfaced into a planning session's context — "was
+-- offered to an agent" is the usage signal, not "a human later confirmed it was used".
+CREATE OR REPLACE FUNCTION increment_kb_reuse_count(entry_ids uuid[])
+RETURNS void
+LANGUAGE sql
+AS $$
+  UPDATE knowledge_base_entries SET reuse_count = reuse_count + 1 WHERE id = ANY(entry_ids);
+$$;

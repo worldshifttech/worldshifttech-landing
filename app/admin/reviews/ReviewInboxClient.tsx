@@ -14,12 +14,21 @@ export type OpenQuestion = {
   answer: string;
 };
 
+export type KbDraft = {
+  title?: string;
+  problem_solved?: string;
+  tags?: string[];
+  tech_stack?: string[];
+  artifact_location?: string;
+};
+
 export type ReviewItem = {
   id: string;
   kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft" | "build_result";
   summary: string;
   open_questions: OpenQuestion[];
   proposed_content: string | null;
+  kb_draft: KbDraft | null;
   drew_response: string | null;
   status: "pending" | "answered";
   created_at: string;
@@ -71,10 +80,12 @@ const KIND_BADGE: Record<ReviewItem["kind"], { label: string; bg: string; text: 
   },
 };
 
-// ─── Decision buttons (production_risk_flag / kb_entry_draft) ────────────────
-// These two kinds have no open_questions to answer — they need a decision, not
-// a freeform blob. consolidated_review keeps the plain textarea fallback for
-// the (rare) case it has zero open_questions too.
+// ─── Decision buttons (production_risk_flag) ──────────────────────────────────
+// This kind has no open_questions to answer — it needs a decision, not a freeform
+// blob. consolidated_review keeps the plain textarea fallback for the (rare) case it
+// has zero open_questions too. kb_entry_draft and build_result both got their own early
+// return branches instead (see below) — a promoted KB entry needs several structured
+// fields, not a single decision + freeform notes.
 
 type DecisionOption = { value: string; label: string; style: "primary" | "neutral" | "danger" };
 
@@ -82,11 +93,6 @@ const DECISION_OPTIONS: Partial<Record<ReviewItem["kind"], DecisionOption[]>> = 
   production_risk_flag: [
     { value: "Acknowledged & Proceed", label: "Acknowledge & Proceed", style: "primary" },
     { value: "Stop / Needs Changes", label: "Stop / Needs Changes", style: "danger" },
-  ],
-  kb_entry_draft: [
-    { value: "Approved", label: "Approve", style: "primary" },
-    { value: "Edit", label: "Edit", style: "neutral" },
-    { value: "Discarded", label: "Discard", style: "danger" },
   ],
 };
 
@@ -117,7 +123,6 @@ export function ReviewCard({
   const [answers, setAnswers] = useState<string[]>(item.open_questions.map((q) => q.answer || ""));
   const [drewResponse, setDrewResponse] = useState(item.drew_response ?? "");
   const [decision, setDecision] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState(item.proposed_content ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [buildDispatching, setBuildDispatching] = useState(false);
@@ -129,16 +134,23 @@ export function ReviewCard({
   const [mergeError, setMergeError] = useState("");
   const [discarding, setDiscarding] = useState(false);
   const [discardError, setDiscardError] = useState("");
+  const [kbTitle, setKbTitle] = useState(item.kb_draft?.title ?? "");
+  const [kbProblemSolved, setKbProblemSolved] = useState(item.kb_draft?.problem_solved ?? "");
+  const [kbDescription, setKbDescription] = useState(item.proposed_content ?? "");
+  const [kbTags, setKbTags] = useState((item.kb_draft?.tags ?? []).join(", "));
+  const [kbTechStack, setKbTechStack] = useState((item.kb_draft?.tech_stack ?? []).join(", "));
+  const [kbArtifactLocation, setKbArtifactLocation] = useState(item.kb_draft?.artifact_location ?? "");
+  const [kbApproving, setKbApproving] = useState(false);
+  const [kbApproveError, setKbApproveError] = useState("");
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
-  const isEditing = item.kind === "kb_entry_draft" && decision === "Edit";
 
   const allQuestionsAnswered = answers.every((a) => a.trim().length > 0);
   const canSubmit = hasQuestions
     ? allQuestionsAnswered
     : decisionOptions
-    ? decision !== null && (!isEditing || editedContent.trim().length > 0)
+    ? decision !== null
     : drewResponse.trim().length > 0;
 
   function setAnswer(i: number, value: string) {
@@ -179,7 +191,6 @@ export function ReviewCard({
         body: JSON.stringify({
           open_questions: hasQuestions ? updatedQuestions : undefined,
           drew_response: finalResponse || undefined,
-          proposed_content: isEditing ? editedContent : undefined,
         }),
       });
 
@@ -193,7 +204,6 @@ export function ReviewCard({
         status: "answered",
         open_questions: hasQuestions ? updatedQuestions : item.open_questions,
         drew_response: finalResponse || null,
-        proposed_content: isEditing ? editedContent : item.proposed_content,
       });
     } catch {
       setError("Something went wrong. Please try again.");
@@ -316,9 +326,10 @@ export function ReviewCard({
     }
   }
 
-  // Marks a build result as reviewed-and-not-shipped, without touching GitHub at all —
-  // the PR stays open on GitHub for Drew to deal with separately if he wants.
-  async function handleDiscardBuild() {
+  // Marks a card reviewed-and-not-acted-on via the generic PATCH — no GitHub or KB side
+  // effect either way. Shared by build_result ("Discard") and kb_entry_draft ("Discard"),
+  // each passing its own drew_response wording.
+  async function handleDiscard(message: string) {
     setDiscarding(true);
     setDiscardError("");
 
@@ -335,7 +346,7 @@ export function ReviewCard({
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ drew_response: "Discarded — not merged" }),
+        body: JSON.stringify({ drew_response: message }),
       });
 
       const data = await res.json();
@@ -344,12 +355,170 @@ export function ReviewCard({
         return;
       }
 
-      onAnswered(item.id, { status: "answered", drew_response: "Discarded — not merged" });
+      onAnswered(item.id, { status: "answered", drew_response: message });
     } catch {
       setDiscardError("Something went wrong. Please try again.");
     } finally {
       setDiscarding(false);
     }
+  }
+
+  // Promotes this draft into a real, permanent, embedded knowledge_base_entries row.
+  // Sends whatever's currently in the (always-editable) fields below, not a re-read of
+  // the original agent-drafted values — Drew's last edit wins. See NOTES.md Session 55.
+  async function handleApproveKbEntry() {
+    setKbApproving(true);
+    setKbApproveError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}/approve-kb-entry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          title: kbTitle,
+          problem_solved: kbProblemSolved || null,
+          tags: kbTags.split(",").map((t) => t.trim()).filter(Boolean),
+          tech_stack: kbTechStack.split(",").map((t) => t.trim()).filter(Boolean),
+          artifact_location: kbArtifactLocation || null,
+          artifact_description: kbDescription,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setKbApproveError(data.error ?? "Failed to add to knowledge base");
+        return;
+      }
+
+      onAnswered(item.id, { status: "answered", drew_response: "Added to knowledge base" });
+    } catch {
+      setKbApproveError("Something went wrong. Please try again.");
+    } finally {
+      setKbApproving(false);
+    }
+  }
+
+  // kb_entry_draft cards need several structured fields (title, tags, tech stack, ...)
+  // reviewed and adjustable before Approve, not a single decision + freeform notes — own
+  // early return, same reasoning as build_result just below. See NOTES.md Session 55.
+  if (item.kind === "kb_entry_draft") {
+    return (
+      <div className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`text-xs font-bold px-2.5 py-1 rounded-full border uppercase tracking-wide ${badge.bg} ${badge.text} ${badge.border}`}
+          >
+            {badge.label}
+          </span>
+          <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
+          <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs font-medium text-red-400 hover:text-red-500 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+
+        {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
+
+        <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
+
+        {item.status === "pending" ? (
+          <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Title</label>
+              <input
+                value={kbTitle}
+                onChange={(e) => setKbTitle(e.target.value)}
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Problem solved</label>
+              <input
+                value={kbProblemSolved}
+                onChange={(e) => setKbProblemSolved(e.target.value)}
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Description</label>
+              <textarea
+                value={kbDescription}
+                onChange={(e) => setKbDescription(e.target.value)}
+                rows={6}
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-xs text-[#00205C] font-mono focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[#76777A] mb-1.5">Tags (comma-separated)</label>
+                <input
+                  value={kbTags}
+                  onChange={(e) => setKbTags(e.target.value)}
+                  className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                  Tech stack (comma-separated)
+                </label>
+                <input
+                  value={kbTechStack}
+                  onChange={(e) => setKbTechStack(e.target.value)}
+                  className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Artifact location (optional)</label>
+              <input
+                value={kbArtifactLocation}
+                onChange={(e) => setKbArtifactLocation(e.target.value)}
+                placeholder="e.g. lib/project-files.ts"
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+
+            {kbApproveError && <p className="text-red-400 text-xs">{kbApproveError}</p>}
+            {discardError && <p className="text-red-400 text-xs">{discardError}</p>}
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleApproveKbEntry}
+                disabled={kbApproving || discarding || !kbTitle.trim() || !kbDescription.trim()}
+                className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {kbApproving ? "Adding..." : "Approve & Add to Knowledge Base"}
+              </button>
+              <button
+                onClick={() => handleDiscard("Discarded")}
+                disabled={kbApproving || discarding}
+                className="text-sm font-semibold px-6 py-2.5 rounded-full border border-red-300 text-red-400 hover:bg-red-50 disabled:opacity-50 transition-colors"
+              >
+                {discarding ? "Discarding..." : "Discard"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="border-t border-[#00205C]/[0.08] pt-4">
+            <p className="text-[#4B858E] text-sm font-medium">{item.drew_response}</p>
+          </div>
+        )}
+      </div>
+    );
   }
 
   // build_result cards don't fit the open-questions/decision-buttons/textarea shape at
@@ -416,7 +585,7 @@ export function ReviewCard({
                 {merging ? "Merging..." : "Merge to Production"}
               </button>
               <button
-                onClick={handleDiscardBuild}
+                onClick={() => handleDiscard("Discarded — not merged")}
                 disabled={merging || discarding}
                 className="text-sm font-semibold px-6 py-2.5 rounded-full border border-red-300 text-red-400 hover:bg-red-50 disabled:opacity-50 transition-colors"
               >
@@ -458,7 +627,7 @@ export function ReviewCard({
 
       <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
-      {item.proposed_content && (item.status !== "pending" || !isEditing) && (
+      {item.proposed_content && (
         <pre className="max-h-96 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] whitespace-pre-wrap font-mono">
           {item.proposed_content}
         </pre>
@@ -514,18 +683,6 @@ export function ReviewCard({
                   </button>
                 ))}
               </div>
-
-              {isEditing && (
-                <div>
-                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">Edit the draft</label>
-                  <textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    rows={8}
-                    className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-xs text-[#00205C] font-mono focus:outline-none focus:border-[#4B858E]/60"
-                  />
-                </div>
-              )}
             </div>
           )}
 

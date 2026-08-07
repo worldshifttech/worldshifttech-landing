@@ -7,11 +7,23 @@ type OpenQuestionInput = {
   answer: string | null;
 };
 
+type KbDraftInput = {
+  title?: string;
+  problem_solved?: string;
+  tags?: string[];
+  tech_stack?: string[];
+  artifact_location?: string;
+};
+
 type ReviewInput = {
   kind: "consolidated_review" | "production_risk_flag" | "kb_entry_draft" | "build_result";
   summary: string;
   open_questions?: OpenQuestionInput[];
   proposed_content?: string;
+  // kb_entry_draft only — the structured metadata a promoted knowledge_base_entries row
+  // needs beyond proposed_content (which carries the long-form artifact_description). See
+  // NOTES.md Session 55.
+  kb_draft?: KbDraftInput;
 };
 
 export async function POST(req: NextRequest) {
@@ -66,6 +78,7 @@ export async function POST(req: NextRequest) {
       summary: review.summary,
       open_questions: review.open_questions ?? [],
       proposed_content: review.proposed_content ?? null,
+      kb_draft: review.kb_draft ?? null,
       status: "pending",
     });
 

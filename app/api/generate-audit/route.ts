@@ -4,6 +4,14 @@ import fs from "fs";
 import path from "path";
 import { getSupabase } from "@/lib/supabase";
 
+// NOTE (Session 55): this route reads content/tool-registry.json directly — a separate,
+// structurally different store from the unified knowledge_base_entries table
+// (lib/knowledge-base.ts) that Session 55 consolidated the old audit_knowledge table and
+// content/audit-knowledge/*.md into. Left alone deliberately (Drew's call, Session 55):
+// different shape (per-tool cost/waste facts vs. prose reference) and already wired into
+// this live flow, so folding it in is a separate, higher-stakes project — flagged as a
+// candidate to retire or merge next time either system comes up again, not done here.
+
 interface ToolEntry {
   id: string;
   name: string;
