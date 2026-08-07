@@ -107,6 +107,16 @@ just the admin UI's manual path. Also worth a look eventually: encryption at res
 `target_supabase_service_role_key`, and adapters for any other repos that grow their own
 feedback backlog (`entos-group-website` included, deliberately deferred this session).
 
+**Same-day follow-up: tabs.** Drew confirmed the credentials save flow works (added real
+credentials for both repos, write-only round-trip held up), then flagged that Feedback and
+Reviews were buried at the bottom of a long scrolling page. `RepoDetailClient.tsx`
+restructured into three tabs — Settings (core fields, Target Supabase Credentials, Run
+Planning Session, Save — everything that was already above Feedback, unchanged, just
+grouped), Feedback, Reviews — with open counts in the Feedback/Reviews tab labels. The
+Feedback tab now handles its own loading/not-configured/populated states inline instead
+of the whole section just not rendering; Reviews unchanged internally, just moved. No
+route or data-shape changes, UI-only. Verified with `tsc`/`npm run build`.
+
 ---
 
 ## Recent Changes (Session 50, August 6, 2026)

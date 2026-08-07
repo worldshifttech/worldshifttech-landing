@@ -48,6 +48,7 @@ export default function RepoDetailClient({
   reviewItems: ReviewItem[];
 }) {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"settings" | "feedback" | "reviews">("settings");
   const [name, setName] = useState(repo.name);
   const [localPath, setLocalPath] = useState(repo.local_path);
   const [githubOwner, setGithubOwner] = useState(repo.github_owner);
@@ -285,6 +286,8 @@ export default function RepoDetailClient({
     }
   }
 
+  const pendingReviewCount = reviewItems.filter((r) => r.status === "pending").length;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
@@ -313,6 +316,34 @@ export default function RepoDetailClient({
         <div className="w-full max-w-3xl mx-auto space-y-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C]">{name || "Untitled Repo"}</h1>
 
+          {/* Tabs */}
+          <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10]">
+            {(
+              [
+                { key: "settings" as const, label: "Settings" },
+                { key: "feedback" as const, label: `Feedback${feedbackConfigured ? ` (${feedbackItems.length})` : ""}` },
+                { key: "reviews" as const, label: `Reviews${pendingReviewCount > 0 ? ` (${pendingReviewCount})` : ""}` },
+              ]
+            ).map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`text-sm font-semibold px-4 py-3 border-b-2 -mb-px transition-colors ${
+                    isActive
+                      ? "text-[#00205C] border-[#4B858E]"
+                      : "text-[#76777A] border-transparent hover:text-[#00205C]"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab === "settings" && (
+          <>
           {/* Core fields */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -516,56 +547,8 @@ export default function RepoDetailClient({
             )}
           </div>
 
-          {/* Feedback — only renders once the target repo has both credentials and a
-              matching adapter; see lib/feedback-adapters.ts */}
-          {!feedbackLoading && feedbackConfigured && (
-            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
-                Feedback ({feedbackItems.length} open)
-              </span>
-              {feedbackError && <p className="text-red-400 text-xs">{feedbackError}</p>}
-              {feedbackItems.length === 0 ? (
-                <p className="text-[#00205C] text-sm">No open feedback tickets.</p>
-              ) : (
-                <div className="space-y-3">
-                  {feedbackItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-[#00205C]/[0.1] rounded-xl p-4 flex items-start justify-between gap-4"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-[#00205C] text-sm font-medium">{item.title}</p>
-                        {item.body && <p className="text-[#76777A] text-xs mt-1">{item.body}</p>}
-                        <p className="text-[#76777A] text-xs mt-1 uppercase tracking-wide">{item.status}</p>
-                      </div>
-                      <button
-                        onClick={() => handleResolveFeedback(item.id)}
-                        disabled={resolvingId === item.id}
-                        className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors flex-shrink-0"
-                      >
-                        {resolvingId === item.id ? "Resolving..." : "Resolve"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Reviews — this repo's own scoped Pending/Answered list */}
-          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-4">
-              Reviews
-            </span>
-            <ReviewList
-              initialItems={reviewItems}
-              emptyPendingLabel="Nothing to review for this repo."
-              emptyAnsweredLabel="No answered items yet for this repo."
-            />
-          </div>
-
           {/* Save */}
-          <div className="flex items-center gap-4 pb-12">
+          <div className="flex items-center gap-4 pb-4">
             <button
               onClick={handleSave}
               disabled={saving}
@@ -575,6 +558,62 @@ export default function RepoDetailClient({
             </button>
             {saveError && <span className="text-red-400 text-sm">{saveError}</span>}
           </div>
+          </>
+          )}
+
+          {/* Feedback tab */}
+          {activeTab === "feedback" && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4 mb-12">
+              {feedbackLoading ? (
+                <p className="text-[#76777A] text-sm">Loading...</p>
+              ) : !feedbackConfigured ? (
+                <p className="text-[#76777A] text-sm">
+                  No feedback source configured for this repo yet — add Target Supabase Credentials
+                  on the Settings tab first.
+                </p>
+              ) : (
+                <>
+                  {feedbackError && <p className="text-red-400 text-xs">{feedbackError}</p>}
+                  {feedbackItems.length === 0 ? (
+                    <p className="text-[#00205C] text-sm">No open feedback tickets.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {feedbackItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="border border-[#00205C]/[0.1] rounded-xl p-4 flex items-start justify-between gap-4"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[#00205C] text-sm font-medium">{item.title}</p>
+                            {item.body && <p className="text-[#76777A] text-xs mt-1">{item.body}</p>}
+                            <p className="text-[#76777A] text-xs mt-1 uppercase tracking-wide">{item.status}</p>
+                          </div>
+                          <button
+                            onClick={() => handleResolveFeedback(item.id)}
+                            disabled={resolvingId === item.id}
+                            className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors flex-shrink-0"
+                          >
+                            {resolvingId === item.id ? "Resolving..." : "Resolve"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Reviews tab — this repo's own scoped Pending/Answered list */}
+          {activeTab === "reviews" && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 mb-12">
+              <ReviewList
+                initialItems={reviewItems}
+                emptyPendingLabel="Nothing to review for this repo."
+                emptyAnsweredLabel="No answered items yet for this repo."
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>
