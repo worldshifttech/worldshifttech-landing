@@ -22,6 +22,7 @@ export type Repo = {
   automation_enabled: boolean;
   planning_interval_hours: number | null;
   last_planning_session_at: string | null;
+  open_review_count: number;
 };
 
 export type ProjectOption = { id: string; title: string };
@@ -292,9 +293,19 @@ export default function RepoFleetClient({
                   className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 border border-[#00205C]/[0.12] rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
-                      {repo.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
+                        {repo.name}
+                      </p>
+                      {repo.open_review_count > 0 && (
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/30 flex-shrink-0"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                        >
+                          {repo.open_review_count} open review{repo.open_review_count !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
                       {repo.github_owner}/{repo.github_repo}
                     </p>

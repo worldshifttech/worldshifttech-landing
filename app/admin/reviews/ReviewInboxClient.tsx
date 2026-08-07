@@ -96,7 +96,7 @@ const DECISION_BUTTON_STYLE_UNSELECTED: Record<DecisionOption["style"], string> 
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-function ReviewCard({
+export function ReviewCard({
   item,
   onAnswered,
   onDeleted,
@@ -435,9 +435,20 @@ function ReviewCard({
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── List (tabbed Pending/Answered) ────────────────────────────────────────────
+// Extracted so both the global /admin/reviews inbox and a single repo's own scoped
+// section on /admin/repos/[id] can render the same tabs + cards against different item
+// sets, without duplicating the tab/local-state logic. See NOTES.md Session 51.
 
-export default function ReviewInboxClient({ initialItems }: { initialItems: ReviewItem[] }) {
+export function ReviewList({
+  initialItems,
+  emptyPendingLabel = "Nothing to review.",
+  emptyAnsweredLabel = "No answered items yet.",
+}: {
+  initialItems: ReviewItem[];
+  emptyPendingLabel?: string;
+  emptyAnsweredLabel?: string;
+}) {
   const [items, setItems] = useState<ReviewItem[]>(initialItems);
   const [activeTab, setActiveTab] = useState<"pending" | "answered">("pending");
 
@@ -453,6 +464,46 @@ export default function ReviewInboxClient({ initialItems }: { initialItems: Revi
   const answered = items.filter((i) => i.status === "answered");
   const visible = activeTab === "pending" ? pending : answered;
 
+  return (
+    <div>
+      <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10] mb-6">
+        {(["pending", "answered"] as const).map((tab) => {
+          const count = tab === "pending" ? pending.length : answered.length;
+          const isActive = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`text-sm font-semibold px-4 py-3 border-b-2 -mb-px transition-colors capitalize ${
+                isActive
+                  ? "text-[#00205C] border-[#4B858E]"
+                  : "text-[#76777A] border-transparent hover:text-[#00205C]"
+              }`}
+            >
+              {tab} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {visible.length === 0 ? (
+        <p className="text-[#00205C] text-sm">
+          {activeTab === "pending" ? emptyPendingLabel : emptyAnsweredLabel}
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {visible.map((item) => (
+            <ReviewCard key={item.id} item={item} onAnswered={handleAnswered} onDeleted={handleDeleted} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main (full-page inbox, all repos) ─────────────────────────────────────────
+
+export default function ReviewInboxClient({ initialItems }: { initialItems: ReviewItem[] }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
@@ -483,38 +534,7 @@ export default function ReviewInboxClient({ initialItems }: { initialItems: Revi
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold text-[#00205C] mb-6">Reviews</h1>
-
-          <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10] mb-8">
-            {(["pending", "answered"] as const).map((tab) => {
-              const count = tab === "pending" ? pending.length : answered.length;
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`text-sm font-semibold px-4 py-3 border-b-2 -mb-px transition-colors capitalize ${
-                    isActive
-                      ? "text-[#00205C] border-[#4B858E]"
-                      : "text-[#76777A] border-transparent hover:text-[#00205C]"
-                  }`}
-                >
-                  {tab} ({count})
-                </button>
-              );
-            })}
-          </div>
-
-          {visible.length === 0 ? (
-            <p className="text-[#00205C] text-sm">
-              {activeTab === "pending" ? "Nothing to review." : "No answered items yet."}
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {visible.map((item) => (
-                <ReviewCard key={item.id} item={item} onAnswered={handleAnswered} onDeleted={handleDeleted} />
-              ))}
-            </div>
-          )}
+          <ReviewList initialItems={initialItems} />
         </div>
       </main>
 

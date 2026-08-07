@@ -34,6 +34,21 @@ export default async function AdminReposPage() {
     .select("*")
     .order("created_at", { ascending: true });
 
+  // Open-reviews count per repo, for the fleet list's "needs attention" badge. Fetched
+  // and aggregated in JS rather than a SQL group-by — no RPC/view exists for this yet,
+  // and at the fleet's current size a full pending-items scan is cheap. See NOTES.md
+  // Session 51.
+  const { data: rawPendingReviews } = await serviceClient
+    .from("review_items")
+    .select("agent_sessions!inner(repo_id)")
+    .eq("status", "pending");
+
+  const openReviewCounts: Record<string, number> = {};
+  for (const row of (rawPendingReviews ?? []) as unknown as { agent_sessions: { repo_id: string } | null }[]) {
+    const repoId = row.agent_sessions?.repo_id;
+    if (repoId) openReviewCounts[repoId] = (openReviewCounts[repoId] ?? 0) + 1;
+  }
+
   const repos: Repo[] = (rawRepos ?? []).map((r) => ({
     id: r.id as string,
     name: r.name as string,
@@ -47,6 +62,7 @@ export default async function AdminReposPage() {
     automation_enabled: Boolean(r.automation_enabled),
     planning_interval_hours: (r.planning_interval_hours as number | null) ?? null,
     last_planning_session_at: (r.last_planning_session_at as string | null) ?? null,
+    open_review_count: openReviewCounts[r.id as string] ?? 0,
   }));
 
   const { data: rawProjects } = await serviceClient

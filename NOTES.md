@@ -1,4 +1,113 @@
-﻿Last session: 50
+﻿Last session: 51
+
+## Recent Changes (Session 51, August 7, 2026)
+
+**Target-repo feedback visibility + per-repo review views**
+
+Three things that all serve "see what needs my attention, per repo, without leaving the
+dashboard": each managed repo can now store its own Supabase credentials so the control
+plane can read/resolve its feedback backlog directly; a small adapter bridges two repos'
+genuinely different feedback schemas; and the repo detail page gains its own scoped
+review list while the fleet list gains an open-reviews badge per row.
+
+**Real schemas, not guessed** — read both target repos' actual code before designing
+anything: `forgotten-realms-dm`'s `feedback_tickets` (`title`, `description`, `status`
+`'open'|'in_progress'|'done'`) vs. `drew-griffiths-speak-easy`'s `app_feedback` (`text`,
+`notes`, `status` `'open'|'planned'|'closed'`, `closed_at`). Different tables, different
+columns, different status vocabularies — confirmed a single hardcoded query wouldn't work
+across both before writing one. `entos-group-website` deliberately has no adapter yet,
+despite being the repo whose `list-feedback.js` gap started this thread — Drew's explicit
+scope call for this session, not an oversight.
+
+**Secrets design, chosen over two other options:** passing a target repo's credentials
+through `client_payload` was rejected outright (`repository_dispatch` payloads are
+visible in plaintext in the runner's Actions UI — a real leak, not hypothetical). One
+shared GitHub secret on the runner (a JSON blob of every repo's credentials) was also
+rejected — every session would technically have read access to every other managed
+repo's credentials, not just the one it's working on. Went with a
+control-plane-mediated fetch instead: credentials live on the `repos` row, and a new
+bearer-secret-gated endpoint (`/api/orchestrator/repo-secrets`) lets a session fetch only
+the one repo's credentials it needs. Same trust model `WST_ORCHESTRATOR_SECRET` already
+has elsewhere, smallest blast radius of the three.
+
+**A second pass caught something the first design missed:** the repo detail page's
+original plan would have sent `target_supabase_service_role_key`'s raw value down to the
+browser on every page load (masked visually in a password input, but still present in
+the page's data and readable via devtools). Fixed before building: the key is now
+write-only end to end — no route ever returns it, the server passes only a
+`has_target_supabase_service_role_key` boolean to the client, and the input field never
+pre-fills with the real value. Also split into its own endpoint
+(`/api/admin-repos/[id]/target-credentials`, POST-only) rather than folding into the
+general repo-fields PATCH, so a future edit to that route's dozen unrelated fields can't
+accidentally sweep this one into some other response. `target_supabase_url` isn't treated
+the same way — it's a project subdomain, not a credential, and displays/edits normally.
+
+**Still true, and deliberately not solved this session:** `target_supabase_service_role_key`
+sits in the `repos` table as plaintext at the database layer (no RLS, service-role only —
+the same convention as every other table here, but the first time this convention holds
+a raw credential for a *different* live system rather than this project's own metadata).
+Anyone holding this project's own `SUPABASE_SERVICE_ROLE_KEY` could read it directly,
+bypassing the app entirely. Encryption at rest was discussed and deferred as optional,
+not built.
+
+**`lib/feedback-adapters.ts`** (new): `FEEDBACK_ADAPTERS` map keyed by `github_repo`,
+`getFeedbackAdapter()`. Two entries, per the schemas above.
+
+**`lib/target-supabase.ts`** (new): `getTargetSupabaseClient(url, key)` — a second
+Supabase client for a different project's credentials, mirroring `lib/supabase.ts`'s
+`getSupabase()` but parameterized instead of reading this project's fixed env vars.
+
+**`app/api/admin-repos/[id]/target-credentials/route.ts`** (new, POST): write-only, as
+above. Only overwrites the key when a non-empty value is sent — there's no way to
+intentionally clear it through this route, only replace it.
+
+**`app/api/admin-repos/[id]/feedback/route.ts`** (new, GET) and
+**`.../feedback/[ticketId]/route.ts`** (new, POST): `verifyAdmin`-gated. GET returns
+`{ items: [], configured: false }` (not an error) when a repo has no adapter or no
+credentials set — the UI treats this as "nothing to show." POST resolves one ticket via
+the adapter's `resolveField`/`resolveValue`/`resolveTimestampField`.
+
+**`app/api/orchestrator/repo-secrets/route.ts`** (new, GET): bearer-secret
+(`WST_ORCHESTRATOR_SECRET`) gated, same shape as `session-result` — built this session but
+**not yet called by anything**. `wst-orchestrator-runner` doesn't fetch from it yet; that's
+a future session in that repo, once build sessions actually need to resolve tickets
+themselves rather than just the admin UI doing it manually.
+
+**`app/admin/reviews/ReviewInboxClient.tsx`**: refactored, no behavior change to the
+global inbox. `ReviewCard` is now exported; a new exported `ReviewList` (tabbed
+Pending/Answered + card rendering) was extracted so the repo detail page can reuse the
+exact same UI against a different, filtered item set instead of duplicating the tab logic.
+
+**`app/admin/repos/[id]/page.tsx`**: fetches this repo's own `review_items` via
+`agent_sessions!inner(repo_id, ...)` + `.eq("agent_sessions.repo_id", id)` — the `!inner`
+modifier is required for a PostgREST embedded-column `.eq` to actually filter rather than
+just shape the nested object. Passes `target_supabase_url` normally but computes
+`has_target_supabase_service_role_key` as a boolean rather than ever passing the raw
+column through.
+
+**`app/admin/repos/[id]/RepoDetailClient.tsx`**: three new sections — Target Supabase
+Credentials (URL + write-only key field, separate "Save Credentials" action), Feedback
+(only renders when `configured: true` comes back; a "Resolve" button per open ticket),
+Reviews (renders `<ReviewList>` against this repo's own items, same Pending/Answered tabs
+as the global inbox).
+
+**`app/admin/repos/page.tsx`**: computes an open-reviews count per repo — one query for
+all pending `review_items` joined to `agent_sessions(repo_id)`, aggregated in JS rather
+than a SQL group-by (no view/RPC exists for this yet; fine at the fleet's current size).
+
+**`app/admin/repos/RepoFleetClient.tsx`**: renders that count as a small orange badge
+next to the repo name, hidden at zero.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, all four new routes
+listed).
+
+**Next:** wire `wst-orchestrator-runner` to actually call `/api/orchestrator/repo-secrets`
+during a build session, so autonomous build work can resolve feedback tickets too, not
+just the admin UI's manual path. Also worth a look eventually: encryption at rest for
+`target_supabase_service_role_key`, and adapters for any other repos that grow their own
+feedback backlog (`entos-group-website` included, deliberately deferred this session).
+
+---
 
 ## Recent Changes (Session 50, August 6, 2026)
 

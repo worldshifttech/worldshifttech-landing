@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabase";
 import SignOutButton from "@/app/components/SignOutButton";
 import { FRAMEWORK_OPTIONS, AUTH_OPTIONS, type ProjectOption } from "../RepoFleetClient";
+import { ReviewList, type ReviewItem } from "../../reviews/ReviewInboxClient";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,16 @@ type RepoFields = {
   automation_enabled: boolean;
   planning_interval_hours: number | null;
   github_app_installation_id: number | null;
+  target_supabase_url: string | null;
+  has_target_supabase_service_role_key: boolean;
+};
+
+type FeedbackItem = {
+  id: string;
+  title: string;
+  body: string | null;
+  status: string;
+  created_at: string;
 };
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -30,9 +41,11 @@ type RepoFields = {
 export default function RepoDetailClient({
   repo,
   projects,
+  reviewItems,
 }: {
   repo: RepoFields;
   projects: ProjectOption[];
+  reviewItems: ReviewItem[];
 }) {
   const router = useRouter();
   const [name, setName] = useState(repo.name);
@@ -58,6 +71,133 @@ export default function RepoDetailClient({
   const [planningBrief, setPlanningBrief] = useState("");
   const [dispatching, setDispatching] = useState(false);
   const [dispatchError, setDispatchError] = useState("");
+
+  // Target Supabase credentials — deliberately separate save action, separate route, and
+  // the key field is never pre-filled with the stored value (only a "set/not set"
+  // indicator is). See NOTES.md Session 51 for why.
+  const [targetSupabaseUrl, setTargetSupabaseUrl] = useState(repo.target_supabase_url ?? "");
+  const [targetSupabaseKey, setTargetSupabaseKey] = useState("");
+  const [hasTargetKey, setHasTargetKey] = useState(repo.has_target_supabase_service_role_key);
+  const [credsSaving, setCredsSaving] = useState(false);
+  const [credsError, setCredsError] = useState("");
+  const [credsSaved, setCredsSaved] = useState(false);
+
+  // Feedback — only ever populated when this repo has both credentials and a matching
+  // adapter (see lib/feedback-adapters.ts); the route returns configured: false otherwise
+  // and this section just doesn't render.
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [feedbackConfigured, setFeedbackConfigured] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFeedback() {
+      const supabase = getSupabaseBrowser();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      try {
+        const res = await fetch(`/api/admin-repos/${repo.id}/feedback`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setFeedbackError(data.error ?? "Failed to load feedback");
+          return;
+        }
+        setFeedbackItems(data.items ?? []);
+        setFeedbackConfigured(Boolean(data.configured));
+      } catch {
+        if (!cancelled) setFeedbackError("Something went wrong loading feedback.");
+      } finally {
+        if (!cancelled) setFeedbackLoading(false);
+      }
+    }
+
+    loadFeedback();
+    return () => {
+      cancelled = true;
+    };
+  }, [repo.id]);
+
+  async function handleSaveCredentials() {
+    setCredsSaving(true);
+    setCredsError("");
+    setCredsSaved(false);
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-repos/${repo.id}/target-credentials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          target_supabase_url: targetSupabaseUrl,
+          ...(targetSupabaseKey.trim() ? { target_supabase_service_role_key: targetSupabaseKey } : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setCredsError(data.error ?? "Save failed");
+        return;
+      }
+
+      if (targetSupabaseKey.trim()) {
+        setHasTargetKey(true);
+        setTargetSupabaseKey("");
+      }
+      setCredsSaved(true);
+      setTimeout(() => setCredsSaved(false), 2500);
+    } catch {
+      setCredsError("Something went wrong. Please try again.");
+    } finally {
+      setCredsSaving(false);
+    }
+  }
+
+  async function handleResolveFeedback(ticketId: string) {
+    setResolvingId(ticketId);
+    setFeedbackError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-repos/${repo.id}/feedback/${ticketId}`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setFeedbackError(data.error ?? "Failed to resolve");
+        return;
+      }
+
+      setFeedbackItems((prev) => prev.filter((i) => i.id !== ticketId));
+    } catch {
+      setFeedbackError("Something went wrong. Please try again.");
+    } finally {
+      setResolvingId(null);
+    }
+  }
 
   async function handleRunPlanningSession() {
     setDispatching(true);
@@ -307,6 +447,47 @@ export default function RepoDetailClient({
             </div>
           </div>
 
+          {/* Target Supabase Credentials */}
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              Target Supabase Credentials
+            </span>
+            <p className="text-[#76777A] text-xs">
+              For repos with their own feedback backlog (see lib/feedback-adapters.ts) — lets this
+              dashboard read and resolve that repo&apos;s own tickets directly.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">Supabase URL</label>
+              <input
+                value={targetSupabaseUrl}
+                onChange={(e) => setTargetSupabaseUrl(e.target.value)}
+                placeholder="https://xxxx.supabase.co"
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                Service Role Key {hasTargetKey ? "(set — enter a new value to replace)" : "(not set)"}
+              </label>
+              <input
+                type="password"
+                value={targetSupabaseKey}
+                onChange={(e) => setTargetSupabaseKey(e.target.value)}
+                placeholder={hasTargetKey ? "••••••••••••" : "Not set"}
+                autoComplete="off"
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+            </div>
+            {credsError && <p className="text-red-400 text-xs">{credsError}</p>}
+            <button
+              onClick={handleSaveCredentials}
+              disabled={credsSaving}
+              className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 transition-colors"
+            >
+              {credsSaving ? "Saving..." : credsSaved ? "Saved ✓" : "Save Credentials"}
+            </button>
+          </div>
+
           {/* Run Planning Session */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
             <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
@@ -333,6 +514,54 @@ export default function RepoDetailClient({
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
             )}
+          </div>
+
+          {/* Feedback — only renders once the target repo has both credentials and a
+              matching adapter; see lib/feedback-adapters.ts */}
+          {!feedbackLoading && feedbackConfigured && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Feedback ({feedbackItems.length} open)
+              </span>
+              {feedbackError && <p className="text-red-400 text-xs">{feedbackError}</p>}
+              {feedbackItems.length === 0 ? (
+                <p className="text-[#00205C] text-sm">No open feedback tickets.</p>
+              ) : (
+                <div className="space-y-3">
+                  {feedbackItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border border-[#00205C]/[0.1] rounded-xl p-4 flex items-start justify-between gap-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-[#00205C] text-sm font-medium">{item.title}</p>
+                        {item.body && <p className="text-[#76777A] text-xs mt-1">{item.body}</p>}
+                        <p className="text-[#76777A] text-xs mt-1 uppercase tracking-wide">{item.status}</p>
+                      </div>
+                      <button
+                        onClick={() => handleResolveFeedback(item.id)}
+                        disabled={resolvingId === item.id}
+                        className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors flex-shrink-0"
+                      >
+                        {resolvingId === item.id ? "Resolving..." : "Resolve"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Reviews — this repo's own scoped Pending/Answered list */}
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-4">
+              Reviews
+            </span>
+            <ReviewList
+              initialItems={reviewItems}
+              emptyPendingLabel="Nothing to review for this repo."
+              emptyAnsweredLabel="No answered items yet for this repo."
+            />
           </div>
 
           {/* Save */}
