@@ -130,6 +130,7 @@ export function ReviewCard({
   const [buildSessionId, setBuildSessionId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [sqlCopied, setSqlCopied] = useState(false);
   const [merging, setMerging] = useState(false);
   const [mergeError, setMergeError] = useState("");
   const [discarding, setDiscarding] = useState(false);
@@ -253,6 +254,17 @@ export function ReviewCard({
       setBuildDispatchError("Something went wrong. Please try again.");
     } finally {
       setBuildDispatching(false);
+    }
+  }
+
+  async function handleCopySql(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setSqlCopied(true);
+      setTimeout(() => setSqlCopied(false), 2000);
+    } catch {
+      // Clipboard API can be denied/unavailable — the SQL is still visible on screen to
+      // copy by hand, so this fails silently rather than showing an error.
     }
   }
 
@@ -571,6 +583,28 @@ export function ReviewCard({
             </a>
           )}
         </div>
+
+        {/* proposed_content is unused by every other build_result field — repurposed
+            here to carry SQL the build session extracted from its own PR description
+            (under a `## SQL to run` heading, per wst-orchestrator-runner's build
+            prompt), rather than adding a new column for a single kind's one-off need. */}
+        {item.proposed_content && (
+          <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-2">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              SQL to Run
+            </span>
+            <pre className="max-h-72 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] whitespace-pre-wrap font-mono">
+              {item.proposed_content}
+            </pre>
+            <button
+              type="button"
+              onClick={() => handleCopySql(item.proposed_content!)}
+              className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+            >
+              {sqlCopied ? "Copied ✓" : "Copy SQL"}
+            </button>
+          </div>
+        )}
 
         {item.status === "pending" ? (
           <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">

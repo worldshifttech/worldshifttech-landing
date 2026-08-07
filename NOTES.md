@@ -1,4 +1,33 @@
-﻿Last session: 58
+﻿Last session: 59
+
+## Recent Changes (Session 59, August 7, 2026)
+
+**Surface SQL migrations from build sessions on the dashboard**
+
+Drew's own question after building Session 58's custom-build-dispatch box: once a build
+session's SQL output exists, how does he actually get it? Real gap — every WST repo's own
+Build Mode convention says "output all SQL at the end," written for an interactive
+terminal session Drew would copy from directly; a headless build dispatch has no terminal
+for that to land in, and nothing captured or forwarded it anywhere durable before this.
+Most of the actual fix lives in `wst-orchestrator-runner`'s own Session 3 (see that repo's
+NOTES.md) — the build wrapper prompt now tells Claude to also put SQL under a `## SQL to
+run` heading in the PR description, and a new workflow step extracts it back out.
+
+**`ReviewInboxClient.tsx`**: `build_result` cards now render `item.proposed_content` (when
+present) as a copyable "SQL to Run" block, right below the PR/Preview links. That field
+was unused by every other `build_result` payload since Session 53 introduced the kind
+(hardcoded `null`) — repurposed rather than adding a new column, matching how
+`kb_entry_draft` already reuses `proposed_content` for its own long-form description.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+Also renumbering a same-day loose end: the two split build prompts handed to Drew earlier
+today for the milestone-feedback feature were labeled Session 59/60 before this
+control-plane work claimed 59 for itself. **Bumped to Session 60 and 61** — neither had
+been dispatched yet, confirmed by checking `agent_sessions` before renumbering, so nothing
+real collides.
+
+---
 
 ## Recent Changes (Session 58, August 7, 2026)
 
