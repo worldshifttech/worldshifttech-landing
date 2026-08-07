@@ -1,4 +1,45 @@
-﻿Last session: 55
+﻿Last session: 56
+
+## Recent Changes (Session 56, August 7, 2026)
+
+**WST Orchestrator Phase 5 — `wst-build-manager` upgrade**
+
+The last phase on the original `ORCHESTRATOR_DESIGN.md` §10 roadmap. Requested and built
+while Drew was independently testing Session 55's live dispatch flow — see that session's
+own follow-ups above for the real-dispatch proof this ran alongside. Almost all of this
+phase's work lives in `wst-build-manager` itself (its own repo, own commit
+[`5bdcb43`](https://github.com/worldshifttech/wst-build-manager/commit/5bdcb43) — read
+that repo's own README for the full detail, not duplicated here): idempotency
+(`findX`-before-`createX` across GitHub/Supabase/Vercel/ClickUp, step-level resume state
+in a new gitignored `.bootstrap-state/`), a real Vite+React starter app
+(`starter-template/`, verified end-to-end against a scratch copy — `npm install` and
+`vite build` both run clean), and this session's own one piece of the auto-registration
+half.
+
+**`app/api/ingest-repo-registration/route.ts`** (new, POST): same `WST_INGEST_SECRET`
+bearer-secret shape as the existing `ingest-build-cost` route — reuses that secret rather
+than minting a new one, since it's the same trust boundary (`wst-build-manager` talking to
+this control plane). Inserts a `repos` row for a newly-bootstrapped project
+(`framework_type: 'vite'`, `auth_convention: 'shared_secret'` — matching the WST App
+Standard's actual documented auth gate, `x-app-token`/`APP_SECRET`, not Supabase Auth).
+Idempotent: checks for an existing row by `github_repo` first and returns
+`alreadyRegistered: true` rather than duplicating — `repos.github_repo` has no unique
+constraint at the DB layer (Session 48's own migration comment already flagged this), so
+this app-level check is what actually prevents a retried `bootstrap.js` run from creating
+two rows for the same project. `wst-build-manager`'s own new Step 9b calls this,
+non-fatally, after every successful bootstrap.
+
+`WST_INGEST_SECRET` was already set in Vercel (used by the existing cost-sync path) —
+nothing new to configure on this side.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/api/ingest-repo-registration`
+listed).
+
+**This closes Phase 5 — and with it, every phase on `ORCHESTRATOR_DESIGN.md` §10's
+original roadmap (0 through 6) is now done.** Nothing scoped from that original design
+doc remains. Any future orchestrator work from here is a new ask, not a leftover phase.
+
+---
 
 ## Recent Changes (Session 55, August 7, 2026)
 
