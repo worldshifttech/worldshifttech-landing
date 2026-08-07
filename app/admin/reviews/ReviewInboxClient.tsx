@@ -96,7 +96,15 @@ const DECISION_BUTTON_STYLE_UNSELECTED: Record<DecisionOption["style"], string> 
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: string, updated: Partial<ReviewItem>) => void }) {
+function ReviewCard({
+  item,
+  onAnswered,
+  onDeleted,
+}: {
+  item: ReviewItem;
+  onAnswered: (id: string, updated: Partial<ReviewItem>) => void;
+  onDeleted: (id: string) => void;
+}) {
   const badge = KIND_BADGE[item.kind] ?? KIND_BADGE.consolidated_review;
   const [answers, setAnswers] = useState<string[]>(item.open_questions.map((q) => q.answer || ""));
   const [drewResponse, setDrewResponse] = useState(item.drew_response ?? "");
@@ -107,6 +115,8 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
   const [buildDispatching, setBuildDispatching] = useState(false);
   const [buildDispatchError, setBuildDispatchError] = useState("");
   const [buildSessionId, setBuildSessionId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
@@ -224,6 +234,41 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
     }
   }
 
+  // Removes the card outright, for stray/test dispatches that never should have been
+  // real inbox items. Only pending cards get this control (see render below) — an
+  // answered card is a real decision on record, not something to casually erase.
+  async function handleDelete() {
+    if (!window.confirm("Delete this review card? This can't be undone.")) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setDeleteError(data.error ?? "Failed to delete");
+        return;
+      }
+
+      onDeleted(item.id);
+    } catch {
+      setDeleteError("Something went wrong. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 space-y-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -235,7 +280,19 @@ function ReviewCard({ item, onAnswered }: { item: ReviewItem; onAnswered: (id: s
         <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
         <span className="text-[#76777A] text-xs">{item.session_type}</span>
         <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+        {item.status === "pending" && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs font-medium text-red-400 hover:text-red-500 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        )}
       </div>
+
+      {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
 
       <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
@@ -390,6 +447,10 @@ export default function ReviewInboxClient({ initialItems }: { initialItems: Revi
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...updated } : it)));
   }
 
+  function handleDeleted(id: string) {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+  }
+
   const pending = items.filter((i) => i.status === "pending");
   const answered = items.filter((i) => i.status === "answered");
   const visible = activeTab === "pending" ? pending : answered;
@@ -452,7 +513,7 @@ export default function ReviewInboxClient({ initialItems }: { initialItems: Revi
           ) : (
             <div className="space-y-4">
               {visible.map((item) => (
-                <ReviewCard key={item.id} item={item} onAnswered={handleAnswered} />
+                <ReviewCard key={item.id} item={item} onAnswered={handleAnswered} onDeleted={handleDeleted} />
               ))}
             </div>
           )}

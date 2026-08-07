@@ -57,6 +57,37 @@ dontAsk` behaves the same way under `claude-code-action` as it does for the bare
 whether `gh pr create` reliably infers the right repo from the checked-out working
 directory.
 
+**Same-day follow-up: first live build dispatch, one more gap, and a "Delete" action.**
+
+The first real `session_type: "build"` dispatch (against `entos-group-website`, from the
+"mobile QA pass" card a test planning dispatch produced) failed immediately —
+`claude-code-action@v1` has its own anti-loop guard that refuses to run for a non-human
+actor, and every `build` dispatch is authenticated via the exchanged GitHub App
+installation token, never a human, so it hit this by construction. Fixed in
+`wst-orchestrator-runner` (`allowed_bots: "wst-orchestrator[bot]"` on the action step) —
+full detail in that repo's own NOTES.md, not duplicated here since this repo holds none of
+that workflow's code.
+
+Drew also asked to clear out stray/test planning items for `entos-group-website` before
+starting a fresh planning doc for it. The Reviews inbox had no delete path at all — PATCH
+only ever marks a card `answered`, nothing removes one — so added a real one rather than
+touching Supabase directly by hand (deliberately staying inside the app's own
+`verifyAdmin` pattern, not the service-role key, per the hard rule in
+ORCHESTRATOR_DESIGN.md §9).
+
+**`app/api/admin-reviews/[id]/route.ts`**: new `DELETE` handler, same `verifyAdmin`
+pattern as `PATCH`. Deletes only the `review_items` row, not its parent `agent_sessions`
+row — that stays as the historical record that a dispatch happened, same reasoning
+already applied to the stuck-`running` rows left alone in Session 49.
+
+**`app/admin/reviews/ReviewInboxClient.tsx`**: a small "Delete" text link on **pending**
+cards only (any kind, not just `consolidated_review`) — an answered card is a decision on
+record, not something to casually erase, so the control doesn't appear there.
+`window.confirm()` gate before the request fires, since this one's not reversible the way
+"answer" is. On success, the card is filtered out of local state immediately.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
 ---
 
 ## Recent Changes (Session 49, August 5, 2026)

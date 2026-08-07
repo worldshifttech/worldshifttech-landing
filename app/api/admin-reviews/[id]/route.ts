@@ -55,3 +55,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   return NextResponse.json({ ok: true });
 }
+
+// Removes a review card outright — for stray/test dispatches that don't belong in the
+// inbox at all, as opposed to PATCH's "answered" path for real ones. Only deletes the
+// review_items row, not its parent agent_sessions row (that stays as the historical
+// record that a dispatch happened, same reasoning as leaving stuck-running sessions
+// alone elsewhere in this system — see NOTES.md Session 50).
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await verifyAdmin(req))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const supabase = getSupabase();
+
+  const { error } = await supabase.from("review_items").delete().eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
