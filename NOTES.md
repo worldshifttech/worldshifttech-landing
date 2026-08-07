@@ -158,6 +158,21 @@ decide whether to keep showing the box — not enforced server-side), with copy 
 yet"). Should have caught this the first time — a one-shot migration trigger needs to stay
 reachable until it's actually finished, not just until it's non-zero.
 
+**Fourth same-day follow-up: retried, loop actually completed this time, but "3 added, 3
+already there, 15 failed."** Progress — the batching/maxDuration fix from the second
+follow-up worked (no more silent timeout kill, the route ran to completion and reported
+real per-file outcomes) — but 15 of 18 remaining files genuinely failed. Couldn't diagnose
+from what was on screen: the UI only ever showed a failure *count*, discarding each
+failure's actual error message. Two changes: (1) `KnowledgeBaseClient.tsx` now keeps each
+failed slug + its real error text and lists them under the summary line, so the next
+attempt is diagnosable directly from a screenshot instead of guessed at blind; (2) leading
+suspect is a burst of `BATCH_SIZE=5` concurrent Voyage calls tripping a rate or connection
+limit (not a systemic bug, given 3 of the 5-per-batch did succeed) — dropped to `BATCH_SIZE
+= 3` with a 500ms pause between batches in `app/api/admin/migrate-audit-knowledge/route.ts`
+as a defensive mitigation, still comfortably inside `maxDuration = 60` even worst-case (21
+files ÷ 3 ≈ 7 batches). Unconfirmed until the next real run — if it fails again, the actual
+error text will finally be visible rather than requiring another guess.
+
 ---
 
 ## Recent Changes (Session 54, August 7, 2026)

@@ -35,7 +35,16 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
 // idempotent either way — re-running only ever processes what's missing. See NOTES.md.
 export const maxDuration = 60;
 
-const BATCH_SIZE = 5;
+// Third same-day follow-up: batches of 5 got the loop to actually finish (no more silent
+// timeout kill), but reported "3 added, 3 already there, 15 failed" — a burst of 5
+// concurrent Voyage embed calls is the leading suspect (rate limit or connection-limit
+// rejections on a burst, not a systemic bug), though the UI previously threw away the
+// actual per-file error message needed to confirm that. Dropped concurrency to 3 and
+// added a short pause between batches as a defensive measure either way; the UI below now
+// surfaces each failure's real error text so a repeat failure is diagnosable directly
+// instead of guessed at again. See NOTES.md.
+const BATCH_SIZE = 3;
+const BATCH_PAUSE_MS = 500;
 
 type FileResult = { slug: string; status: "inserted" | "skipped" | "failed"; error?: string };
 
@@ -109,6 +118,9 @@ export async function POST(req: NextRequest) {
     const batch = toProcess.slice(i, i + BATCH_SIZE);
     const batchResults = await Promise.all(batch.map((file) => processFile(dir, file)));
     results.push(...batchResults);
+    if (i + BATCH_SIZE < toProcess.length) {
+      await new Promise((resolve) => setTimeout(resolve, BATCH_PAUSE_MS));
+    }
   }
 
   return NextResponse.json({ ok: true, results });

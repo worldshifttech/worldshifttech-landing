@@ -44,6 +44,7 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
   const [migrating, setMigrating] = useState(false);
   const [migrateError, setMigrateError] = useState("");
   const [migrateSummary, setMigrateSummary] = useState<string | null>(null);
+  const [migrateFailures, setMigrateFailures] = useState<{ slug: string; error?: string }[]>([]);
 
   // One-time backfill trigger for /api/admin/migrate-audit-knowledge (Session 55) — the
   // route itself is idempotent (skips any tool_slug already present), so this button is
@@ -53,6 +54,7 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
     setMigrating(true);
     setMigrateError("");
     setMigrateSummary(null);
+    setMigrateFailures([]);
 
     const supabase = getSupabaseBrowser();
     const {
@@ -72,13 +74,14 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
         return;
       }
 
-      const results = data.results as { slug: string; status: string }[];
+      const results = data.results as { slug: string; status: string; error?: string }[];
       const inserted = results.filter((r) => r.status === "inserted").length;
       const skipped = results.filter((r) => r.status === "skipped").length;
-      const failed = results.filter((r) => r.status === "failed").length;
+      const failures = results.filter((r) => r.status === "failed");
       setMigrateSummary(
-        `${inserted} added, ${skipped} already there${failed ? `, ${failed} failed` : ""}.`
+        `${inserted} added, ${skipped} already there${failures.length ? `, ${failures.length} failed` : ""}.`
       );
+      setMigrateFailures(failures.map((f) => ({ slug: f.slug, error: f.error })));
       router.refresh();
     } catch {
       setMigrateError("Something went wrong. Please try again.");
@@ -170,6 +173,16 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
                   <p className="mb-2" style={{ color: "#4B858E" }}>
                     {migrateSummary}
                   </p>
+                )}
+                {migrateFailures.length > 0 && (
+                  <ul className="mb-2 space-y-1 max-h-40 overflow-y-auto">
+                    {migrateFailures.map((f) => (
+                      <li key={f.slug} className="text-red-500">
+                        <span className="font-semibold">{f.slug}</span>
+                        {f.error ? `: ${f.error}` : ""}
+                      </li>
+                    ))}
+                  </ul>
                 )}
                 <button
                   type="button"
