@@ -156,7 +156,7 @@ npm run dev  # http://localhost:3000
 | `WST_GITHUB_APP_PRIVATE_KEY` | (Session 49) — same App's private key (PEM). Paste with literal newlines, no `\n` escaping needed in Vercel's env var UI. |
 | `WST_ORCHESTRATOR_SECRET` | (Session 49) — bearer secret for `/api/orchestrator/session-result`, same shape as `WST_INGEST_SECRET` but a distinct value. Must match the `wst-orchestrator-runner` repo's own Actions secret of the same name. |
 | `WST_ORCHESTRATOR_RUNNER_REPO` | (Session 49) — `worldshifttech/wst-orchestrator-runner`. Read from env in `/api/orchestrator/dispatch` rather than hardcoded. |
-| `CRON_SECRET` | **Needs to be added** (Session 52) — any long random string. Vercel automatically sends `Authorization: Bearer $CRON_SECRET` on requests it triggers via `vercel.json`'s `crons` config; `/api/orchestrator/scheduler-tick` checks this to confirm a hit actually came from Vercel's own scheduler. The scheduler is inert without this set. |
+| `CRON_SECRET` | Set (Session 52) — Vercel automatically sends `Authorization: Bearer $CRON_SECRET` on requests it triggers via `vercel.json`'s `crons` config; `/api/orchestrator/scheduler-tick` checks this to confirm a hit actually came from Vercel's own scheduler. |
 
 ---
 
