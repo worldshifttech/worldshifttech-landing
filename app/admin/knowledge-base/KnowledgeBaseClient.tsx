@@ -7,6 +7,12 @@ import Link from "next/link";
 import SignOutButton from "@/app/components/SignOutButton";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
+// Number of content/audit-knowledge/*.md files as of Session 55 — used only to decide
+// when the migrate button/box still needs to be shown (< this many audit_reference rows
+// so far), not enforced anywhere server-side. Bump this by hand if more reference docs
+// are ever added before a fresh migration.
+const EXPECTED_AUDIT_DOC_COUNT = 21;
+
 export type KnowledgeBaseEntry = {
   id: string;
   category: "audit_reference" | "build_artifact";
@@ -149,14 +155,15 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
               {entries.length} entries — audit reference + past build artifacts
             </p>
 
-            {totalAuditCount === 0 && (
+            {totalAuditCount < EXPECTED_AUDIT_DOC_COUNT && (
               <div
                 className="rounded-lg p-3 mb-4 text-xs"
                 style={{ background: "rgba(75,133,142,0.08)", border: "1px solid rgba(75,133,142,0.25)" }}
               >
                 <p className="mb-2" style={{ color: "#00205C" }}>
-                  No audit reference docs yet — run the one-time migration to pull in the
-                  21 tool reference docs.
+                  {totalAuditCount === 0
+                    ? `No audit reference docs yet — run the one-time migration to pull in the ${EXPECTED_AUDIT_DOC_COUNT} tool reference docs.`
+                    : `${totalAuditCount} of ${EXPECTED_AUDIT_DOC_COUNT} audit reference docs synced — run again to pull in the rest (already-synced ones are skipped automatically).`}
                 </p>
                 {migrateError && <p className="text-red-500 mb-2">{migrateError}</p>}
                 {migrateSummary && (

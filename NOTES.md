@@ -148,6 +148,16 @@ maxDuration = 60`, plus the remaining files now process in concurrent batches of
 clear the limit. Still idempotent regardless — the route already skips any `tool_slug`
 already present, so clicking it again after a partial run only processes what's missing.
 
+**Third same-day follow-up: Drew went to retry and the button was gone.** A bug in the
+button itself, not the route — `KnowledgeBaseClient.tsx` only rendered the "Migrate Audit
+Docs" box when `totalAuditCount === 0`, so the moment the first partial run landed 3 rows,
+the only way to trigger a retry disappeared from the UI entirely. Changed the condition to
+`totalAuditCount < EXPECTED_AUDIT_DOC_COUNT` (a client-side constant, `21`, used only to
+decide whether to keep showing the box — not enforced server-side), with copy that adapts
+("3 of 21 synced — run again to pull in the rest" instead of "No audit reference docs
+yet"). Should have caught this the first time — a one-shot migration trigger needs to stay
+reachable until it's actually finished, not just until it's non-zero.
+
 ---
 
 ## Recent Changes (Session 54, August 7, 2026)
