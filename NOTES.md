@@ -1,4 +1,33 @@
-﻿Last session: 61
+﻿Last session: 62
+
+## Recent Changes (Session 62, August 8, 2026)
+
+**A "ticket in the app" for the nav-cohesion complaint — pre-filled, not a new feature**
+
+Drew's ask: the admin nav feels disjointed, and he wants "a ticket in the app I can look
+at later to run" as his next planning session, once he's done with Session 61's test —
+but explicitly "I don't need to make anything new." First instinct was to insert an `open`
+`agent_sessions` row directly, but there's currently no UI anywhere that lists raw
+`agent_sessions` rows for Drew to browse — only `review_items` (populated by session
+*results*, not pre-planning tickets) and the repo detail page's single free-text Planning
+box. Inserting an invisible DB row wouldn't have actually satisfied "look at it later."
+
+Landed on the literal minimal reading instead: `NAV_COHESION_PLANNING_BRIEF` (a real,
+specific brief — names every current `/admin/*` route, asks about consistent header/nav,
+breadcrumbs, click-count between related sections, explicitly scoped to navigation only,
+not a rewrite of any page's functionality) now pre-fills `planningBrief`'s initial state
+in `RepoDetailClient.tsx`, but only when `repo.github_repo === "worldshifttech-landing"` —
+this is a navigation complaint about the admin app itself, not something that belongs as a
+default on every other repo's planning box. Next time Drew opens this repo's own
+`/admin/repos/[id]` page, it's just sitting there in the existing Run Planning Session
+box, ready to review and click — no new table, no new UI, no persistence beyond React's
+own component state (meaning it resets if the textarea is cleared or on a fresh page load
+after being edited — genuinely ephemeral, not a durable queue, which is the real tradeoff
+of "don't make anything new").
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+---
 
 ## Recent Changes (Session 61, August 8, 2026)
 

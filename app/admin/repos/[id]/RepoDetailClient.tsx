@@ -9,6 +9,24 @@ import SignOutButton from "@/app/components/SignOutButton";
 import { FRAMEWORK_OPTIONS, AUTH_OPTIONS, type ProjectOption } from "../RepoFleetClient";
 import { ReviewList, type ReviewItem } from "../../reviews/ReviewInboxClient";
 
+// A "ticket in the app" Drew asked to run after his current test, not a new feature —
+// just sits pre-filled in this repo's own Run Planning Session box (below) so it's there
+// waiting rather than something to remember or retype. See NOTES.md Session 62.
+const NAV_COHESION_PLANNING_BRIEF =
+  "The admin dashboard's navigation feels disjointed, not cohesive or friendly. Audit " +
+  "navigation across /admin (dashboard home), /admin/repos (fleet list), " +
+  "/admin/repos/[id] (repo detail -- Settings/Reviews tabs), /admin/reviews (global " +
+  "inbox), /admin/knowledge-base, and /admin/projects/[id] (client project detail). " +
+  "Look at: is there a consistent top nav/header across all of these, or does each page " +
+  "reinvent its own? Is there any breadcrumb or clear way back up a level? Is it obvious " +
+  "which section of the app you're in at a glance? How many clicks does it take to get " +
+  "from one related page to another (e.g. a repo's own scoped reviews vs. the global " +
+  "reviews inbox vs. a linked client project)? Propose a more cohesive structure -- " +
+  "consistent header/nav across every admin page, clear active-state or breadcrumbs, " +
+  "fewer redundant clicks between related sections. This is a navigation/UX pass, not a " +
+  "rewrite of any page's actual functionality -- don't restructure data models or " +
+  "existing features, just how they're navigated between.";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RepoFields = {
@@ -72,7 +90,9 @@ export default function RepoDetailClient({
   const [saveError, setSaveError] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const [planningBrief, setPlanningBrief] = useState("");
+  const [planningBrief, setPlanningBrief] = useState(
+    repo.github_repo === "worldshifttech-landing" ? NAV_COHESION_PLANNING_BRIEF : ""
+  );
   const [dispatching, setDispatching] = useState(false);
   const [dispatchError, setDispatchError] = useState("");
 
