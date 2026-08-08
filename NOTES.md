@@ -1,4 +1,33 @@
-﻿Last session: 60
+﻿Last session: 61
+
+## Recent Changes (Session 61, August 8, 2026)
+
+**Backfilled a real build session's result after finding it was silently dropped**
+
+Not a code change on this repo's side — the fix lives in `wst-orchestrator-runner`'s own
+Session 5. Worth a NOTES entry here anyway since it explains a manual DB write outside
+the normal `session-result` flow.
+
+Dispatched Session 60 (the milestone-feedback backend build prompt) against this repo via
+the new "Dispatching to" labels' correct target. It completed successfully from Claude's
+own side — real commits, [PR #2](https://github.com/worldshifttech/worldshifttech-landing/pull/2)
+opened, SQL included per Session 59's own convention — but the dashboard still showed
+`status: failed` with no `build_result` card. Reading `wst-orchestrator-runner`'s actual
+job log (not guessing) found the cause: `resolve_pr`'s gate on `claude-code-action`'s
+`branch_name` output never fires under this workflow's actual usage (Claude creates PRs
+manually via Bash, not through the action's own branch-management feature) — silently
+skipping PR/preview/SQL resolution on every build, successful or not, likely since Session
+53. Fixed there; see that repo's NOTES.md for the full root-cause writeup.
+
+Rather than wait for a fresh dispatch to re-prove a fix that direct log-reading already
+confirmed, Session 60's real PR and Vercel preview (both verified live via `gh pr view`
+and the PR's own comments) were written directly into `agent_sessions`
+(`status: 'done'`, `pr_url`, `pr_preview_url`) and a `build_result` `review_items` row
+inserted with the real SQL as `proposed_content` — exactly what the (fixed) workflow's own
+report step would have sent. `/admin/reviews` should now show a real, mergeable Session 60
+card.
+
+---
 
 ## Recent Changes (Session 60, August 8, 2026)
 
