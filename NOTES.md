@@ -1,4 +1,65 @@
-﻿Last session: 64
+﻿Last session: 65
+
+## Recent Changes (Session 65, August 8, 2026)
+
+**`repos.system_group` tagging + a real root cause found while investigating "these
+sessions aren't working"**
+
+Two separate asks that turned into one investigation. Drew wanted GitHub Actions run
+titles to say what they actually are (they'd all shown the same static "Run WST
+orchestrator session" regardless of type or target), and — mid-request — asked for a real
+"tag repos that are part of the same system" concept rather than hardcoding specific repo
+names into the workflow file for that. **`repos.system_group`** (new, free text) does
+both: threaded into the dispatch `client_payload` (`lib/orchestrator-dispatch.ts`) purely
+as a display label, consumed by `wst-orchestrator-runner`'s own `run-name:` template (its
+Session 6) to produce titles like "Planning session — WST App (worldshifttech-landing)."
+Surfaced in the admin UI too, not just the payload: a badge on the fleet list
+(`RepoFleetClient.tsx`) and an editable field on the repo detail Settings tab
+(`RepoDetailClient.tsx`, threaded through `/api/admin-repos/[id]`'s existing PATCH
+allow-list). Seeded `'WST App'` on both `worldshifttech-landing` and
+`wst-orchestrator-runner` — the latter had never actually been registered as a `repos` row
+at all despite being a valid dispatch target since Phase 2, so this session also inserts
+that row for the first time (idempotent, `WHERE NOT EXISTS`).
+
+**The real finding, from checking specific GitHub Actions run numbers Drew asked about:**
+`entos-group-website`'s scheduled automation had been silently dead since August 6.
+`app/api/orchestrator/scheduler-tick/route.ts`'s "is there already an open session for
+this repo" guard (`status NOT IN ('done','failed')`) is correct in isolation, but nothing
+ever swept a session back to a terminal state if its GitHub Actions run crashed, never
+actually got dispatched, or failed to POST back to `/api/orchestrator/session-result`.
+Four sessions across two repos (two blocking `entos-group-website` specifically, one of
+the other two the literal Phase 1 seed-data row from `supabase/schema.sql`, never cleaned
+up since Session 48) had sat non-terminal since August 5–6 — every scheduler tick since
+then correctly found an "open" session for `entos-group-website` and backed off, forever,
+with nothing anywhere surfacing that as a problem. Manually marked all four `failed` after
+confirming each was genuinely stale (oldest first, all from before Session 49's GitHub App
+permission fix — plausibly exactly the "accepted before the fix, never replayed" sessions
+that fix's own NOTES entry mentioned but didn't enumerate).
+
+**Structural fix, not just a one-time cleanup:** `scheduler-tick` now sweeps and
+auto-fails any session non-terminal for more than `STALE_SESSION_HOURS` (3 — comfortably
+longer than the workflow's own hard ceiling of 45 minutes for a build, plus buffer for the
+report step) on every tick, before the pause checks and before the per-repo dispatch loop.
+Runs even when automation is globally paused — this is data hygiene, not a dispatch
+action, no reason to skip it. Response body now reports `stale_sessions_failed` so this is
+visible in the tick's own output going forward instead of only discoverable by directly
+querying the table.
+
+Also checked, while investigating: two real build dispatches (run #18, run #20) both hit
+the exact git-remote mismatch bug from `wst-orchestrator-runner`'s own pending KB draft —
+confirmed as an active blocker, not a hypothetical, and fixed there (Session 6). Session
+65's own operational-triage build prompt (scheduler resilience, Slack fire-and-forget,
+`build_cost_entries` FK wiring — three items from this session's own earlier triage brief)
+never actually ran because of that bug; needs a fresh dispatch now that it's fixed.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+**Needs Drew:** run this session's SQL (`repos.system_group` + the `wst-orchestrator-runner`
+seed row), merge PR #4 (already open, unrelated to this session — the "messy Answered tab"
+fix from run #20), and re-dispatch the operational-triage build now that the git-remote
+fix is live.
+
+---
 
 ## Recent Changes (Session 64, August 8, 2026)
 

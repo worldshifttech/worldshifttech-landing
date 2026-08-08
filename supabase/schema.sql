@@ -558,6 +558,33 @@ CREATE TABLE IF NOT EXISTS session_drafts (
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 
+-- ============================================================
+-- MIGRATION: repos.system_group (Session 65)
+-- Drew's ask: dispatched GitHub Actions runs all showed the same static title with no
+-- way to tell what a run actually was — while fixing that (run-name in
+-- wst-orchestrator-runner's own workflow), also wanted a real, general "these repos are
+-- part of the same system" concept rather than hardcoding specific repo names into that
+-- workflow file. Free-text rather than an enum/FK to a separate groups table — the only
+-- consumer today is a run-title label, not a query filter; a real "list every repo in
+-- group X" feature would justify a proper join table, this doesn't yet.
+-- ============================================================
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS system_group text;
+
+-- wst-orchestrator-runner was never actually registered as a repos row despite being a
+-- valid dispatch target since Phase 2 (ORCHESTRATOR_DESIGN.md §4 always intended one
+-- shared GitHub App installation covering it too) — needed now so it can carry
+-- system_group at all. Installation ID matches every other row's (one shared
+-- installation across the whole org, per the design doc). Idempotent — WHERE NOT EXISTS,
+-- safe to re-run.
+INSERT INTO repos (name, local_path, github_owner, github_repo, framework_type, auth_convention, github_app_installation_id)
+SELECT 'wst-orchestrator-runner', 'C:\Users\drewg\wst-orchestrator-runner', 'worldshifttech', 'wst-orchestrator-runner', 'other', 'none', 151554103
+WHERE NOT EXISTS (SELECT 1 FROM repos WHERE github_repo = 'wst-orchestrator-runner');
+
+-- Seed: worldshifttech-landing (control plane) and wst-orchestrator-runner (compute
+-- plane) are two repos, one system — "WST App" per Drew's own framing. Safe to run
+-- more than once; UPDATE, not INSERT.
+UPDATE repos SET system_group = 'WST App' WHERE github_repo IN ('worldshifttech-landing', 'wst-orchestrator-runner');
+
 -- Seed: promotes Session 62's hardcoded default into a real draft. Safe to run once —
 -- no unique constraint to conflict on, so re-running this INSERT duplicates the row.
 INSERT INTO session_drafts (repo_id, session_type, title, brief)

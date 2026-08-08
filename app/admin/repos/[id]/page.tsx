@@ -143,6 +143,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
         deployed_sha: repo.deployed_sha ?? null,
         github_head_sha: repo.github_head_sha ?? null,
         drift_checked_at: repo.drift_checked_at ?? null,
+        system_group: repo.system_group ?? null,
       }}
       projects={projects}
       reviewItems={reviewItems}

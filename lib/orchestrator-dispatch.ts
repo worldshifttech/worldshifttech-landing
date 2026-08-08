@@ -29,7 +29,7 @@ export async function dispatchOrchestratorSession({
 
   const { data: repo, error: repoError } = await supabase
     .from("repos")
-    .select("github_owner, github_repo, github_app_installation_id")
+    .select("github_owner, github_repo, github_app_installation_id, system_group")
     .eq("id", repoId)
     .single();
 
@@ -107,6 +107,9 @@ export async function dispatchOrchestratorSession({
           github_repo: repo.github_repo,
           resume_context: null,
           knowledge_context: knowledgeContext,
+          // Purely a display label for the runner's run-name title — no dispatch
+          // behavior depends on it. null when this repo has no group set.
+          system_group: repo.system_group ?? null,
         },
       }),
     });

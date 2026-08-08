@@ -26,6 +26,7 @@ export type Repo = {
   deployed_sha: string | null;
   github_head_sha: string | null;
   drift_checked_at: string | null;
+  system_group: string | null;
 };
 
 // slug/access_mode/has_password added for the repo detail page's Client Portal section —
@@ -395,6 +396,15 @@ export default function RepoFleetClient({
                       <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
                         {repo.name}
                       </p>
+                      {repo.system_group && (
+                        <span
+                          className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 flex-shrink-0"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                          title={`Part of the ${repo.system_group} system, alongside other repos sharing this tag`}
+                        >
+                          {repo.system_group}
+                        </span>
+                      )}
                       {repo.open_review_count > 0 && (
                         <span
                           className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-500 border border-orange-500/30 flex-shrink-0"
