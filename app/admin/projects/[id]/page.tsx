@@ -67,6 +67,8 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
+  const milestoneTitleById = new Map((milestones ?? []).map((m) => [m.id as string, m.title as string]));
+
   const files = await Promise.all(
     (fileRows ?? []).map(async (f) => {
       const { data: signed } = await serviceClient.storage.from(BUCKET).createSignedUrl(f.storage_path, 3600);
@@ -77,9 +79,24 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
         note: f.note,
         created_at: f.created_at,
         downloadUrl: signed?.signedUrl ?? null,
+        milestoneTitle: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
       };
     })
   );
+
+  const { data: feedbackRows } = await serviceClient
+    .from("project_feedback")
+    .select("id, message, status, created_at, milestone_id, project_milestones(title)")
+    .eq("project_id", id)
+    .order("created_at", { ascending: false });
+
+  const feedback = (feedbackRows ?? []).map((f) => ({
+    id: f.id as string,
+    message: f.message as string,
+    status: f.status as "new" | "read" | "resolved",
+    created_at: f.created_at as string,
+    milestoneTitle: (f.project_milestones as unknown as { title: string } | null)?.title ?? null,
+  }));
 
   return (
     <ProjectDetailClient
@@ -108,6 +125,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
       hoursLogged={hoursLogged}
       costLogged={costLogged}
       files={files}
+      feedback={feedback}
     />
   );
 }

@@ -1,4 +1,85 @@
-﻿Last session: 63
+﻿Last session: 64
+
+## Recent Changes (Session 64, August 8, 2026)
+
+**Client-facing "action needed" milestone UI — closes out Session 60's backend**
+
+The build prompt handed in for this work labeled itself "Session 61," written back when
+Session 60's backend was the most recent entry in this file. By the time it actually ran,
+Sessions 61 (control-plane backfill), 62 (nav-cohesion draft), and 63 (real save-draft
+feature) had already claimed those numbers for real, unrelated work — the same kind of
+stale-label collision Session 59's own NOTES entry describes handling by renumbering
+rather than colliding. Renumbered to 64 here; the prompt's own technical content (built on
+Session 60's `action_owner`/`action_note`/`milestone_id` columns and `/api/project-feedback`
+endpoint) is otherwise followed exactly as written. This is an unattended CI build session
+with no live back-and-forth with Drew, so there were no new open design questions answered
+mid-build — the build prompt itself had already resolved every design call that would
+otherwise have needed one (one shared Turnstile widget per milestone panel rather than one
+per submission path, no second query for a milestone's scoped files since `page.tsx`
+already fetches all project files, no client-side mutation of a milestone's own
+status/action_owner on submit).
+
+**`app/projects/[slug]/MilestoneActionPanel.tsx`** (new): collapsed-by-default "Action
+needed" toggle rendered inside a milestone card, only when `action_owner === "client" &&
+status !== "done"`. Expanded, shows `action_note` as the instruction line, a text-answer
+form (textarea + "Submit Answer" → `POST /api/project-feedback` with `milestoneId`), and a
+file-upload form reusing the exact signed-upload-url flow from `FileUploads.tsx`
+(`createSignedUploadUrl` → `uploadToSignedUrl` → `POST /api/project-files`), both gated by
+one Turnstile widget per open panel (`turnstile.render()` into a unique
+`cf-widget-milestone-{id}` div, mounted only once the panel is expanded — same explicit-render
+posture as the existing client `FileUploads.tsx`, not an implicit embed). The file list
+under the upload form is filtered client-side from the same `files` prop `page.tsx` already
+fetches (`f.milestone_id === milestoneId`) — no second Supabase query. Success shows an
+inline "Sent. Drew will follow up." under whichever form succeeded (answer and upload track
+separate sent-state so submitting one doesn't hide the other) and clears that form's input;
+neither path ever writes to the milestone's own `status`/`action_owner`. `app/projects/[slug]/page.tsx`
+threads `milestone_id` through its existing `files` mapping (already `select("*")`, just
+wasn't projected into the object literal before) and drops the old page-level "Client
+feedback — coming in a future session" placeholder entirely, since the real UI is now
+per-milestone rather than one generic block.
+
+**Admin milestone-owner visibility + feedback inbox.** `app/admin/projects/[id]/page.tsx`
+now also queries `project_feedback` (joined to `project_milestones(title)` for display,
+since `milestone_id` can be null) and builds a `milestone_id → title` lookup map reused when
+projecting `project_files` rows, so the admin `FileUploads.tsx` can show a "for: {milestone
+title}" line under any file whose `milestone_id` is set — Drew can now tell a
+milestone-scoped upload apart from a general one without cross-referencing anything by hand.
+`ProjectDetailClient.tsx`'s old feedback placeholder is now a real list (message, milestone
+title or "General", status, relative date, "Mark Resolved") backed by local component state
+so a resolve click updates the row immediately without a full reload. **`/api/admin-project-feedback/[id]/route.ts`**
+(new, PATCH) is the admin-only mutation behind that button — same `verifyAdmin` bearer
+pattern (Supabase Auth token → `drew@worldshifttech.com` check) as every other
+`admin-*`/`admin-projects` route; the only transition it supports is setting `status:
+'resolved'`.
+
+**Slack.** `notify-slack/route.ts` gained a `milestone_response` branch (client's text
+answer, links to the admin project page), fired fire-and-forget from
+`/api/project-feedback` right after a successful insert — same pattern as the existing
+`file_upload` ping, including a best-effort lookup of the project/milestone titles for the
+message text. The existing `file_upload` branch in both `notify-slack` and
+`app/api/project-files/route.ts` was extended (not duplicated) to include the milestone
+title in the Slack text whenever a client upload's `milestoneId` is set, so Drew can tell at
+a glance whether an upload was general or fulfilling a specific open item.
+
+No new SQL this session — Session 60 already landed every schema change this UI needed
+(`action_owner`, `action_note`, `project_files.milestone_id`); this was purely wiring the UI
+and admin inbox on top of it.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean — `node_modules` had to be
+installed first in this CI environment; `/api/admin-project-feedback/[id]` listed among the
+built routes). `npm run lint` shows 6 `@typescript-eslint/no-explicit-any` errors: the 4
+pre-existing ones already flagged as unrelated in Session 60's own NOTES entry
+(`app/meet/page.tsx`, the client `FileUploads.tsx`), plus 2 new ones in
+`MilestoneActionPanel.tsx` from the exact same `(window as any).turnstile` cast those files
+already use — matching the established convention for calling Cloudflare Turnstile's
+untyped global rather than introducing a new pattern.
+
+**Needs Drew:** click through a real "Action needed" milestone on a live client-facing
+project page (both the text-answer and file-upload paths) and confirm the Slack pings and
+admin inbox both show up as expected — unverified end-to-end past a clean build, same
+caveat as most sessions in this file until Drew exercises it for real.
+
+---
 
 ## Recent Changes (Session 63, August 8, 2026)
 

@@ -11,6 +11,7 @@ type ProjectFile = {
   note: string | null;
   created_at: string;
   downloadUrl: string | null;
+  milestoneTitle: string | null;
 };
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -148,6 +149,7 @@ export default function FileUploads({
               <div className="min-w-0">
                 <p className="text-[#00205C] text-sm font-medium truncate">{f.file_name}</p>
                 {f.note && <p className="text-[#76777A] text-xs mt-0.5">{f.note}</p>}
+                {f.milestoneTitle && <p className="text-[#4B858E] text-xs mt-0.5">for: {f.milestoneTitle}</p>}
                 <p className="text-[#76777A] text-xs mt-0.5">
                   {f.uploaded_by === "drew" ? "You" : "Client"} &middot; {relativeDate(f.created_at)}
                 </p>
