@@ -97,10 +97,13 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
         hourly_rate: project.hourly_rate,
       }}
       initialMilestones={(milestones ?? []).map((m) => ({
+        id: m.id,
         title: m.title,
         description: m.description,
         status: m.status,
         target_date: m.target_date,
+        action_owner: m.action_owner ?? "drew",
+        action_note: m.action_note ?? null,
       }))}
       hoursLogged={hoursLogged}
       costLogged={costLogged}

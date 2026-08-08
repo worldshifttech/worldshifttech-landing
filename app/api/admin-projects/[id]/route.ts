@@ -14,10 +14,13 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
 }
 
 type MilestoneInput = {
+  id?: string | null;
   title?: string;
   description?: string;
   status?: string;
   target_date?: string;
+  action_owner?: string;
+  action_note?: string;
 };
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -69,26 +72,73 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   if (Array.isArray(milestones)) {
-    const { error: deleteError } = await supabase.from("project_milestones").delete().eq("project_id", id);
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    const { data: existingMilestones, error: existingError } = await supabase
+      .from("project_milestones")
+      .select("id")
+      .eq("project_id", id);
+    if (existingError) {
+      return NextResponse.json({ error: existingError.message }, { status: 500 });
+    }
+    const existingIds = new Set((existingMilestones ?? []).map((m) => m.id as string));
+
+    type MilestoneRow = {
+      title: string;
+      description: string | null;
+      status: string;
+      target_date: string | null;
+      action_owner: string;
+      action_note: string | null;
+      sort_order: number;
+    };
+
+    const toUpdate: { id: string; fields: MilestoneRow }[] = [];
+    const toInsert: MilestoneRow[] = [];
+
+    milestones
+      .filter((m) => m.title && m.title.trim())
+      .forEach((m, i) => {
+        const fields: MilestoneRow = {
+          title: m.title as string,
+          description: m.description || null,
+          status: m.status ?? "not_started",
+          target_date: m.target_date || null,
+          action_owner: m.action_owner === "client" ? "client" : "drew",
+          action_note: m.action_owner === "client" ? m.action_note || null : null,
+          sort_order: i,
+        };
+        if (m.id && existingIds.has(m.id)) {
+          toUpdate.push({ id: m.id, fields });
+        } else {
+          toInsert.push(fields);
+        }
+      });
+
+    const keptIds = new Set(toUpdate.map((u) => u.id));
+    const toDeleteIds = [...existingIds].filter((eid) => !keptIds.has(eid));
+
+    for (const { id: milestoneId, fields } of toUpdate) {
+      const { error: updateError } = await supabase
+        .from("project_milestones")
+        .update(fields)
+        .eq("id", milestoneId);
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
+      }
     }
 
-    const rows = milestones
-      .filter((m) => m.title && m.title.trim())
-      .map((m, i) => ({
-        project_id: id,
-        title: m.title,
-        description: m.description || null,
-        status: m.status ?? "not_started",
-        target_date: m.target_date || null,
-        sort_order: i,
-      }));
-
-    if (rows.length > 0) {
-      const { error: insertError } = await supabase.from("project_milestones").insert(rows);
+    if (toInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from("project_milestones")
+        .insert(toInsert.map((fields) => ({ project_id: id, ...fields })));
       if (insertError) {
         return NextResponse.json({ error: insertError.message }, { status: 500 });
+      }
+    }
+
+    if (toDeleteIds.length > 0) {
+      const { error: deleteError } = await supabase.from("project_milestones").delete().in("id", toDeleteIds);
+      if (deleteError) {
+        return NextResponse.json({ error: deleteError.message }, { status: 500 });
       }
     }
   }

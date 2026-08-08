@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
-import { verifyAccessToken, accessCookieName } from "@/lib/project-access";
+import { verifyClientAccess } from "@/lib/project-access";
 
 const ADMIN_EMAIL = "drew@worldshifttech.com";
 
@@ -11,17 +11,6 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
   const supabase = getSupabase();
   const { data, error } = await supabase.auth.getUser(token);
   return !error && data.user?.email === ADMIN_EMAIL;
-}
-
-async function verifyClientAccess(req: NextRequest, slug: string): Promise<boolean> {
-  const supabase = getSupabase();
-  const { data: project } = await supabase.from("projects").select("access_mode").eq("slug", slug).single();
-
-  if (!project) return false;
-  if (project.access_mode === "public") return true;
-
-  const token = req.cookies.get(accessCookieName(slug))?.value;
-  return !!token && verifyAccessToken(slug, token);
 }
 
 // Records the project_files row once the browser has finished uploading to the
@@ -36,9 +25,10 @@ export async function POST(req: NextRequest) {
     fileName?: string;
     uploadedBy?: "client" | "drew";
     note?: string;
+    milestoneId?: string;
   };
 
-  const { projectId, slug, storagePath, fileName, uploadedBy, note } = body;
+  const { projectId, slug, storagePath, fileName, uploadedBy, note, milestoneId } = body;
 
   if (!projectId || !slug || !storagePath || !fileName || !uploadedBy) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -63,6 +53,7 @@ export async function POST(req: NextRequest) {
       storage_path: storagePath,
       uploaded_by: uploadedBy,
       note: note || null,
+      milestone_id: milestoneId ?? null,
     })
     .select("id")
     .single();

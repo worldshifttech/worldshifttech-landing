@@ -24,10 +24,13 @@ type ProjectFields = {
 };
 
 type Milestone = {
+  id: string | null;
   title: string;
   description: string | null;
   status: "not_started" | "in_progress" | "done";
   target_date: string | null;
+  action_owner: "drew" | "client";
+  action_note: string | null;
 };
 
 type ProjectFile = {
@@ -43,6 +46,11 @@ const STATUS_OPTIONS: { value: Milestone["status"]; label: string }[] = [
   { value: "not_started", label: "Not started" },
   { value: "in_progress", label: "In progress" },
   { value: "done", label: "Done" },
+];
+
+const ACTION_OWNER_OPTIONS: { value: Milestone["action_owner"]; label: string }[] = [
+  { value: "drew", label: "Drew" },
+  { value: "client", label: "Client" },
 ];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -82,7 +90,18 @@ export default function ProjectDetailClient({
   const clientUrl = `https://worldshifttech.com/projects/${project.slug}`;
 
   function addMilestone() {
-    setMilestones((prev) => [...prev, { title: "", description: "", status: "not_started", target_date: null }]);
+    setMilestones((prev) => [
+      ...prev,
+      {
+        id: null,
+        title: "",
+        description: "",
+        status: "not_started",
+        target_date: null,
+        action_owner: "drew",
+        action_note: null,
+      },
+    ]);
   }
 
   function updateMilestone(index: number, patch: Partial<Milestone>) {
@@ -380,7 +399,28 @@ export default function ProjectDetailClient({
                         onChange={(e) => updateMilestone(i, { target_date: e.target.value || null })}
                         className="bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
                       />
+                      <select
+                        value={m.action_owner}
+                        onChange={(e) =>
+                          updateMilestone(i, { action_owner: e.target.value as Milestone["action_owner"] })
+                        }
+                        className="bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      >
+                        {ACTION_OWNER_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            Who owns this: {opt.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+                    {m.action_owner === "client" && (
+                      <input
+                        value={m.action_note ?? ""}
+                        onChange={(e) => updateMilestone(i, { action_note: e.target.value || null })}
+                        placeholder="What do you need from the client? e.g. Upload your logo files"
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    )}
                   </div>
                 ))}
               </div>

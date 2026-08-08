@@ -529,6 +529,17 @@ AS $$
 $$;
 
 -- ============================================================
+-- MIGRATION: milestone ownership + milestone-scoped files (Session 60 — client
+-- feedback backend). Lets a milestone mark itself as needing something from the
+-- client (a text answer or a file upload) rather than being purely a status
+-- tracker. project_feedback already had milestone_id (ON DELETE SET NULL) from
+-- the Session 46/48 schema — unchanged here. See NOTES.md Session 60.
+-- ============================================================
+ALTER TABLE project_milestones ADD COLUMN IF NOT EXISTS action_owner text NOT NULL DEFAULT 'drew' CHECK (action_owner IN ('drew', 'client'));
+ALTER TABLE project_milestones ADD COLUMN IF NOT EXISTS action_note text;
+ALTER TABLE project_files ADD COLUMN IF NOT EXISTS milestone_id uuid REFERENCES project_milestones(id) ON DELETE SET NULL;
+
+-- ============================================================
 -- MIGRATION: session_drafts (Session 63)
 -- Real feature, replacing Session 62's stopgap (a hardcoded default value in
 -- RepoDetailClient.tsx's planningBrief state) — Drew wants a durable "ticket in the app"

@@ -93,23 +93,83 @@ card.
 
 ## Recent Changes (Session 60, August 8, 2026)
 
-**"Dispatching to: {repo name}" label on the two dispatch boxes**
+**Client feedback backend: milestone ownership, upsert fix, feedback endpoint**
 
-Real mix-up, not hypothetical: after fixing an API spend-limit failure, Drew retried a
-build dispatch twice more and both landed against `wst-build-manager` instead of
+Data-model and API half of letting a client fulfill an "open item" on their roadmap —
+either a text answer or a file upload — scoped to a specific milestone. Deliberately does
+not touch the client-facing page or the admin inbox UI; those are Session 61 (build), the
+follow-up build dispatch once this one merges — not to be confused with the *control-plane*
+Session 61 NOTES entry above, which documents backfilling this very session's result; the
+two "Session 61"s are different repos' own numbering, not a second collision.
+
+**The real gotcha this session's own investigation surfaced, worth flagging so nobody
+reintroduces it:** `app/api/admin-projects/[id]/route.ts`'s milestone save deleted every
+`project_milestones` row for the project on every save and re-inserted fresh ones with
+brand-new IDs. Harmless while nothing referenced a milestone by ID — but this session adds
+exactly that (`project_files.milestone_id`, and `project_feedback.milestone_id` already
+existed unused since Session 46/48). Left as-is, the very next unrelated milestone edit
+would have silently orphaned every file/feedback row's milestone reference. Fixed first,
+before anything else in this session touched milestones: the PATCH handler now diffs the
+submitted array against the milestones that already exist for the project (by `id`),
+updates any that matched, inserts any with no `id` (new milestones added client-side start
+with `id: null`), and deletes only the `id`s that existed before but are missing from the
+new submission — delete run last, so an id is never briefly absent mid-request. The
+client-side `Milestone` type in `ProjectDetailClient.tsx` gained `id: string | null`,
+threaded from `page.tsx`'s `initialMilestones` mapping.
+
+**Schema + admin milestone editor:** `project_milestones` gained `action_owner text NOT
+NULL DEFAULT 'drew' CHECK (action_owner IN ('drew','client'))` and `action_note text`;
+`project_files` gained `milestone_id uuid REFERENCES project_milestones(id) ON DELETE SET
+NULL`. `project_feedback.milestone_id` (Session 46/48) was already `ON DELETE SET NULL` —
+confirmed unchanged, no edit needed. `ProjectDetailClient.tsx`'s milestone editor gained a
+"Who owns this" select (Drew / Client, visually mirroring the existing status select) and,
+only when set to Client, a one-line `action_note` input ("What do you need from the
+client?").
+
+**Shared client-access helper + milestone-scoped uploads:** `verifyClientAccess` and
+`verifyTurnstile` were copy-pasted identically into both `app/api/project-files/route.ts`
+and `app/api/project-files/upload-url/route.ts`. Extracted into `lib/project-access.ts`
+(which already owned `verifyAccessToken`/`accessCookieName`) so the new feedback endpoint
+below didn't need a third copy — both existing routes now import from there, no behavior
+change. Both routes' request bodies gained an optional `milestoneId?: string`; the
+confirm route (`project-files/route.ts`) passes it straight through to the `project_files`
+insert as `milestone_id: milestoneId ?? null`. The general Files section's two
+`FileUploads.tsx` call sites (admin and client-facing) are unchanged, so existing general
+uploads keep landing with `milestone_id: null` exactly as before.
+
+**New endpoint:** `app/api/project-feedback/route.ts` (new, POST) — `project_feedback`'s
+first writer ever (the table has existed since the Session 46/48 schema with nothing
+inserting into it). Mirrors `project-files`' access pattern using the helpers above:
+Turnstile check, then `verifyClientAccess` against the project slug. Inserts `project_id`,
+`milestone_id`, `message`, `status: 'new'`. Rejects empty/whitespace-only messages with a
+400 before either access check runs.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean, `/api/project-feedback`
+listed). `npm run lint` shows 4 pre-existing errors in `app/meet/page.tsx` and
+`app/projects/[slug]/FileUploads.tsx` (both `@typescript-eslint/no-explicit-any`, unrelated
+to any file this session touched) — confirmed via `git status` that none of this session's
+changed files appear in the lint output.
+
+**Needs Drew:** run this session's SQL migration (below) in Supabase — done, confirmed via
+a direct column check before merging — then confirm the milestone editor still saves
+correctly and that a manually inserted `project_files`/`project_feedback` row with a
+`milestone_id` survives an unrelated milestone save without orphaning. No real
+client-facing caller of `/api/project-feedback` exists yet — that's the Session 61 build.
+
+**Same-day follow-up: "Dispatching to: {repo name}" label on the two dispatch boxes.**
+(Originally filed as its own "Session 60" entry, written before this build had actually
+dispatched — folded in here on merge rather than left as a duplicate heading.) Real
+mix-up, not hypothetical: after fixing an API spend-limit failure, Drew retried a build
+dispatch twice more and both landed against `wst-build-manager` instead of
 `worldshifttech-landing` — he was on the wrong repo's `/admin/repos/[id]` page, which
 looks identical to every other repo's page apart from a small heading up top. The build
 session itself ran fine (no error) but had nothing coherent to build against a mismatched
 repo's files, so no PR ever resulted. Confirmed by reading the actual GitHub Actions logs
 (`repository: worldshifttech/wst-build-manager` in the checkout step, paired with a
-`BRIEF` written for `worldshifttech-landing`'s own files).
-
-Both **Run Planning Session** and **Run Custom Build Session** boxes on
-`RepoDetailClient.tsx` now show a small "Dispatching to: {repo.name}" badge next to their
-header — cheap, high-visibility, directly addresses the failure mode that just happened
-rather than a generic "be more careful" fix.
-
-Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+`BRIEF` written for `worldshifttech-landing`'s own files). Both **Run Planning Session**
+and **Run Custom Build Session** boxes on `RepoDetailClient.tsx` now show a small
+"Dispatching to: {repo.name}" badge next to their header. Verified with
+`npx tsc --noEmit` and `npm run build` (both clean).
 
 ---
 
