@@ -37,6 +37,7 @@ export type ReviewItem = {
   session_type: string;
   pr_url: string | null;
   pr_preview_url: string | null;
+  linked_build: { id: string; status: string; pr_url: string | null; pr_preview_url: string | null } | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -127,7 +128,6 @@ export function ReviewCard({
   const [error, setError] = useState("");
   const [buildDispatching, setBuildDispatching] = useState(false);
   const [buildDispatchError, setBuildDispatchError] = useState("");
-  const [buildSessionId, setBuildSessionId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [sqlCopied, setSqlCopied] = useState(false);
@@ -240,6 +240,7 @@ export function ReviewCard({
           repo_id: item.repo_id,
           session_type: "build",
           brief: item.proposed_content,
+          source_review_item_id: item.id,
         }),
       });
 
@@ -249,7 +250,9 @@ export function ReviewCard({
         return;
       }
 
-      setBuildSessionId(data.session_id);
+      onAnswered(item.id, {
+        linked_build: { id: data.session_id, status: "running", pr_url: null, pr_preview_url: null },
+      });
     } catch {
       setBuildDispatchError("Something went wrong. Please try again.");
     } finally {
@@ -764,23 +767,55 @@ export function ReviewCard({
               <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
                 Build
               </span>
-              {buildSessionId ? (
-                <p className="text-[#4B858E] text-sm">
-                  Build session dispatched (session {buildSessionId.slice(0, 8)}). Check
-                  wst-orchestrator-runner&apos;s Actions tab and this repo&apos;s pull requests for
-                  progress.
-                </p>
-              ) : (
+              {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
+              {!item.linked_build ? (
+                <button
+                  onClick={handleRunBuildSession}
+                  disabled={buildDispatching}
+                  className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {buildDispatching ? "Dispatching..." : "Run Build Session"}
+                </button>
+              ) : item.linked_build.status === "failed" ? (
                 <>
-                  {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
+                  <p className="text-red-400 text-sm">Build session failed. Check this repo&apos;s Actions tab for details.</p>
                   <button
                     onClick={handleRunBuildSession}
                     disabled={buildDispatching}
                     className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {buildDispatching ? "Dispatching..." : "Run Build Session"}
+                    {buildDispatching ? "Dispatching..." : "Retry Build Session"}
                   </button>
                 </>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-[#4B858E] text-sm">
+                    Build session dispatched (status: {item.linked_build.status}). Check the Build Result
+                    card in this inbox for status.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {item.linked_build.pr_url && (
+                      <a
+                        href={item.linked_build.pr_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-semibold text-[#4B858E] hover:underline"
+                      >
+                        View PR &rarr;
+                      </a>
+                    )}
+                    {item.linked_build.pr_preview_url && (
+                      <a
+                        href={item.linked_build.pr_preview_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-semibold text-[#4B858E] hover:underline"
+                      >
+                        View Preview &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           )}

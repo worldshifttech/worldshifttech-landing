@@ -15,10 +15,12 @@ export async function dispatchOrchestratorSession({
   repoId,
   sessionType,
   brief,
+  sourceReviewItemId,
 }: {
   repoId: string;
   sessionType: "planning" | "build";
   brief: string;
+  sourceReviewItemId?: string;
 }): Promise<DispatchResult> {
   const runnerRepo = process.env.WST_ORCHESTRATOR_RUNNER_REPO;
   if (!runnerRepo) {
@@ -52,6 +54,7 @@ export async function dispatchOrchestratorSession({
       session_type: sessionType,
       status: "running",
       brief,
+      ...(sourceReviewItemId ? { source_review_item_id: sourceReviewItemId } : {}),
     })
     .select("id")
     .single();
