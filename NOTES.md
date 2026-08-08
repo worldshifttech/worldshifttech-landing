@@ -1,4 +1,26 @@
-﻿Last session: 59
+﻿Last session: 60
+
+## Recent Changes (Session 60, August 8, 2026)
+
+**"Dispatching to: {repo name}" label on the two dispatch boxes**
+
+Real mix-up, not hypothetical: after fixing an API spend-limit failure, Drew retried a
+build dispatch twice more and both landed against `wst-build-manager` instead of
+`worldshifttech-landing` — he was on the wrong repo's `/admin/repos/[id]` page, which
+looks identical to every other repo's page apart from a small heading up top. The build
+session itself ran fine (no error) but had nothing coherent to build against a mismatched
+repo's files, so no PR ever resulted. Confirmed by reading the actual GitHub Actions logs
+(`repository: worldshifttech/wst-build-manager` in the checkout step, paired with a
+`BRIEF` written for `worldshifttech-landing`'s own files).
+
+Both **Run Planning Session** and **Run Custom Build Session** boxes on
+`RepoDetailClient.tsx` now show a small "Dispatching to: {repo.name}" badge next to their
+header — cheap, high-visibility, directly addresses the failure mode that just happened
+rather than a generic "be more careful" fix.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+---
 
 ## Recent Changes (Session 59, August 7, 2026)
 

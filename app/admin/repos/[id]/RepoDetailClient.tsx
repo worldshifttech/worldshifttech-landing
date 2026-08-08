@@ -732,9 +732,17 @@ export default function RepoDetailClient({
 
           {/* Run Planning Session */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
-              Run Planning Session
-            </span>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Run Planning Session
+              </span>
+              {/* Dispatches against whichever repo's page this is — easy to miss when
+                  several repo detail pages look identical. Made explicit here after a
+                  real dispatch-to-the-wrong-repo mix-up. See NOTES.md. */}
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#00205C]/[0.06] text-[#00205C]">
+                Dispatching to: {repo.name}
+              </span>
+            </div>
             <div>
               <label className="block text-xs font-medium text-[#76777A] mb-1.5">Brief</label>
               <textarea
@@ -763,9 +771,14 @@ export default function RepoDetailClient({
               sends that card's full proposed_content unmodified. Use this to dispatch a
               hand-split or otherwise edited build brief instead. */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
-              Run Custom Build Session
-            </span>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Run Custom Build Session
+              </span>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#00205C]/[0.06] text-[#00205C]">
+                Dispatching to: {repo.name}
+              </span>
+            </div>
             <p className="text-[#76777A] text-xs">
               For a hand-edited or hand-split build prompt — the review inbox&apos;s own
               &quot;Run Build Session&quot; button always sends a card&apos;s full, unmodified text.
