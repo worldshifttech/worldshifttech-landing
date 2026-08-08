@@ -1,4 +1,91 @@
-﻿Last session: 65
+﻿Last session: 66
+
+## Recent Changes (Session 66, August 8, 2026)
+
+**Persist build-dispatch status on answered review cards**
+
+(Renumbered from this build's own "Session 65" — the number was already claimed by a
+separate control-plane session, itself titled Session 65, that landed on `main` first
+while this PR sat open. Same kind of same-day collision Sessions 60/64 already describe
+handling by renumbering on merge rather than colliding — see that entry, directly below
+this one, for what actually happened there.)
+
+Drew flagged the Answered tab as ambiguous about build status: a `consolidated_review`
+card that had a build dispatched from it looked identical to one that never did, unless
+you happened to still have the browser tab open from the moment you clicked "Run Build
+Session." Root cause was `buildSessionId` in `ReviewInboxClient.tsx` — plain React
+component state, never written anywhere durable, so any page reload (or opening the card
+on a different device, or just coming back the next day) lost it entirely. This is an
+unattended CI build session with no live back-and-forth with Drew, so the two open
+questions the planning pass flagged had to be resolved as judgment calls rather than
+asked live — recorded here since neither is obvious from the code alone:
+
+- **Retry-on-failed-only, not always-allow-redispatch.** A card whose linked build is
+  `running`/`awaiting_review`/`approved`/`awaiting_verification`/`done` shows a persisted
+  status badge with no button at all — only `failed` gets a "Retry Build Session" action.
+  Reasoning: re-dispatching against a build that's still in flight or already succeeded
+  has no obvious use case and risks a confusing double-dispatch; a failed build is the one
+  state where firing it again is clearly the right next action.
+- **Latest-linked-build-only, not full history.** If a card has more than one linked
+  build session (e.g. after a retry), the map built in both `page.tsx` files keeps only
+  the most-recently-created one per `source_review_item_id`. A full history view would be
+  a reasonable future ask, but nothing currently reads or needs the older ones, and the
+  card UI has no obvious place to show more than one build's status at once.
+
+**`agent_sessions.source_review_item_id`** (new, nullable `uuid references review_items(id)`,
+SQL below) — records which review card, if any, a build session was dispatched from.
+Planning sessions and manually-typed Custom Build Sessions leave this null; only builds
+dispatched from a `consolidated_review` card's "Run Build Session" (or its new "Retry")
+button set it. Same pattern as the existing `knowledge_base_entries.source_session_id`
+column.
+
+**`lib/orchestrator-dispatch.ts`**: `dispatchOrchestratorSession()` gains an optional
+`sourceReviewItemId` param, included in the `agent_sessions` insert only when present — no
+behavior change for the scheduler-tick caller or any other caller that doesn't pass it.
+**`app/api/orchestrator/dispatch/route.ts`** accepts an optional `source_review_item_id`
+in the POST body and threads it straight through; still optional, so the Run Planning
+Session box, Run Custom Build Session box, and scheduler-tick all keep working exactly as
+before.
+
+**`app/admin/reviews/page.tsx` and `app/admin/repos/[id]/page.tsx`**: both already mapped
+`RawReviewRow` to `ReviewItem` near-identically, so this follows the same pattern in each
+rather than extracting a shared helper (per the build prompt's own call — not trivial
+enough to be worth it here). After building the `reviewItems` array, each collects the ids
+of every `consolidated_review` item, runs one query for `agent_sessions` rows where
+`source_review_item_id` is in that list (`id, status, pr_url, pr_preview_url,
+source_review_item_id, created_at`, ordered newest-first), and builds a
+`source_review_item_id → linked_build` map, keeping only the first (most recent) row seen
+per key. Every `ReviewItem` gets a new `linked_build: { id, status, pr_url, pr_preview_url }
+| null` field — unconditionally `null` for anything that isn't a `consolidated_review`.
+
+**`app/admin/reviews/ReviewInboxClient.tsx`** is the actual UI fix. `ReviewItem` gained the
+`linked_build` field. `handleRunBuildSession()` now sends `source_review_item_id: item.id`
+in its dispatch POST and, on success, calls `onAnswered(item.id, { linked_build: { id:
+data.session_id, status: "running", pr_url: null, pr_preview_url: null } })` instead of
+setting local-only state — the shared list state (and the badge below) updates immediately,
+no reload needed. The old `buildSessionId` state and its render branch are gone entirely,
+replaced by reading `item.linked_build` in the `consolidated_review` answered-state block:
+`null` shows the original "Run Build Session" button; `status === "failed"` shows a failed
+message plus "Retry Build Session" (same handler, same dispatch call); any other status
+shows a persisted "Build session dispatched (status: X)" message pointing at the Build
+Result card, with PR/Preview links rendered when the linked session has them (mirroring how
+`build_result` cards already link them) and no button.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean after `npm install` —
+`node_modules` had to be installed first in this CI environment, same as Session 64;
+`/api/orchestrator/dispatch`, `/admin/reviews`, `/admin/repos/[id]` all listed among the
+built routes). `npm run lint` shows the same 6 pre-existing `@typescript-eslint/no-explicit-any`
+errors flagged as unrelated in Session 60/64's own NOTES entries (`app/meet/page.tsx`, the
+client `FileUploads.tsx`, `MilestoneActionPanel.tsx`) — confirmed via `git status` that none
+of this session's changed files appear in the lint output.
+
+**Needs Drew:** run this session's SQL migration (below) in Supabase, then click "Run Build
+Session" on a real answered `consolidated_review` card and confirm the badge persists across
+a page reload, and separately confirm a `failed` build session shows "Retry Build Session"
+rather than the original button. Unverified end-to-end past a clean build, same caveat as
+most sessions in this file.
+
+---
 
 ## Recent Changes (Session 65, August 8, 2026)
 
@@ -55,9 +142,10 @@ never actually ran because of that bug; needs a fresh dispatch now that it's fix
 Verified with `npx tsc --noEmit` and `npm run build` (both clean).
 
 **Needs Drew:** run this session's SQL (`repos.system_group` + the `wst-orchestrator-runner`
-seed row), merge PR #4 (already open, unrelated to this session — the "messy Answered tab"
-fix from run #20), and re-dispatch the operational-triage build now that the git-remote
-fix is live.
+seed row — done same day), then re-dispatch the operational-triage build now that the
+git-remote fix is live. PR #4 (Session 66, above) went stale while this session's own
+commits landed on `main` first — same merge-conflict pattern as PRs #2/#3 earlier, resolved
+by hand the same way, not evidence of anything wrong with either session's actual content.
 
 ---
 

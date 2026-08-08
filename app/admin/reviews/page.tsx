@@ -57,6 +57,36 @@ export default async function AdminReviewsPage() {
 
   const rows = (rawRows ?? []) as unknown as RawReviewRow[];
 
+  // Persisted build-dispatch status for every consolidated_review card (Session 65) —
+  // replaces the old client-only buildSessionId state that reset on every page reload.
+  // See NOTES.md.
+  const consolidatedReviewIds = rows.filter((r) => r.kind === "consolidated_review").map((r) => r.id);
+
+  const linkedBuildBySourceId = new Map<
+    string,
+    { id: string; status: string; pr_url: string | null; pr_preview_url: string | null }
+  >();
+
+  if (consolidatedReviewIds.length > 0) {
+    const { data: linkedBuildRows } = await serviceClient
+      .from("agent_sessions")
+      .select("id, status, pr_url, pr_preview_url, source_review_item_id, created_at")
+      .in("source_review_item_id", consolidatedReviewIds)
+      .order("created_at", { ascending: false });
+
+    for (const row of linkedBuildRows ?? []) {
+      const sourceId = row.source_review_item_id as string;
+      if (!linkedBuildBySourceId.has(sourceId)) {
+        linkedBuildBySourceId.set(sourceId, {
+          id: row.id as string,
+          status: row.status as string,
+          pr_url: (row.pr_url as string | null) ?? null,
+          pr_preview_url: (row.pr_preview_url as string | null) ?? null,
+        });
+      }
+    }
+  }
+
   const reviewItems: ReviewItem[] = rows.map((r) => ({
     id: r.id,
     kind: r.kind as ReviewItem["kind"],
@@ -76,6 +106,7 @@ export default async function AdminReviewsPage() {
     session_type: r.agent_sessions?.session_type ?? "planning",
     pr_url: r.agent_sessions?.pr_url ?? null,
     pr_preview_url: r.agent_sessions?.pr_preview_url ?? null,
+    linked_build: r.kind === "consolidated_review" ? linkedBuildBySourceId.get(r.id) ?? null : null,
   }));
 
   return <ReviewInboxClient initialItems={reviewItems} />;
