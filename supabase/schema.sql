@@ -538,3 +538,29 @@ $$;
 ALTER TABLE project_milestones ADD COLUMN IF NOT EXISTS action_owner text NOT NULL DEFAULT 'drew' CHECK (action_owner IN ('drew', 'client'));
 ALTER TABLE project_milestones ADD COLUMN IF NOT EXISTS action_note text;
 ALTER TABLE project_files ADD COLUMN IF NOT EXISTS milestone_id uuid REFERENCES project_milestones(id) ON DELETE SET NULL;
+
+-- ============================================================
+-- MIGRATION: session_drafts (Session 63)
+-- Real feature, replacing Session 62's stopgap (a hardcoded default value in
+-- RepoDetailClient.tsx's planningBrief state) — Drew wants a durable "ticket in the app"
+-- for a not-yet-dispatched planning or build brief, save it now, load and run it later.
+-- Deliberately not a new column on agent_sessions: a draft has never been dispatched and
+-- has no status lifecycle beyond existing/deleted, a genuinely different shape from a
+-- real session (no github_run_id, no status transitions, no result to report). No RLS,
+-- service-role only, same convention as every other table here.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS session_drafts (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  repo_id       uuid NOT NULL REFERENCES repos(id) ON DELETE CASCADE,
+  session_type  text NOT NULL,               -- 'planning' | 'build'
+  title         text NOT NULL,
+  brief         text NOT NULL,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+-- Seed: promotes Session 62's hardcoded default into a real draft. Safe to run once —
+-- no unique constraint to conflict on, so re-running this INSERT duplicates the row.
+INSERT INTO session_drafts (repo_id, session_type, title, brief)
+SELECT id, 'planning', 'Admin nav cohesion audit',
+  'The admin dashboard''s navigation feels disjointed, not cohesive or friendly. Audit navigation across /admin (dashboard home), /admin/repos (fleet list), /admin/repos/[id] (repo detail -- Settings/Reviews tabs), /admin/reviews (global inbox), /admin/knowledge-base, and /admin/projects/[id] (client project detail). Look at: is there a consistent top nav/header across all of these, or does each page reinvent its own? Is there any breadcrumb or clear way back up a level? Is it obvious which section of the app you''re in at a glance? How many clicks does it take to get from one related page to another (e.g. a repo''s own scoped reviews vs. the global reviews inbox vs. a linked client project)? Propose a more cohesive structure -- consistent header/nav across every admin page, clear active-state or breadcrumbs, fewer redundant clicks between related sections. This is a navigation/UX pass, not a rewrite of any page''s actual functionality -- don''t restructure data models or existing features, just how they''re navigated between.'
+FROM repos WHERE github_repo = 'worldshifttech-landing';

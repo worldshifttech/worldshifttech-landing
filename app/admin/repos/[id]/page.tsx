@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabase } from "@/lib/supabase";
-import RepoDetailClient from "./RepoDetailClient";
+import RepoDetailClient, { type SessionDraft } from "./RepoDetailClient";
 import type { ProjectOption } from "../RepoFleetClient";
 import type { ReviewItem } from "../../reviews/ReviewInboxClient";
 
@@ -105,6 +105,22 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
     pr_preview_url: r.agent_sessions?.pr_preview_url ?? null,
   }));
 
+  // Saved-but-not-dispatched planning/build briefs for this repo (Session 63). See
+  // NOTES.md.
+  const { data: rawDrafts } = await serviceClient
+    .from("session_drafts")
+    .select("id, session_type, title, brief, created_at")
+    .eq("repo_id", id)
+    .order("created_at", { ascending: false });
+
+  const drafts: SessionDraft[] = (rawDrafts ?? []).map((d) => ({
+    id: d.id,
+    session_type: d.session_type as "planning" | "build",
+    title: d.title,
+    brief: d.brief,
+    created_at: d.created_at,
+  }));
+
   return (
     <RepoDetailClient
       repo={{
@@ -130,6 +146,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
       }}
       projects={projects}
       reviewItems={reviewItems}
+      initialDrafts={drafts}
     />
   );
 }

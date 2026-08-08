@@ -1,4 +1,95 @@
-﻿Last session: 60
+﻿Last session: 63
+
+## Recent Changes (Session 63, August 8, 2026)
+
+**Real "save draft" feature, replacing Session 62's stopgap**
+
+Session 62 landed a hardcoded default value in `planningBrief`'s component state as a
+quick "ticket in the app I can look at later to run." Drew tried it, correctly identified
+it wasn't durable enough (component state, no way to hold more than one, gone the moment
+it's edited or the page reloads fresh), and asked for the real thing.
+
+**`session_drafts`** (new table): `repo_id`, `session_type` (`'planning' | 'build'`),
+`title`, `brief`. Deliberately not a new column on `agent_sessions` — a draft has never
+been dispatched and has no status lifecycle (no `github_run_id`, no status transitions,
+no result to report), a genuinely different shape from a real session row. Seeded with
+Session 62's nav-cohesion brief as a real row, promoting it rather than leaving both
+mechanisms around.
+
+**`/api/admin-repos/[id]/drafts`** (new, POST) and **`/api/admin-repos/[id]/drafts/[draftId]`**
+(new, DELETE) — same `verifyAdmin` bearer pattern as every other `admin-repos` route.
+Title is optional on save (falls back to a truncated snippet of the brief) — a quick
+"save this before I lose it" click shouldn't require typing a title first.
+
+**`RepoDetailClient.tsx`**: a "Saved Drafts" list (only rendered when non-empty) sits
+above the Planning/Build boxes, each entry tagged planning/build with **Load** (fills the
+matching textarea, switches to the Settings tab, never dispatches on its own) and
+**Delete**. Both dispatch boxes gained a "Save as Draft" control (title input + button)
+next to their existing Run button. Session 62's hardcoded `NAV_COHESION_PLANNING_BRIEF`
+default removed entirely — the real seeded draft replaces it.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean — confirmed
+`/api/admin-repos/[id]/drafts` and its `[draftId]` child both registered as routes).
+
+---
+
+## Recent Changes (Session 62, August 8, 2026)
+
+**A "ticket in the app" for the nav-cohesion complaint — pre-filled, not a new feature**
+
+Drew's ask: the admin nav feels disjointed, and he wants "a ticket in the app I can look
+at later to run" as his next planning session, once he's done with Session 61's test —
+but explicitly "I don't need to make anything new." First instinct was to insert an `open`
+`agent_sessions` row directly, but there's currently no UI anywhere that lists raw
+`agent_sessions` rows for Drew to browse — only `review_items` (populated by session
+*results*, not pre-planning tickets) and the repo detail page's single free-text Planning
+box. Inserting an invisible DB row wouldn't have actually satisfied "look at it later."
+
+Landed on the literal minimal reading instead: `NAV_COHESION_PLANNING_BRIEF` (a real,
+specific brief — names every current `/admin/*` route, asks about consistent header/nav,
+breadcrumbs, click-count between related sections, explicitly scoped to navigation only,
+not a rewrite of any page's functionality) now pre-fills `planningBrief`'s initial state
+in `RepoDetailClient.tsx`, but only when `repo.github_repo === "worldshifttech-landing"` —
+this is a navigation complaint about the admin app itself, not something that belongs as a
+default on every other repo's planning box. Next time Drew opens this repo's own
+`/admin/repos/[id]` page, it's just sitting there in the existing Run Planning Session
+box, ready to review and click — no new table, no new UI, no persistence beyond React's
+own component state (meaning it resets if the textarea is cleared or on a fresh page load
+after being edited — genuinely ephemeral, not a durable queue, which is the real tradeoff
+of "don't make anything new").
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean).
+
+---
+
+## Recent Changes (Session 61, August 8, 2026)
+
+**Backfilled a real build session's result after finding it was silently dropped**
+
+Not a code change on this repo's side — the fix lives in `wst-orchestrator-runner`'s own
+Session 5. Worth a NOTES entry here anyway since it explains a manual DB write outside
+the normal `session-result` flow.
+
+Dispatched Session 60 (the milestone-feedback backend build prompt) against this repo via
+the new "Dispatching to" labels' correct target. It completed successfully from Claude's
+own side — real commits, [PR #2](https://github.com/worldshifttech/worldshifttech-landing/pull/2)
+opened, SQL included per Session 59's own convention — but the dashboard still showed
+`status: failed` with no `build_result` card. Reading `wst-orchestrator-runner`'s actual
+job log (not guessing) found the cause: `resolve_pr`'s gate on `claude-code-action`'s
+`branch_name` output never fires under this workflow's actual usage (Claude creates PRs
+manually via Bash, not through the action's own branch-management feature) — silently
+skipping PR/preview/SQL resolution on every build, successful or not, likely since Session
+53. Fixed there; see that repo's NOTES.md for the full root-cause writeup.
+
+Rather than wait for a fresh dispatch to re-prove a fix that direct log-reading already
+confirmed, Session 60's real PR and Vercel preview (both verified live via `gh pr view`
+and the PR's own comments) were written directly into `agent_sessions`
+(`status: 'done'`, `pr_url`, `pr_preview_url`) and a `build_result` `review_items` row
+inserted with the real SQL as `proposed_content` — exactly what the (fixed) workflow's own
+report step would have sent. `/admin/reviews` should now show a real, mergeable Session 60
+card.
+
+---
 
 ## Recent Changes (Session 60, August 8, 2026)
 
@@ -6,9 +97,10 @@
 
 Data-model and API half of letting a client fulfill an "open item" on their roadmap —
 either a text answer or a file upload — scoped to a specific milestone. Deliberately does
-not touch the client-facing page or the admin inbox UI; those are Session 61, dispatched
-separately once this one merges. Session number renumbered from the original 59/60 split
-by Session 59's own same-day follow-up before either was dispatched — no collision.
+not touch the client-facing page or the admin inbox UI; those are Session 61 (build), the
+follow-up build dispatch once this one merges — not to be confused with the *control-plane*
+Session 61 NOTES entry above, which documents backfilling this very session's result; the
+two "Session 61"s are different repos' own numbering, not a second collision.
 
 **The real gotcha this session's own investigation surfaced, worth flagging so nobody
 reintroduces it:** `app/api/admin-projects/[id]/route.ts`'s milestone save deleted every
@@ -58,11 +150,26 @@ listed). `npm run lint` shows 4 pre-existing errors in `app/meet/page.tsx` and
 to any file this session touched) — confirmed via `git status` that none of this session's
 changed files appear in the lint output.
 
-**Unverified end-to-end, needs Drew:** run this session's SQL migration (below) in
-Supabase, then confirm the milestone editor still saves correctly and that a manually
-inserted `project_files`/`project_feedback` row with a `milestone_id` survives an
-unrelated milestone save without orphaning. No real client-facing caller of
-`/api/project-feedback` exists yet — that's Session 61.
+**Needs Drew:** run this session's SQL migration (below) in Supabase — done, confirmed via
+a direct column check before merging — then confirm the milestone editor still saves
+correctly and that a manually inserted `project_files`/`project_feedback` row with a
+`milestone_id` survives an unrelated milestone save without orphaning. No real
+client-facing caller of `/api/project-feedback` exists yet — that's the Session 61 build.
+
+**Same-day follow-up: "Dispatching to: {repo name}" label on the two dispatch boxes.**
+(Originally filed as its own "Session 60" entry, written before this build had actually
+dispatched — folded in here on merge rather than left as a duplicate heading.) Real
+mix-up, not hypothetical: after fixing an API spend-limit failure, Drew retried a build
+dispatch twice more and both landed against `wst-build-manager` instead of
+`worldshifttech-landing` — he was on the wrong repo's `/admin/repos/[id]` page, which
+looks identical to every other repo's page apart from a small heading up top. The build
+session itself ran fine (no error) but had nothing coherent to build against a mismatched
+repo's files, so no PR ever resulted. Confirmed by reading the actual GitHub Actions logs
+(`repository: worldshifttech/wst-build-manager` in the checkout step, paired with a
+`BRIEF` written for `worldshifttech-landing`'s own files). Both **Run Planning Session**
+and **Run Custom Build Session** boxes on `RepoDetailClient.tsx` now show a small
+"Dispatching to: {repo.name}" badge next to their header. Verified with
+`npx tsc --noEmit` and `npm run build` (both clean).
 
 ---
 
