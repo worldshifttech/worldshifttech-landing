@@ -66,6 +66,7 @@ export default async function AdminReposPage() {
     deployed_sha: (r.deployed_sha as string | null) ?? null,
     github_head_sha: (r.github_head_sha as string | null) ?? null,
     drift_checked_at: (r.drift_checked_at as string | null) ?? null,
+    system_group: (r.system_group as string | null) ?? null,
   }));
 
   const { data: rawProjects } = await serviceClient

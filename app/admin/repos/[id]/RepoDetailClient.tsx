@@ -29,6 +29,7 @@ type RepoFields = {
   deployed_sha: string | null;
   github_head_sha: string | null;
   drift_checked_at: string | null;
+  system_group: string | null;
 };
 
 type FeedbackItem = {
@@ -69,6 +70,7 @@ export default function RepoDetailClient({
   const [vercelProjectId, setVercelProjectId] = useState(repo.vercel_project_id ?? "");
   const [frameworkType, setFrameworkType] = useState(repo.framework_type);
   const [authConvention, setAuthConvention] = useState(repo.auth_convention);
+  const [systemGroup, setSystemGroup] = useState(repo.system_group ?? "");
   const [clientProjectId, setClientProjectId] = useState(repo.client_project_id ?? "");
   const [automationEnabled, setAutomationEnabled] = useState(repo.automation_enabled);
   const [planningIntervalHours, setPlanningIntervalHours] = useState(
@@ -465,6 +467,7 @@ export default function RepoDetailClient({
           vercel_project_id: vercelProjectId || null,
           framework_type: frameworkType,
           auth_convention: authConvention,
+          system_group: systemGroup.trim() || null,
           client_project_id: clientProjectId || null,
           automation_enabled: automationEnabled,
           planning_interval_hours: planningIntervalHours ? Number(planningIntervalHours) : null,
@@ -614,6 +617,22 @@ export default function RepoDetailClient({
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                System Group <span className="normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                value={systemGroup}
+                onChange={(e) => setSystemGroup(e.target.value)}
+                placeholder='e.g. "WST App" — tags repos that are part of the same system'
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+              <p className="text-[#76777A] text-xs mt-1">
+                Shown as a badge on the fleet list and in this repo&apos;s dispatched GitHub Actions run titles.
+                Repos sharing the same text are treated as one system — free text, not a fixed list.
+              </p>
             </div>
 
             <div>

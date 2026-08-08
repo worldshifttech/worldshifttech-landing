@@ -31,12 +31,45 @@ type TickResult = {
   session_id?: string;
 };
 
+// A session's own workflow enforces a hard ceiling (20min planning / 45min build,
+// timeout-minutes in wst-orchestrator-runner's run-session.yml) — past that plus a
+// generous buffer for the report step and any retry, it can never legitimately still be
+// non-terminal. Session 65's investigation found four sessions (two of them blocking
+// entos-group-website's automation completely, since a "session already open" check below
+// treats any non-done/failed status as blocking) stuck since Aug 5-6 with no automatic
+// path back to a terminal state — a crashed run, a GitHub Actions dispatch that never
+// actually landed, or a result POST that failed all leave a session open forever with
+// nothing to notice or fix it. Swept on every tick from here on, not just fixed once by
+// hand, so this can't happen silently again.
+const STALE_SESSION_HOURS = 3;
+
+async function failStaleSessions(supabase: ReturnType<typeof getSupabase>): Promise<number> {
+  const staleBefore = new Date(Date.now() - STALE_SESSION_HOURS * 3600 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("agent_sessions")
+    .update({ status: "failed", completed_at: new Date().toISOString() })
+    .not("status", "in", "(done,failed)")
+    .lt("created_at", staleBefore)
+    .select("id");
+
+  if (error) {
+    console.error("[scheduler-tick] stale session sweep failed:", error.message);
+    return 0;
+  }
+  return data?.length ?? 0;
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyCron(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   const supabase = getSupabase();
+
+  // Runs regardless of the pause switches below — this is data hygiene (keeping
+  // "is a session open" queries honest), not a dispatch action, so there's no reason to
+  // skip it just because automation happens to be paused right now.
+  const staleFailed = await failStaleSessions(supabase);
 
   const { data: settings } = await supabase
     .from("orchestrator_settings")
@@ -45,7 +78,7 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (settings?.automation_paused) {
-    return NextResponse.json({ paused: true, results: [] });
+    return NextResponse.json({ paused: true, stale_sessions_failed: staleFailed, results: [] });
   }
 
   // Per-repo pause is automation_enabled itself (see RepoDetailClient.tsx's own note on
@@ -99,5 +132,5 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ paused: false, results });
+  return NextResponse.json({ paused: false, stale_sessions_failed: staleFailed, results });
 }
