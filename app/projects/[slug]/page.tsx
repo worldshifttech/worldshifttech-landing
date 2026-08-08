@@ -6,6 +6,7 @@ import { verifyAccessToken, accessCookieName } from "@/lib/project-access";
 import { BUCKET } from "@/lib/project-files";
 import PasswordGate from "./PasswordGate";
 import FileUploads from "./FileUploads";
+import MilestoneActionPanel from "./MilestoneActionPanel";
 
 const STATUS_LABEL: Record<string, string> = {
   not_started: "Not started",
@@ -84,6 +85,7 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
         note: f.note,
         created_at: f.created_at,
         downloadUrl: signed?.signedUrl ?? null,
+        milestone_id: f.milestone_id ?? null,
       };
     })
   );
@@ -174,6 +176,15 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
                     {m.target_date && (
                       <p className="text-[#76777A] text-xs">Target: {formatDate(m.target_date)}</p>
                     )}
+                    {m.action_owner === "client" && m.status !== "done" && (
+                      <MilestoneActionPanel
+                        projectId={project.id}
+                        slug={slug}
+                        milestoneId={m.id}
+                        actionNote={m.action_note}
+                        files={files}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -182,11 +193,6 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
 
           <div className="mb-4">
             <FileUploads projectId={project.id} slug={slug} files={files} />
-          </div>
-
-          {/* Placeholder — Session 48 */}
-          <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm">
-            Client feedback — coming in a future session
           </div>
         </div>
       </main>

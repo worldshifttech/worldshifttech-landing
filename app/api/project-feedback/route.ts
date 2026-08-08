@@ -49,5 +49,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message ?? "Could not submit feedback" }, { status: 500 });
   }
 
+  const { data: project } = await supabase.from("projects").select("title").eq("id", projectId).single();
+  let milestoneTitle: string | null = null;
+  if (milestoneId) {
+    const { data: milestone } = await supabase
+      .from("project_milestones")
+      .select("title")
+      .eq("id", milestoneId)
+      .single();
+    milestoneTitle = milestone?.title ?? null;
+  }
+  fetch(new URL("/api/notify-slack", req.nextUrl.origin), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "milestone_response",
+      projectId,
+      projectTitle: project?.title ?? "Untitled",
+      milestoneTitle,
+      message: message.trim(),
+    }),
+  }).catch(() => {});
+
   return NextResponse.json({ ok: true, id: data.id });
 }

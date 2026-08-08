@@ -64,6 +64,15 @@ export async function POST(req: NextRequest) {
 
   if (uploadedBy === "client") {
     const { data: project } = await supabase.from("projects").select("title").eq("id", projectId).single();
+    let milestoneTitle: string | null = null;
+    if (milestoneId) {
+      const { data: milestone } = await supabase
+        .from("project_milestones")
+        .select("title")
+        .eq("id", milestoneId)
+        .single();
+      milestoneTitle = milestone?.title ?? null;
+    }
     fetch(new URL("/api/notify-slack", req.nextUrl.origin), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -72,6 +81,7 @@ export async function POST(req: NextRequest) {
         fileName,
         projectTitle: project?.title ?? "Untitled",
         projectId,
+        milestoneTitle,
       }),
     }).catch(() => {});
   }

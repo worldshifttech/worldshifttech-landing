@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { projectTitle, userEmail, type, fileName, projectId } = body;
+  const { projectTitle, userEmail, type, fileName, projectId, milestoneTitle, message } = body;
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) return NextResponse.json({}, { status: 200 });
 
   let text: string;
   if (type === "file_upload") {
-    text = `📎 File uploaded: *${fileName}* on *${projectTitle}*\nhttps://worldshifttech.com/admin/projects/${projectId}`;
+    text = `📎 File uploaded: *${fileName}* on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\nhttps://worldshifttech.com/admin/projects/${projectId}`;
+  } else if (type === "milestone_response") {
+    text = `💬 Client response on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\n"${message}"\nhttps://worldshifttech.com/admin/projects/${projectId}`;
   } else if (type === "audit") {
     const {
       business_name,

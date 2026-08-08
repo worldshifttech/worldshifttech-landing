@@ -40,6 +40,15 @@ type ProjectFile = {
   note: string | null;
   created_at: string;
   downloadUrl: string | null;
+  milestoneTitle: string | null;
+};
+
+type FeedbackItem = {
+  id: string;
+  message: string;
+  status: "new" | "read" | "resolved";
+  created_at: string;
+  milestoneTitle: string | null;
 };
 
 const STATUS_OPTIONS: { value: Milestone["status"]; label: string }[] = [
@@ -53,6 +62,15 @@ const ACTION_OWNER_OPTIONS: { value: Milestone["action_owner"]; label: string }[
   { value: "client", label: "Client" },
 ];
 
+function relativeDate(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days < 1) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function ProjectDetailClient({
@@ -61,12 +79,14 @@ export default function ProjectDetailClient({
   hoursLogged,
   costLogged,
   files,
+  feedback,
 }: {
   project: ProjectFields;
   initialMilestones: Milestone[];
   hoursLogged: number;
   costLogged: number;
   files: ProjectFile[];
+  feedback: FeedbackItem[];
 }) {
   const [title, setTitle] = useState(project.title);
   const [clientName, setClientName] = useState(project.client_name ?? "");
@@ -81,6 +101,8 @@ export default function ProjectDetailClient({
   );
   const [hourlyRate, setHourlyRate] = useState(project.hourly_rate != null ? String(project.hourly_rate) : "");
   const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones);
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>(feedback);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -116,6 +138,30 @@ export default function ProjectDetailClient({
     await navigator.clipboard.writeText(clientUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleResolveFeedback(id: string) {
+    setResolvingId(id);
+    try {
+      const supabase = getSupabaseBrowser();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`/api/admin-project-feedback/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (res.ok) {
+        setFeedbackItems((prev) => prev.map((f) => (f.id === id ? { ...f, status: "resolved" } : f)));
+      }
+    } finally {
+      setResolvingId(null);
+    }
   }
 
   async function handleSave() {
@@ -429,9 +475,40 @@ export default function ProjectDetailClient({
 
           <FileUploads projectId={project.id} slug={project.slug} files={files} />
 
-          {/* Placeholder — Session 48 */}
-          <div className="bg-white border border-dashed border-[#00205C]/20 rounded-2xl p-6 text-center text-[#76777A] text-sm">
-            Client feedback — coming in a future session
+          {/* Client feedback inbox */}
+          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-4">
+              Client Feedback
+            </span>
+            {feedbackItems.length === 0 ? (
+              <p className="text-[#76777A] text-sm">No feedback yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {feedbackItems.map((f) => (
+                  <div
+                    key={f.id}
+                    className="flex items-start justify-between gap-3 border border-[#00205C]/[0.08] rounded-xl px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[#00205C] text-sm">{f.message}</p>
+                      <p className="text-[#76777A] text-xs mt-1">
+                        {f.milestoneTitle ?? "General"} &middot; {relativeDate(f.created_at)} &middot;{" "}
+                        {f.status === "resolved" ? "Resolved" : "New"}
+                      </p>
+                    </div>
+                    {f.status !== "resolved" && (
+                      <button
+                        onClick={() => handleResolveFeedback(f.id)}
+                        disabled={resolvingId === f.id}
+                        className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
+                      >
+                        {resolvingId === f.id ? "..." : "Mark Resolved"}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Save */}
