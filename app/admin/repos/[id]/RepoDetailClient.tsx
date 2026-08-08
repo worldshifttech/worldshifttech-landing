@@ -9,24 +9,6 @@ import SignOutButton from "@/app/components/SignOutButton";
 import { FRAMEWORK_OPTIONS, AUTH_OPTIONS, type ProjectOption } from "../RepoFleetClient";
 import { ReviewList, type ReviewItem } from "../../reviews/ReviewInboxClient";
 
-// A "ticket in the app" Drew asked to run after his current test, not a new feature —
-// just sits pre-filled in this repo's own Run Planning Session box (below) so it's there
-// waiting rather than something to remember or retype. See NOTES.md Session 62.
-const NAV_COHESION_PLANNING_BRIEF =
-  "The admin dashboard's navigation feels disjointed, not cohesive or friendly. Audit " +
-  "navigation across /admin (dashboard home), /admin/repos (fleet list), " +
-  "/admin/repos/[id] (repo detail -- Settings/Reviews tabs), /admin/reviews (global " +
-  "inbox), /admin/knowledge-base, and /admin/projects/[id] (client project detail). " +
-  "Look at: is there a consistent top nav/header across all of these, or does each page " +
-  "reinvent its own? Is there any breadcrumb or clear way back up a level? Is it obvious " +
-  "which section of the app you're in at a glance? How many clicks does it take to get " +
-  "from one related page to another (e.g. a repo's own scoped reviews vs. the global " +
-  "reviews inbox vs. a linked client project)? Propose a more cohesive structure -- " +
-  "consistent header/nav across every admin page, clear active-state or breadcrumbs, " +
-  "fewer redundant clicks between related sections. This is a navigation/UX pass, not a " +
-  "rewrite of any page's actual functionality -- don't restructure data models or " +
-  "existing features, just how they're navigated between.";
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RepoFields = {
@@ -57,16 +39,26 @@ type FeedbackItem = {
   created_at: string;
 };
 
+export type SessionDraft = {
+  id: string;
+  session_type: "planning" | "build";
+  title: string;
+  brief: string;
+  created_at: string;
+};
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function RepoDetailClient({
   repo,
   projects,
   reviewItems,
+  initialDrafts,
 }: {
   repo: RepoFields;
   projects: ProjectOption[];
   reviewItems: ReviewItem[];
+  initialDrafts: SessionDraft[];
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"settings" | "feedback" | "reviews">("settings");
@@ -90,9 +82,7 @@ export default function RepoDetailClient({
   const [saveError, setSaveError] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const [planningBrief, setPlanningBrief] = useState(
-    repo.github_repo === "worldshifttech-landing" ? NAV_COHESION_PLANNING_BRIEF : ""
-  );
+  const [planningBrief, setPlanningBrief] = useState("");
   const [dispatching, setDispatching] = useState(false);
   const [dispatchError, setDispatchError] = useState("");
 
@@ -105,6 +95,16 @@ export default function RepoDetailClient({
   const [buildBrief, setBuildBrief] = useState("");
   const [buildDispatching, setBuildDispatching] = useState(false);
   const [buildDispatchError, setBuildDispatchError] = useState("");
+
+  // Saved-but-not-dispatched planning/build briefs — "a ticket in the app I can look at
+  // later to run" (Drew's own words), replacing Session 62's stopgap of hardcoding one
+  // brief as a component-state default, which vanished the moment the textarea was
+  // cleared or edited and had no way to hold more than one at a time. See NOTES.md
+  // Session 63.
+  const [drafts, setDrafts] = useState<SessionDraft[]>(initialDrafts);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftError, setDraftError] = useState("");
 
   // Target Supabase credentials — deliberately separate save action, separate route, and
   // the key field is never pre-filled with the stored value (only a "set/not set"
@@ -366,6 +366,76 @@ export default function RepoDetailClient({
       setBuildDispatchError("Something went wrong. Please try again.");
     } finally {
       setBuildDispatching(false);
+    }
+  }
+
+  async function handleSaveDraft(sessionType: "planning" | "build") {
+    const brief = sessionType === "planning" ? planningBrief : buildBrief;
+    if (!brief.trim()) return;
+
+    setSavingDraft(true);
+    setDraftError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-repos/${repo.id}/drafts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ session_type: sessionType, title: draftTitle, brief }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDraftError(data.error ?? "Failed to save draft");
+        return;
+      }
+
+      setDrafts((prev) => [data.draft, ...prev]);
+      setDraftTitle("");
+    } catch {
+      setDraftError("Something went wrong. Please try again.");
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
+  // Loads a saved draft into the matching textarea for review/editing before dispatch —
+  // never dispatches on its own. Switches to the Settings tab too, since a draft loaded
+  // from a repo whose page defaults to a different tab would otherwise land invisibly.
+  function handleLoadDraft(draft: SessionDraft) {
+    if (draft.session_type === "planning") {
+      setPlanningBrief(draft.brief);
+    } else {
+      setBuildBrief(draft.brief);
+    }
+    setActiveTab("settings");
+  }
+
+  async function handleDeleteDraft(draftId: string) {
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-repos/${repo.id}/drafts/${draftId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) return;
+      setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+    } catch {
+      // Best-effort — the draft just stays in the list if this fails, no error state
+      // needed for a low-stakes list-item delete.
     }
   }
 
@@ -750,6 +820,54 @@ export default function RepoDetailClient({
             </button>
           </div>
 
+          {/* Saved Drafts — "a ticket in the app I can look at later to run" (Drew's own
+              words, Session 63). Loading a draft only fills the matching textarea below;
+              it never dispatches on its own. */}
+          {drafts.length > 0 && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-3">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+                Saved Drafts
+              </span>
+              <ul className="space-y-2">
+                {drafts.map((draft) => (
+                  <li
+                    key={draft.id}
+                    className="flex items-center justify-between gap-3 bg-[#F4F2EE] rounded-lg px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded mr-2 ${
+                          draft.session_type === "planning"
+                            ? "bg-[#4B858E]/15 text-[#4B858E]"
+                            : "bg-[#91B6BB]/25 text-[#00205C]"
+                        }`}
+                      >
+                        {draft.session_type}
+                      </span>
+                      <span className="text-sm text-[#00205C] truncate">{draft.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleLoadDraft(draft)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                      >
+                        Load
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDraft(draft.id)}
+                        className="text-xs font-medium text-red-400 hover:text-red-500 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Run Planning Session */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -774,13 +892,30 @@ export default function RepoDetailClient({
               />
             </div>
             {dispatchError && <p className="text-red-400 text-xs">{dispatchError}</p>}
-            <button
-              onClick={handleRunPlanningSession}
-              disabled={dispatching || !planningBrief.trim() || !repo.github_app_installation_id}
-              className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {dispatching ? "Dispatching..." : "Run Planning Session"}
-            </button>
+            {draftError && <p className="text-red-400 text-xs">{draftError}</p>}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleRunPlanningSession}
+                disabled={dispatching || !planningBrief.trim() || !repo.github_app_installation_id}
+                className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {dispatching ? "Dispatching..." : "Run Planning Session"}
+              </button>
+              <input
+                value={draftTitle}
+                onChange={(e) => setDraftTitle(e.target.value)}
+                placeholder="Draft title (optional)"
+                className="text-sm bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-full px-3 py-2 text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 w-40"
+              />
+              <button
+                type="button"
+                onClick={() => handleSaveDraft("planning")}
+                disabled={savingDraft || !planningBrief.trim()}
+                className="text-sm font-semibold px-4 py-2 rounded-full border border-[#00205C]/25 text-[#00205C] hover:bg-[#00205C]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {savingDraft ? "Saving..." : "Save as Draft"}
+              </button>
+            </div>
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
             )}
@@ -814,13 +949,30 @@ export default function RepoDetailClient({
               />
             </div>
             {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
-            <button
-              onClick={handleRunCustomBuildSession}
-              disabled={buildDispatching || !buildBrief.trim() || !repo.github_app_installation_id}
-              className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {buildDispatching ? "Dispatching..." : "Run Custom Build Session"}
-            </button>
+            {draftError && <p className="text-red-400 text-xs">{draftError}</p>}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleRunCustomBuildSession}
+                disabled={buildDispatching || !buildBrief.trim() || !repo.github_app_installation_id}
+                className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {buildDispatching ? "Dispatching..." : "Run Custom Build Session"}
+              </button>
+              <input
+                value={draftTitle}
+                onChange={(e) => setDraftTitle(e.target.value)}
+                placeholder="Draft title (optional)"
+                className="text-sm bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-full px-3 py-2 text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 w-40"
+              />
+              <button
+                type="button"
+                onClick={() => handleSaveDraft("build")}
+                disabled={savingDraft || !buildBrief.trim()}
+                className="text-sm font-semibold px-4 py-2 rounded-full border border-[#00205C]/25 text-[#00205C] hover:bg-[#00205C]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {savingDraft ? "Saving..." : "Save as Draft"}
+              </button>
+            </div>
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
             )}

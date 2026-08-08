@@ -1,4 +1,37 @@
-﻿Last session: 62
+﻿Last session: 63
+
+## Recent Changes (Session 63, August 8, 2026)
+
+**Real "save draft" feature, replacing Session 62's stopgap**
+
+Session 62 landed a hardcoded default value in `planningBrief`'s component state as a
+quick "ticket in the app I can look at later to run." Drew tried it, correctly identified
+it wasn't durable enough (component state, no way to hold more than one, gone the moment
+it's edited or the page reloads fresh), and asked for the real thing.
+
+**`session_drafts`** (new table): `repo_id`, `session_type` (`'planning' | 'build'`),
+`title`, `brief`. Deliberately not a new column on `agent_sessions` — a draft has never
+been dispatched and has no status lifecycle (no `github_run_id`, no status transitions,
+no result to report), a genuinely different shape from a real session row. Seeded with
+Session 62's nav-cohesion brief as a real row, promoting it rather than leaving both
+mechanisms around.
+
+**`/api/admin-repos/[id]/drafts`** (new, POST) and **`/api/admin-repos/[id]/drafts/[draftId]`**
+(new, DELETE) — same `verifyAdmin` bearer pattern as every other `admin-repos` route.
+Title is optional on save (falls back to a truncated snippet of the brief) — a quick
+"save this before I lose it" click shouldn't require typing a title first.
+
+**`RepoDetailClient.tsx`**: a "Saved Drafts" list (only rendered when non-empty) sits
+above the Planning/Build boxes, each entry tagged planning/build with **Load** (fills the
+matching textarea, switches to the Settings tab, never dispatches on its own) and
+**Delete**. Both dispatch boxes gained a "Save as Draft" control (title input + button)
+next to their existing Run button. Session 62's hardcoded `NAV_COHESION_PLANNING_BRIEF`
+default removed entirely — the real seeded draft replaces it.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean — confirmed
+`/api/admin-repos/[id]/drafts` and its `[draftId]` child both registered as routes).
+
+---
 
 ## Recent Changes (Session 62, August 8, 2026)
 
