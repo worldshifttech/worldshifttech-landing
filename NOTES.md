@@ -1,4 +1,50 @@
-﻿Last session: 69
+﻿Last session: 70
+
+## Recent Changes (Session 70, August 9, 2026)
+
+**Editable build prompt on `consolidated_review` cards — fixing a gap caught live mid-test**
+
+Drew ran a real end-to-end orchestrator test (planning → review → build → merge → archive
+against `forgotten-realms-dm`, documented in `ORCHESTRATOR_DESIGN.md` §11) specifically to
+find problems rather than confirm the happy path. Round 2 surfaced a real one: the planning
+session's build prompt justified its fix with an inaccurate claim (that `'dodge'` was "the
+one word that slipped through as bare" in an otherwise multi-word-phrase array — direct
+inspection showed the array is mostly bare words, several sharing the same false-positive
+risk). Drew correctly caught this and wrote a free-text correction into the card's response
+field. Then clicked the card's own "Run Build Session" anyway — and the correction had no
+effect. Root cause: `handleRunBuildSession` in `ReviewInboxClient.tsx` always sent
+`brief: item.proposed_content`, never `item.drew_response`. Answering a card's open
+questions is recorded and displayed, but was never actually threaded into what a build
+session executes. Drew's own words on it: "the system needs to catch when I potentially
+make mistakes like this one, or a corrected prompt needs to be added before built." Decided
+to let that flawed dispatch run to completion anyway rather than cancel it, to see whether
+the last gate before merge (reading the actual diff) would catch what slipped past this one
+— see the round 2 result, checked separately right after this entry lands.
+
+**The fix:** the build prompt shown on an answered `consolidated_review` card is now an
+editable `<textarea>` instead of a read-only `<pre>`, but only in the two states where a
+build-dispatch action is actually available on the card (no linked build yet, or the linked
+one `failed` — matches `handleRunBuildSession`'s own reachability exactly, via a new
+`isEditableBuildPrompt` derived condition). New `editedProposedContent` state, defaulting to
+`item.proposed_content` — untouched, behavior is byte-identical to before. `handleRunBuildSession`
+now sends `editedProposedContent` as the brief instead of `item.proposed_content`, and if it
+was actually changed, PATCHes `review_items.proposed_content` to the edited value first
+(the PATCH route already accepted this field — added for something else, never wired to
+this path) before dispatching, so the card's own historical record always matches what was
+actually sent. A small "Reset to original" control appears only once the box has actually
+been edited. The "Build" section's tooltip text updated to say "dispatches exactly what's
+in the box above" rather than "exactly as written," since that's no longer necessarily true.
+`kb_entry_draft` and `build_result` cards untouched — each already has its own separate
+editable-fields or fixed-action pattern that doesn't have this gap.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean; `/admin/reviews` listed
+among the built routes). `npm run lint` shows zero findings in `ReviewInboxClient.tsx`.
+
+No SQL this session — the PATCH route's `proposed_content` handling already existed
+(Session 55, for a different card kind's editable fields); this session only changed which
+client code paths call it.
+
+---
 
 ## Recent Changes (Session 69, August 9, 2026)
 

@@ -156,9 +156,23 @@ export function ReviewCard({
   const [kbArtifactLocation, setKbArtifactLocation] = useState(item.kb_draft?.artifact_location ?? "");
   const [kbApproving, setKbApproving] = useState(false);
   const [kbApproveError, setKbApproveError] = useState("");
+  // Session 70 — what actually gets dispatched by Run/Retry Build Session below, editable
+  // rather than a fixed read of item.proposed_content. Answering a card's open questions
+  // used to have no effect on what a build session executes (proposed_content was sent
+  // verbatim regardless of drew_response) — caught live during a real test, see
+  // ORCHESTRATOR_DESIGN.md §11. Defaults to the original text; untouched, behavior is
+  // identical to before.
+  const [editedProposedContent, setEditedProposedContent] = useState(item.proposed_content ?? "");
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
+  // Only the two states where a build-dispatch action is actually on the card below —
+  // matches handleRunBuildSession's own reachability exactly, see the render branches
+  // further down (!item.linked_build / item.linked_build.status === "failed").
+  const isEditableBuildPrompt =
+    item.status === "answered" &&
+    item.kind === "consolidated_review" &&
+    (!item.linked_build || item.linked_build.status === "failed");
 
   const allQuestionsAnswered = answers.every((a) => a.trim().length > 0);
   const canSubmit = hasQuestions
@@ -238,9 +252,14 @@ export function ReviewCard({
   // before ever writing a checkpoint), so this always just points at it when retrying.
   // See NOTES.md Session 68.
   async function handleRunBuildSession() {
-    if (!item.repo_id || !item.proposed_content) return;
+    if (!item.repo_id || !editedProposedContent.trim()) return;
 
     const isRetry = item.linked_build?.status === "failed";
+    // Session 70 — only true if the box above was actually touched. Saved back to
+    // review_items.proposed_content before dispatching so the historical record on this
+    // card always matches what was actually sent, not what the planning session originally
+    // proposed. See ORCHESTRATOR_DESIGN.md §11.
+    const contentChanged = editedProposedContent !== (item.proposed_content ?? "");
 
     setBuildDispatching(true);
     setBuildDispatchError("");
@@ -252,6 +271,22 @@ export function ReviewCard({
     const token = session?.access_token;
 
     try {
+      if (contentChanged) {
+        const patchRes = await fetch(`/api/admin-reviews/${item.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ proposed_content: editedProposedContent }),
+        });
+        if (!patchRes.ok) {
+          const patchData = await patchRes.json().catch(() => ({}));
+          setBuildDispatchError(patchData.error ?? "Failed to save your edit — not dispatched");
+          return;
+        }
+      }
+
       const res = await fetch("/api/orchestrator/dispatch", {
         method: "POST",
         headers: {
@@ -261,7 +296,7 @@ export function ReviewCard({
         body: JSON.stringify({
           repo_id: item.repo_id,
           session_type: "build",
-          brief: item.proposed_content,
+          brief: editedProposedContent,
           source_review_item_id: item.id,
           ...(isRetry ? { resume_from_session_id: item.linked_build!.id } : {}),
         }),
@@ -274,6 +309,7 @@ export function ReviewCard({
       }
 
       onAnswered(item.id, {
+        proposed_content: editedProposedContent,
         linked_build: {
           id: data.session_id,
           status: "running",
@@ -805,11 +841,36 @@ export function ReviewCard({
 
       <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
-      {item.proposed_content && (
-        <pre className="max-h-96 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] whitespace-pre-wrap font-mono">
-          {item.proposed_content}
-        </pre>
-      )}
+      {item.proposed_content &&
+        (isEditableBuildPrompt ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-medium text-[#76777A] flex items-center gap-1.5">
+                Build prompt (editable)
+                <InfoTooltip text="Editing this box changes exactly what gets dispatched when you click Run/Retry Build Session below, and saves your edit back to this card — so the record here always matches what actually ran." />
+              </span>
+              {editedProposedContent !== (item.proposed_content ?? "") && (
+                <button
+                  type="button"
+                  onClick={() => setEditedProposedContent(item.proposed_content ?? "")}
+                  className="text-xs font-medium text-[#4B858E] hover:text-[#00205C] transition-colors"
+                >
+                  Reset to original
+                </button>
+              )}
+            </div>
+            <textarea
+              value={editedProposedContent}
+              onChange={(e) => setEditedProposedContent(e.target.value)}
+              rows={14}
+              className="w-full max-h-96 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] font-mono focus:outline-none focus:border-[#4B858E]/60"
+            />
+          </div>
+        ) : (
+          <pre className="max-h-96 overflow-y-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs text-[#00205C] whitespace-pre-wrap font-mono">
+            {item.proposed_content}
+          </pre>
+        ))}
 
       {item.status === "pending" ? (
         <>
@@ -907,13 +968,13 @@ export function ReviewCard({
             <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-2">
               <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] flex items-center gap-1.5">
                 Build
-                <InfoTooltip text="Dispatches this card's own build prompt exactly as written and opens a pull request. Retry (after a failure) resumes from that session's last checkpoint automatically, when one exists." />
+                <InfoTooltip text="Dispatches exactly what's in the box above — edit it first if it needs a correction — and opens a pull request. Retry (after a failure) resumes from that session's last checkpoint automatically, when one exists." />
               </span>
               {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
               {!item.linked_build ? (
                 <button
                   onClick={handleRunBuildSession}
-                  disabled={buildDispatching}
+                  disabled={buildDispatching || !editedProposedContent.trim()}
                   className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {buildDispatching ? "Dispatching..." : "Run Build Session"}
@@ -933,7 +994,7 @@ export function ReviewCard({
                   )}
                   <button
                     onClick={handleRunBuildSession}
-                    disabled={buildDispatching}
+                    disabled={buildDispatching || !editedProposedContent.trim()}
                     className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {buildDispatching ? "Dispatching..." : "Retry Build Session"}
