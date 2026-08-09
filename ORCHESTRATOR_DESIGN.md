@@ -331,3 +331,55 @@ are the norm), surfaced as a badge per repo.
 
 Phases 1–2 are the ones that matter most to get right early — everything after them is
 additive, not load-bearing.
+
+---
+
+## 11. Known risks / open concerns (raised during a live end-to-end test, Session 69
+follow-up, August 9, 2026)
+
+Surfaced while running a real planning → build → merge test against `forgotten-realms-dm`,
+looked at specifically for what could produce high-risk or low-quality outcomes rather than
+whether the happy path works. The happy path does work — every step of that test traced
+cleanly through `agent_sessions` and `review_items` exactly as designed. These are the gaps
+underneath it, not a report that something is currently broken:
+
+- **"Review" can collapse into reading the agent's own account of its own work, not the
+  diff.** The `build_result` card shows a summary, a PR link, a preview link — nothing
+  inline shows the actual diff. Nothing in the UI requires the extra hop to GitHub before
+  the "Merge to Production" button is clickable. A one-line docs fix and a 500-line refactor
+  get identical UI friction.
+- **Fact-verification inside a build prompt is a convention the planning session chose to
+  write in, not something the system enforces.** This test's own build prompt happened to
+  tell the build session to re-derive a claimed number itself rather than trust the planning
+  session's claim — good discipline, but nothing structural requires every build prompt to
+  include a self-check like that. A differently-behaved planning session could assert
+  something false with the same confidence and nothing catches it before it merges.
+- **Failure is silent by default**, and this already happened once for real: Session 65
+  found `entos-group-website`'s scheduled automation dead for four days before anyone
+  noticed. The fix that shipped (auto-fail anything stuck non-terminal for 3+ hours) cleans
+  up the symptom, not the gap — a failed session today still just sits there with zero
+  notification. `notify-slack` has a `file_upload` type and a `milestone_response` type;
+  there's no `session_failed` type.
+- **No spend visibility anywhere in the dashboard.** Session 58's own README entry
+  documents a real failure that burned real cost with no PR to show for it — that's only
+  discoverable by reading NOTES.md after the fact. No running total, per-repo or
+  time-windowed, exists anywhere in `/admin`.
+- **Every repo gets identical trust regardless of what's actually at stake.**
+  `entos-group-website` (real client work, `automation_enabled: true`, already dispatching
+  unattended on a schedule) gets the exact same one-click merge flow as a personal test
+  repo. The only risk gating that exists is whatever the agent itself decides to flag as a
+  `production_risk_flag` — self-assessed, not externally imposed.
+- **Secrets are centralized in one place, which concentrates blast radius.** Every managed
+  repo's target Supabase service-role key lives in this control plane's own database
+  (write-only, never echoed back, which is the right call in isolation) — but it means one
+  compromise of this database's service role exposes every managed repo's credentials at
+  once, not just one repo's.
+- **Unverified from this repo's side:** whether `wst-orchestrator-runner`'s build job
+  actually runs the target repo's own lint/typecheck/build as a gate before opening a PR, or
+  relies on the agent choosing to do that because a prompt told it to — same
+  convention-not-guarantee pattern as the fact-verification point above. Check that repo's
+  own NOTES.md directly rather than assuming either way.
+
+What's already solid and worth keeping exactly as-is: PR-not-direct-push, admin-only auth
+on every route, write-once credential fields, GitHub App short-lived tokens over a PAT, and
+Archive being a manual, deliberate action instead of automatic on deploy.
