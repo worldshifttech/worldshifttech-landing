@@ -437,38 +437,81 @@ underneath it, not a report that something is currently broken:
   diff.** The `build_result` card shows a summary, a PR link, a preview link — nothing
   inline shows the actual diff. Nothing in the UI requires the extra hop to GitHub before
   the "Merge to Production" button is clickable. A one-line docs fix and a 500-line refactor
-  get identical UI friction.
+  get identical UI friction. **Resolved (Session 71):** a "View Diff" toggle on `build_result`
+  cards fetches and renders the actual PR diff inline, colored per line, via the same GitHub
+  App token pattern `[id]/merge` already used. Doesn't eliminate the need to actually read
+  it — see the next point — but removes the excuse that doing so meant leaving the dashboard.
 - **Fact-verification inside a build prompt is a convention the planning session chose to
   write in, not something the system enforces.** This test's own build prompt happened to
   tell the build session to re-derive a claimed number itself rather than trust the planning
   session's claim — good discipline, but nothing structural requires every build prompt to
   include a self-check like that. A differently-behaved planning session could assert
-  something false with the same confidence and nothing catches it before it merges.
+  something false with the same confidence and nothing catches it before it merges. **Still
+  open, and stays open** — this is the one risk on this list that doesn't fully go to Low
+  through tooling. Session 71's diff view (above) lowers the friction of catching it; it
+  doesn't remove the need for a human to actually read what's in front of them.
 - **Failure is silent by default**, and this already happened once for real: Session 65
   found `entos-group-website`'s scheduled automation dead for four days before anyone
   noticed. The fix that shipped (auto-fail anything stuck non-terminal for 3+ hours) cleans
   up the symptom, not the gap — a failed session today still just sits there with zero
   notification. `notify-slack` has a `file_upload` type and a `milestone_response` type;
-  there's no `session_failed` type.
+  there's no `session_failed` type. **Resolved (Session 71):** a `session_failed` type now
+  exists, fired fire-and-forget from `/api/orchestrator/session-result` whenever a session
+  reports `status: "failed"`. Confirmed this wasn't hypothetical while building the fix —
+  investigating `entos-group-website`'s real recent history found three build failures with
+  zero notification, one confirmed via GitHub Actions logs to have hit `terminal_reason:
+  "max_turns"` after 34.6 minutes and $8.97 in Sonnet spend, producing no PR. Deleted after
+  investigation per Drew's own request.
 - **No spend visibility anywhere in the dashboard.** Session 58's own README entry
   documents a real failure that burned real cost with no PR to show for it — that's only
   discoverable by reading NOTES.md after the fact. No running total, per-repo or
-  time-windowed, exists anywhere in `/admin`.
+  time-windowed, exists anywhere in `/admin`. **Still open** — not attempted in Session 71.
 - **Every repo gets identical trust regardless of what's actually at stake.**
   `entos-group-website` (real client work, `automation_enabled: true`, already dispatching
   unattended on a schedule) gets the exact same one-click merge flow as a personal test
   repo. The only risk gating that exists is whatever the agent itself decides to flag as a
-  `production_risk_flag` — self-assessed, not externally imposed.
+  `production_risk_flag` — self-assessed, not externally imposed. **Resolved (Session 71):**
+  a `repos.high_stakes` flag, a badge on the fleet list and on that repo's own review cards,
+  and one extra `window.confirm()` naming the repo before Merge to Production on a flagged
+  repo — same confirm pattern already used for Delete. Everything else about the flow stays
+  identical either way.
 - **Secrets are centralized in one place, which concentrates blast radius.** Every managed
   repo's target Supabase service-role key lives in this control plane's own database
   (write-only, never echoed back, which is the right call in isolation) — but it means one
   compromise of this database's service role exposes every managed repo's credentials at
-  once, not just one repo's.
-- **Unverified from this repo's side:** whether `wst-orchestrator-runner`'s build job
-  actually runs the target repo's own lint/typecheck/build as a gate before opening a PR, or
-  relies on the agent choosing to do that because a prompt told it to — same
-  convention-not-guarantee pattern as the fact-verification point above. Check that repo's
-  own NOTES.md directly rather than assuming either way.
+  once, not just one repo's. **Still open, architectural** — not something one session
+  builds away; worth monitoring, not fixing outright.
+- **Confirmed, not just unverified: `wst-orchestrator-runner`'s build job has no structural
+  lint/typecheck/build gate.** Read the actual workflow (`run-session.yml`) directly rather
+  than guessing — there is no CI step anywhere in it that runs the target repo's own quality
+  checks. The only enforcement is the build prompt instructing Claude to follow the target
+  repo's own Build Mode convention, which includes running those checks and reporting the
+  result. Empirically this has held up in every test this doc documents (both `NOTES.md`
+  Session 53/54 build prompts explicitly requested it and got real `npm run lint`/`npm run
+  build` output back in the PR description) — but that's because the prompt asked, not
+  because the workflow enforces it. Same convention-not-guarantee shape as the point above,
+  now confirmed rather than assumed. Not fixed here — would mean the runner's own job
+  running the checks itself as a hard gate, independent of what any given build prompt says.
+- **Good news, found while confirming the above, not degraded from optimism:** the
+  resume/checkpoint mechanism this doc previously described as unbuilt on the runner side
+  is actually fully wired as of today. `wst-orchestrator-runner`'s own Session 8 (landed
+  2026-08-09 07:00 UTC) fixed something more fundamental than the checkpoint itself — before
+  that session, a turn-limit cutoff silently discarded **100% of a session's work**, because
+  commits and the PR were deferred to one final step that a cutoff would never reach (a real
+  instance: 27 verified file edits, zero git history, all lost). The build prompt now commits
+  and pushes incrementally, and opens the PR after the *first* commit rather than the last —
+  a cutoff today loses at most the most recent increment, not the whole session. Session 9
+  (landed 2026-08-09 07:45 UTC, ~1.5 hours after the $8.97 max-turns failure investigated
+  above, which is why that specific failure's own `checkpoint` was null) adds the actual
+  checkpoint writer: `/tmp/checkpoint.json` at each stopping point
+  (`progress_status`/`narrative`/`remaining_work`, read back and sent on every
+  `session-result` POST regardless of final status) plus a "Format resume context" step that
+  composes prose for a resumed dispatch — including an explicit instruction to verify the
+  self-reported narrative against the branch's real commits rather than trust it blindly.
+  Structurally complete, end to end, on both sides of the control-plane/runner split. Its
+  own NOTES.md entry is honest about the caveat: "unverified against a real resumed dispatch
+  — that needs a real build to actually fail with a checkpoint on it first, which hasn't
+  happened yet." No build has failed since either fix landed to actually exercise it.
 
 What's already solid and worth keeping exactly as-is: PR-not-direct-push, admin-only auth
 on every route, write-once credential fields, GitHub App short-lived tokens over a PAT, and
