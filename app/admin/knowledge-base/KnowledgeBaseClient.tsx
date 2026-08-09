@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import SignOutButton from "@/app/components/SignOutButton";
+import AdminNav from "../AdminNav";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // Number of content/audit-knowledge/*.md files as of Session 55 — used only to decide
@@ -121,29 +119,7 @@ export default function KnowledgeBaseClient({ entries }: { entries: KnowledgeBas
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--color-offwhite, #F4F2EE)" }}>
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5">
-          <Link href="/">
-            <Image
-              src="/World_shift_tech_LOGO_PRIMARY.png"
-              alt="World Shift Technologies"
-              width={160}
-              height={38}
-              className="object-contain"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
-              &larr; Dashboard
-            </Link>
-            <Link href="/" className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors">
-              Back to Site
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+      <AdminNav active="knowledge-base" />
 
       <div className="flex flex-1 overflow-hidden">
         <aside

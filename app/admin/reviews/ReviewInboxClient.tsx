@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import SignOutButton from "@/app/components/SignOutButton";
+import AdminNav from "../AdminNav";
+import InfoTooltip from "../InfoTooltip";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -487,14 +486,17 @@ export function ReviewCard({
   function ArchiveControl() {
     if (item.status === "pending") return null;
     return (
-      <button
-        type="button"
-        onClick={item.status === "archived" ? handleUnarchive : handleArchive}
-        disabled={archiving}
-        className="text-xs font-medium text-[#76777A] hover:text-[#00205C] disabled:opacity-50 transition-colors"
-      >
-        {archiving ? "..." : item.status === "archived" ? "Unarchive" : "Archive"}
-      </button>
+      <span className="inline-flex items-center gap-1">
+        <button
+          type="button"
+          onClick={item.status === "archived" ? handleUnarchive : handleArchive}
+          disabled={archiving}
+          className="text-xs font-medium text-[#76777A] hover:text-[#00205C] disabled:opacity-50 transition-colors"
+        >
+          {archiving ? "..." : item.status === "archived" ? "Unarchive" : "Archive"}
+        </button>
+        <InfoTooltip text="Archive is manual and deliberate — mark this once you've actually confirmed the real thing behind it is live and working, not automatically on merge or deploy." />
+      </span>
     );
   }
 
@@ -554,6 +556,7 @@ export function ReviewCard({
           >
             {badge.label}
           </span>
+          <InfoTooltip text="A build session judged something it built as reusable and drafted this entry. Review and edit the fields, then Approve to actually add it to the knowledge base — nothing is written until you do." />
           <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
           <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
           <ArchiveControl />
@@ -632,7 +635,7 @@ export function ReviewCard({
             {kbApproveError && <p className="text-red-400 text-xs">{kbApproveError}</p>}
             {discardError && <p className="text-red-400 text-xs">{discardError}</p>}
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleApproveKbEntry}
                 disabled={kbApproving || discarding || !kbTitle.trim() || !kbDescription.trim()}
@@ -640,6 +643,7 @@ export function ReviewCard({
               >
                 {kbApproving ? "Adding..." : "Approve & Add to Knowledge Base"}
               </button>
+              <InfoTooltip text="Writes this as a real, permanent knowledge_base_entries row using whatever is currently in the fields above — your last edit wins, not the agent's original draft." />
               <button
                 onClick={() => handleDiscard("Discarded")}
                 disabled={kbApproving || discarding}
@@ -647,6 +651,7 @@ export function ReviewCard({
               >
                 {discarding ? "Discarding..." : "Discard"}
               </button>
+              <InfoTooltip text="Marks this card reviewed without adding anything to the knowledge base." />
             </div>
           </div>
         ) : (
@@ -670,6 +675,7 @@ export function ReviewCard({
           >
             {badge.label}
           </span>
+          <InfoTooltip text="A build session finished and opened a PR. Merge to Production squash-merges it to the target repo's main branch and triggers Vercel's auto-deploy — the one irreversible action in this whole flow." />
           <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
           <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
           <ArchiveControl />
@@ -737,7 +743,7 @@ export function ReviewCard({
           <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-3">
             {mergeError && <p className="text-red-400 text-xs">{mergeError}</p>}
             {discardError && <p className="text-red-400 text-xs">{discardError}</p>}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleMerge}
                 disabled={merging || discarding || !item.pr_url}
@@ -745,6 +751,7 @@ export function ReviewCard({
               >
                 {merging ? "Merging..." : "Merge to Production"}
               </button>
+              <InfoTooltip text="Squash-merges this PR to the target repo's main branch and triggers Vercel's normal auto-deploy. This is the one irreversible action anywhere in this inbox." />
               <button
                 onClick={() => handleDiscard("Discarded — not merged")}
                 disabled={merging || discarding}
@@ -752,6 +759,7 @@ export function ReviewCard({
               >
                 {discarding ? "Discarding..." : "Discard"}
               </button>
+              <InfoTooltip text="Marks this card reviewed without touching GitHub — the PR stays open, unmerged, for you to deal with by hand later if needed." />
             </div>
           </div>
         ) : (
@@ -771,6 +779,13 @@ export function ReviewCard({
         >
           {badge.label}
         </span>
+        <InfoTooltip
+          text={
+            item.kind === "production_risk_flag"
+              ? "The session flagged something risky before proceeding. Needs a decision, not open-ended answers."
+              : "A planning session's output — its summary, any open questions, and a build prompt once fully specified."
+          }
+        />
         <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
         <span className="text-[#76777A] text-xs">{item.session_type}</span>
         <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
@@ -890,8 +905,9 @@ export function ReviewCard({
 
           {item.kind === "consolidated_review" && item.proposed_content && item.repo_id && (
             <div className="border-t border-[#00205C]/[0.08] pt-4 space-y-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] flex items-center gap-1.5">
                 Build
+                <InfoTooltip text="Dispatches this card's own build prompt exactly as written and opens a pull request. Retry (after a failure) resumes from that session's last checkpoint automatically, when one exists." />
               </span>
               {buildDispatchError && <p className="text-red-400 text-xs">{buildDispatchError}</p>}
               {!item.linked_build ? (
@@ -1037,29 +1053,7 @@ export default function ReviewInboxClient({ initialItems }: { initialItems: Revi
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5">
-          <Link href="/">
-            <Image
-              src="/World_shift_tech_LOGO_PRIMARY.png"
-              alt="World Shift Technologies"
-              width={160}
-              height={38}
-              className="object-contain"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
-              &larr; Dashboard
-            </Link>
-            <Link href="/" className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors">
-              Back to Site
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+      <AdminNav active="reviews" />
 
       <main className="flex-1 px-6 py-16">
         <div className="w-full max-w-3xl mx-auto">

@@ -1,4 +1,69 @@
-﻿Last session: 68
+﻿Last session: 69
+
+## Recent Changes (Session 69, August 9, 2026)
+
+**Shared admin nav + in-app workflow guide**
+
+Planning session flagged two real gaps in the same sweep: every /admin/* page hand-coded
+its own <nav> with a different subset of links (/admin/repos/[id] and
+/admin/projects/[id] in particular only linked back to their own list — no way to reach
+Reviews, Knowledge Base, or Dashboard without a detour through the parent list first),
+and there was no in-app explanation of how the planning-to-build workflow actually
+operates anywhere but this file and README.md. Drew asked for both in one build: guide
+page + inline tooltips (recommended option over an interactive guided-tour library,
+given this is a single-user internal tool — the actual friction was "what does this
+button do before I click it," not "where do I find it," and a tour adds a real
+dependency for no matching benefit here). Client-facing /projects/[slug] deliberately
+untouched — CLAUDE.md is explicit that side stays founder-led and simple, not styled
+like a SaaS product with help chrome.
+
+**`app/admin/AdminNav.tsx`** (new) — one shared nav component replacing six
+independently hand-coded <nav> blocks (AdminDashboard, RepoFleetClient,
+RepoDetailClient, ReviewInboxClient, KnowledgeBaseClient, ProjectDetailClient). Always
+renders all five destinations (Dashboard, Repos, Reviews, Knowledge Base, Guide) plus
+Back to Site and Sign Out; an `active` prop highlights the current section. The two
+detail pages (RepoDetailClient, ProjectDetailClient) keep their own "← All Repos" /
+"← All Projects" breadcrumb, moved out of the nav bar to sit just above the page's own
+h1 instead — the point was adding the missing destinations, not removing the existing
+one.
+
+**`app/admin/InfoTooltip.tsx`** (new) — small "?" button, click (not hover — this
+dashboard gets used from a phone sometimes, and hover has no touch equivalent) toggles a
+positioned explanation bubble, closes on click-away or Escape. Dropped next to the
+controls actually worth explaining before a click, not sprinkled everywhere: Run
+Planning/Custom Build Session, Save as Draft (both instances), Automation enabled,
+Planning Interval, Pause All Automation, and on the review cards — every kind badge,
+the Build section header (covers both Run and Retry Build Session in one tooltip rather
+than duplicating it per button), Merge to Production, Discard (both instances, worded
+differently per kind), Approve & Add to Knowledge Base, and Archive/Unarchive (added
+once, inside the shared `ArchiveControl()` function, so all three card kinds get it for
+free). Deliberately skipped the Drift badge on RepoFleetClient — that whole repo row is
+itself a `<Link>` to the repo detail page, so a click-toggle button nested inside it
+would be invalid HTML and would fight the row's own navigation; kept its existing native
+`title` attribute instead, which already carries the exact SHA comparison.
+
+**`app/admin/guide/page.tsx`** (new, at `/admin/guide`) — static reference page, same
+admin-auth gate as every other /admin/* route, no data fetching. Covers the two session
+types, the full flow as a numbered list (dispatch planning → review card → answer →
+build → build result → merge or discard → archive once confirmed live), what each
+review card kind means, why Archive is manual and never automatic on merge or deploy,
+how the automation toggles and global pause switch relate to each other, and a short
+"what your client sees" section. Linked from AdminNav, not just floating with nothing
+pointing to it.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean; `/admin/guide` listed
+among the built routes alongside the other five admin pages). `npm run lint` shows the
+same 6 pre-existing errors this file's own recent sessions already flag as unrelated
+(`app/meet/page.tsx`, `FileUploads.tsx`, `MilestoneActionPanel.tsx`), confirmed none of
+this session's nine changed/new files appear anywhere in the lint output. Smoke-tested
+the auth gate locally (`npm run dev`, unauthenticated request to `/admin/guide`) —
+redirects cleanly to `/admin/login`, no server error. The actual nav/tooltip UI itself
+is unverified past that — every /admin/* route needs Drew's own login to see rendered,
+same constraint as any session that can't authenticate as him.
+
+No SQL this session — pure UI/content, nothing schema-related.
+
+---
 
 ## Recent Changes (Session 68, August 9, 2026)
 

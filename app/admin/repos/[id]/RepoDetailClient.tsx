@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabase";
-import SignOutButton from "@/app/components/SignOutButton";
+import AdminNav from "../../AdminNav";
+import InfoTooltip from "../../InfoTooltip";
 import { FRAMEWORK_OPTIONS, AUTH_OPTIONS, type ProjectOption } from "../RepoFleetClient";
 import { ReviewList, type ReviewItem } from "../../reviews/ReviewInboxClient";
 
@@ -495,30 +495,16 @@ export default function RepoDetailClient({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5">
-          <Link href="/">
-            <Image
-              src="/World_shift_tech_LOGO_PRIMARY.png"
-              alt="World Shift Technologies"
-              width={160}
-              height={38}
-              className="object-contain"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/admin/repos" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
-              &larr; All Repos
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+      <AdminNav active="repos" />
 
       <main className="flex-1 px-6 py-12">
         <div className="w-full max-w-3xl mx-auto space-y-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C]">{name || "Untitled Repo"}</h1>
+          <div>
+            <Link href="/admin/repos" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
+              &larr; All Repos
+            </Link>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] mt-1">{name || "Untitled Repo"}</h1>
+          </div>
 
           {/* Tabs */}
           <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10]">
@@ -669,11 +655,13 @@ export default function RepoDetailClient({
                   onChange={(e) => setAutomationEnabled(e.target.checked)}
                 />
                 Automation enabled (per-repo pause switch — the scheduler skips this repo when off)
+                <InfoTooltip text="Works together with Planning Interval below and the global Pause All Automation switch on the Repos fleet list — all three have to allow it before the scheduler dispatches anything here." />
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-[#76777A] mb-1.5">
                     Planning Interval (hours)
+                    <InfoTooltip text="How often the scheduler dispatches an automatic planning session for this repo, once Automation enabled is checked. Blank means it never runs on its own." />
                   </label>
                   <input
                     type="number"
@@ -890,8 +878,9 @@ export default function RepoDetailClient({
           {/* Run Planning Session */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] flex items-center gap-1.5">
                 Run Planning Session
+                <InfoTooltip text="Dispatches a read-only planning session against this repo. It explores, decides what it can on its own, and ends in one review card in the Reviews inbox — never writes or commits anything." />
               </span>
               {/* Dispatches against whichever repo's page this is — easy to miss when
                   several repo detail pages look identical. Made explicit here after a
@@ -934,6 +923,7 @@ export default function RepoDetailClient({
               >
                 {savingDraft ? "Saving..." : "Save as Draft"}
               </button>
+              <InfoTooltip text="Saves this brief as a draft you can load later, without dispatching it now." />
             </div>
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>
@@ -946,8 +936,9 @@ export default function RepoDetailClient({
               hand-split or otherwise edited build brief instead. */}
           <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block">
+              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] flex items-center gap-1.5">
                 Run Custom Build Session
+                <InfoTooltip text="Executes this prompt exactly as written and opens a pull request. Never pushes straight to main — nothing reaches production until you merge it from the Reviews inbox." />
               </span>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#00205C]/[0.06] text-[#00205C]">
                 Dispatching to: {repo.name}
@@ -991,6 +982,7 @@ export default function RepoDetailClient({
               >
                 {savingDraft ? "Saving..." : "Save as Draft"}
               </button>
+              <InfoTooltip text="Saves this brief as a draft you can load later, without dispatching it now." />
             </div>
             {!repo.github_app_installation_id && (
               <p className="text-[#76777A] text-xs">Set a GitHub App Installation ID above first.</p>

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabase";
-import SignOutButton from "@/app/components/SignOutButton";
+import AdminNav from "../../AdminNav";
 import FileUploads from "./FileUploads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -218,31 +217,17 @@ export default function ProjectDetailClient({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5">
-          <Link href="/">
-            <Image
-              src="/World_shift_tech_LOGO_PRIMARY.png"
-              alt="World Shift Technologies"
-              width={160}
-              height={38}
-              className="object-contain"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
-              &larr; All Projects
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+      <AdminNav active="dashboard" />
 
       <main className="flex-1 px-6 py-12">
         <div className="w-full max-w-3xl mx-auto space-y-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C]">{title || "Untitled Project"}</h1>
+            <div>
+              <Link href="/admin" className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors">
+                &larr; All Projects
+              </Link>
+              <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] mt-1">{title || "Untitled Project"}</h1>
+            </div>
             <div className="flex items-center gap-3">
               <a
                 href={clientUrl}

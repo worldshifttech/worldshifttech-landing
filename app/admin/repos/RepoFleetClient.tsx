@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import SignOutButton from "@/app/components/SignOutButton";
+import AdminNav from "../AdminNav";
+import InfoTooltip from "../InfoTooltip";
 import { getSupabaseBrowser } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -191,37 +191,7 @@ export default function RepoFleetClient({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-sm border-b border-[#00205C]/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-5">
-          <Link href="/">
-            <Image
-              src="/World_shift_tech_LOGO_PRIMARY.png"
-              alt="World Shift Technologies"
-              width={160}
-              height={38}
-              className="object-contain"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/admin"
-              className="text-sm text-[#4B858E] hover:text-[#00205C] transition-colors"
-              style={{ fontFamily: "var(--font-poppins)" }}
-            >
-              &larr; Dashboard
-            </Link>
-            <Link
-              href="/"
-              className="text-sm text-[#76777A] hover:text-[#00205C] transition-colors"
-              style={{ fontFamily: "var(--font-poppins)" }}
-            >
-              Back to Site
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-      </nav>
+      <AdminNav active="repos" />
 
       {/* Main */}
       <main className="flex-1 px-6 py-16">
@@ -244,10 +214,11 @@ export default function RepoFleetClient({
           >
             <div>
               <p
-                className="text-sm font-semibold text-[#00205C]"
+                className="text-sm font-semibold text-[#00205C] flex items-center gap-1.5"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 {automationPaused ? "Automation paused sitewide" : "Automation running"}
+                <InfoTooltip text="This is the global kill switch — it overrides every repo's own Automation enabled toggle at once. A repo also needs its own toggle on and a Planning Interval set before the scheduler will touch it." />
               </p>
               <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
                 {automationPaused
