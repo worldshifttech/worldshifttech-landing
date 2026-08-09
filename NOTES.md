@@ -121,6 +121,101 @@ No SQL this session — neither fix touched the schema.
 
 ---
 
+## Recent Changes (Session 73, August 9, 2026)
+
+**Client-facing tool naming + a real "Open Items" surface on the client portal**
+
+Prompted by retiring ENTOS's standalone Open Items site — Drew needs a working, discoverable
+link he can hand ENTOS that shows their open items and milestones, and lets them submit
+feedback that actually gets processed. The repo<->client-project link and the client portal
+itself (`/projects/[slug]`) already existed from Sessions 51/57/60/64, but investigating
+turned up two real gaps standing in the way, not hypothetical ones:
+
+**Gap 1 — the repo<->client link was invisible outside a repo's own Settings tab.** Neither
+the dashboard's project list nor the repo fleet list showed which repos belong to which
+client at a glance; both forced a detour into a repo's own Settings tab to find the link at
+all. Fixed by surfacing it both directions: `app/admin/repos/page.tsx` builds a
+`Record<string, ProjectOption>` keyed by id from its existing `projects` query (this data was
+already being fetched and passed to `RepoFleetClient` as a prop since Session 57, just never
+destructured or used); `RepoFleetClient.tsx` now renders a small badge next to the repo name
+whenever `client_project_id` resolves to a real project — the linked project's title plus an
+"Open Portal" link straight to `/projects/{slug}` in a new tab. `app/admin/page.tsx` gained a
+second query (`repos` where `client_project_id is not null`), grouped in JS into
+`Record<string, {id, label}[]>` keyed by `client_project_id`; `AdminDashboard.tsx` renders a
+chip per linked repo under each project row's client-name line, linking back to that repo's
+own admin detail page. Rows with no linked repo render byte-identical to before.
+
+**`repos.client_facing_name`** (new column, migration below) is the label threaded through
+both of the above: what to call a repo to the client (e.g. "ENTOS Open Items"), distinct from
+the internal `name` Drew uses for his own identification. Editable on the repo's own Settings
+tab (`RepoDetailClient.tsx`, right above "Linked Client Project"), falls back to `name`
+wherever it's shown, accepted by the existing `/api/admin-repos/[id]` PATCH the same way
+`system_group` already was. Admin-side display only for now — deliberately not threaded into
+the client-facing portal's own page heading, see the explicit call-out below.
+
+**Gap 2 — no general, non-milestone-scoped feedback surface for the client at all.** The
+client-facing portal only ever supported feedback scoped to a specific milestone already
+marked `action_owner: 'client'` (`MilestoneActionPanel.tsx`, Session 64) — there was no place
+for a client to raise or track an open item that wasn't tied to one of those specific
+milestone requests. This is the actual thing that was standing between this portal and being
+a real replacement for ENTOS's external site, not the link-visibility gap above (that one was
+just friction for Drew, this one was a missing feature for the client). Fixed with a new
+**`app/projects/[slug]/OpenItems.tsx`**, rendered as its own section between Milestones and
+the existing `FileUploads` block: (a) a list of feedback rows with `status != 'resolved'`
+(message, relative date, and the linked milestone's title or "General" when `milestone_id` is
+null), each with a status badge; the resolved-items exclusion is a single commented filter
+line (`items.filter((i) => i.status !== "resolved")`) so it's a one-line change if Drew wants
+resolved items shown too. (b) a general submission form, always visible regardless of any
+milestone's `action_owner` state, posting to the existing `/api/project-feedback` with
+`milestoneId: null` — that route already accepted a null `milestoneId`, no changes needed
+there. Same explicit Turnstile-render-in-`useEffect` pattern as `FileUploads.tsx` and
+`MilestoneActionPanel.tsx`, with its own widget id (`cf-widget-open-items`) so it doesn't
+collide with either of those on the same page. `app/projects/[slug]/page.tsx` fetches
+`project_feedback` with a plain `select("*")` plus a JS-side map against the `milestones`
+array it already fetches (rather than a second `project_milestones(title)` embed) —
+deliberately avoiding one more PostgREST relationship that could go ambiguous later, the exact
+failure mode Session 67 already hit once on this same pair of tables.
+
+**Explicitly flagged, not assumed already done:** `client_facing_name` is not yet threaded
+into the client-facing portal's own page title. `/projects/[slug]` only ever queries
+`projects` directly (`.from("projects").select("*").eq("slug", slug)`) — there's no join back
+to `repos` from a slug alone, and building one for a single display-label lookup wasn't worth
+it this session. The portal's own heading still reads `project.client_name` / `project.title`
+exactly as before. Follow-up if Drew wants the client-facing heading itself to reflect the
+tool name.
+
+**Still an open manual step, not part of this build:** `entos-group-website`'s
+`repos.client_project_id` is still null as of Session 51's last check — actually linking it to
+a real project (new, or the existing ambiguous "Client Onboarding" one) and setting its
+`client_facing_name` is a data decision for Drew to make via the now-visible UI, not something
+this session should decide on his behalf.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean — `node_modules` had to be
+installed first in this CI environment, same as prior sessions; `/admin`, `/admin/repos`,
+`/admin/repos/[id]`, and `/projects/[slug]` all listed among the built routes). `npm run lint`
+shows the same pre-existing errors already flagged as unrelated in earlier sessions'
+own NOTES entries (`app/meet/page.tsx`, `FileUploads.tsx`, `MilestoneActionPanel.tsx`, one
+`react/no-unescaped-entities` in `app/admin/spend/page.tsx` from Session 72) plus two new
+`@typescript-eslint/no-explicit-any` entries in the new `OpenItems.tsx` — from the exact same
+`(window as any).turnstile` cast those other files already use, matching the established
+convention for calling Cloudflare Turnstile's untyped global rather than introducing a new
+pattern.
+
+**Needs Drew:** run this session's SQL migration in Supabase, then set a `client_facing_name`
+and confirm a real `client_project_id` link on at least one repo, and separately submit a real
+general (non-milestone) open item from a live client portal page and confirm it shows up in
+this session's own list view and the existing Slack `milestone_response` ping fires (that
+ping already handles `milestoneTitle: null` gracefully). Unverified end-to-end past a clean
+build, same caveat as most sessions in this file.
+
+**SQL to run:**
+```sql
+-- MIGRATION: repos.client_facing_name (Session 73)
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS client_facing_name text;
+```
+
+---
+
 ## Recent Changes (Session 72, August 9, 2026)
 
 **Spend visibility — the last two open items from `ORCHESTRATOR_DESIGN.md` §11**

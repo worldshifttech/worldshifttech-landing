@@ -27,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     framework_type?: string;
     auth_convention?: string;
     system_group?: string | null;
+    client_facing_name?: string | null;
     client_project_id?: string | null;
     automation_enabled?: boolean;
     planning_interval_hours?: number | null;
@@ -45,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     framework_type: body.framework_type || "other",
     auth_convention: body.auth_convention || "none",
     system_group: body.system_group || null,
+    client_facing_name: body.client_facing_name || null,
     client_project_id: body.client_project_id || null,
     automation_enabled: Boolean(body.automation_enabled),
     planning_interval_hours: body.planning_interval_hours || null,

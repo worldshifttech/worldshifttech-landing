@@ -221,6 +221,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
         github_head_sha: repo.github_head_sha ?? null,
         drift_checked_at: repo.drift_checked_at ?? null,
         system_group: repo.system_group ?? null,
+        client_facing_name: repo.client_facing_name ?? null,
         high_stakes: Boolean(repo.high_stakes),
       }}
       projects={projects}
