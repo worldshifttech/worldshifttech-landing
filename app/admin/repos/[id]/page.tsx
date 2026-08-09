@@ -76,11 +76,21 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
   // This repo's own review items, scoped via !inner so .eq() on the joined table's
   // column actually filters rather than just shaping which nested rows come back. Same
   // shape as app/admin/reviews/page.tsx's global query, just narrowed to one repo_id.
-  const { data: rawReviewRows } = await serviceClient
+  // FK explicitly hinted (review_items_session_id_fkey) — Session 65 added a second FK
+  // between these two tables (agent_sessions.source_review_item_id, for linked-build
+  // tracking), so an unhinted embed is now ambiguous and PostgREST errors on it. That
+  // error was never checked here, so it silently rendered as an empty review list
+  // instead of a visible failure — confirmed live (Drew hard-refreshed and still saw
+  // "Nothing to review" for a repo with a real, freshly-answered review). See NOTES.md.
+  const { data: rawReviewRows, error: reviewRowsError } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions!inner(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
+    .select("*, agent_sessions!review_items_session_id_fkey!inner(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
     .eq("agent_sessions.repo_id", id)
     .order("created_at", { ascending: false });
+
+  if (reviewRowsError) {
+    console.error("[admin/repos/[id]] review_items query failed:", reviewRowsError.message);
+  }
 
   const reviewRows = (rawReviewRows ?? []) as unknown as RawReviewRow[];
 

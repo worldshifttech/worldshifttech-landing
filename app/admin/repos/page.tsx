@@ -38,10 +38,18 @@ export default async function AdminReposPage() {
   // and aggregated in JS rather than a SQL group-by — no RPC/view exists for this yet,
   // and at the fleet's current size a full pending-items scan is cheap. See NOTES.md
   // Session 51.
-  const { data: rawPendingReviews } = await serviceClient
+  // FK explicitly hinted (review_items_session_id_fkey) — Session 65 added a second FK
+  // between these two tables (agent_sessions.source_review_item_id, for linked-build
+  // tracking), so an unhinted embed is now ambiguous and PostgREST errors on it. Same bug
+  // as app/admin/reviews/page.tsx — see that file's comment and NOTES.md.
+  const { data: rawPendingReviews, error: rawPendingReviewsError } = await serviceClient
     .from("review_items")
-    .select("agent_sessions!inner(repo_id)")
+    .select("agent_sessions!review_items_session_id_fkey!inner(repo_id)")
     .eq("status", "pending");
+
+  if (rawPendingReviewsError) {
+    console.error("[admin/repos] open-reviews count query failed:", rawPendingReviewsError.message);
+  }
 
   const openReviewCounts: Record<string, number> = {};
   for (const row of (rawPendingReviews ?? []) as unknown as { agent_sessions: { repo_id: string } | null }[]) {

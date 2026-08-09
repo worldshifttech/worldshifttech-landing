@@ -1,4 +1,42 @@
-﻿Last session: 66
+﻿Last session: 67
+
+## Recent Changes (Session 67, August 8, 2026)
+
+**Fix: reviews silently disappeared — an unhinted PostgREST embed became ambiguous**
+
+Real production bug, caught live: Drew answered a real, freshly-verified review card
+(entos-group-website's "Session 19" sitewide orphan sweep), refreshed
+`/admin/repos/[id]`, and both Pending and Answered showed 0 — even after a hard refresh.
+Confirmed via direct query that the row itself was correct (`status: 'answered'`, linked
+to the right repo) — the bug was entirely in how the page read it back.
+
+**Root cause:** Session 65's "persist build-dispatch status" feature added a second
+foreign key between `review_items` and `agent_sessions`
+(`agent_sessions.source_review_item_id`, for linked-build tracking) alongside the
+original `review_items.session_id`. Three queries across the admin UI embedded
+`agent_sessions` from `review_items` **without specifying which relationship to use** —
+valid and unambiguous before that second FK existed, silently broken the moment it
+landed, since PostgREST can no longer infer a single answer. None of the three checked
+the query's `error` field, so a real failure just rendered as an empty list — "nothing to
+review" looked identical to "actually nothing to review."
+
+**Every affected call site, found by grepping for the pattern rather than assuming there
+was only one:**
+- `app/admin/repos/[id]/page.tsx` — the one Drew actually hit.
+- `app/admin/reviews/page.tsx` — the *global* inbox, likely also silently empty.
+- `app/admin/repos/page.tsx` — the fleet list's open-reviews badge count.
+
+**Fix:** all three now specify the FK explicitly
+(`agent_sessions!review_items_session_id_fkey`, confirmed against the live REST API
+before editing any code — tested both modifier orderings with `!inner`, both work) and
+log a real error to the server console if the query ever fails again, so a future
+regression is loud instead of silently indistinguishable from an empty state.
+
+Verified: `npx tsc --noEmit` and `npm run build` (both clean), and the exact fixed query
+re-run directly against the live database — confirmed it now returns both of
+entos-group-website's real review rows, including the one that had gone missing.
+
+---
 
 ## Recent Changes (Session 66, August 8, 2026)
 

@@ -50,10 +50,18 @@ export default async function AdminReviewsPage() {
 
   const serviceClient = getSupabase();
 
-  const { data: rawRows } = await serviceClient
+  // FK explicitly hinted (review_items_session_id_fkey) — Session 65 added a second FK
+  // between these two tables (agent_sessions.source_review_item_id, for linked-build
+  // tracking), so an unhinted embed is now ambiguous and PostgREST errors on it. Same bug
+  // as app/admin/repos/[id]/page.tsx — see that file's comment and NOTES.md.
+  const { data: rawRows, error: rawRowsError } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
+    .select("*, agent_sessions!review_items_session_id_fkey(repo_id, session_type, pr_url, pr_preview_url, repos(name))")
     .order("created_at", { ascending: false });
+
+  if (rawRowsError) {
+    console.error("[admin/reviews] review_items query failed:", rawRowsError.message);
+  }
 
   const rows = (rawRows ?? []) as unknown as RawReviewRow[];
 
