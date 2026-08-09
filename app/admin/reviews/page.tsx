@@ -18,6 +18,7 @@ type RawReviewRow = {
   status: string;
   created_at: string;
   answered_at: string | null;
+  archived_at: string | null;
   agent_sessions: {
     repo_id: string;
     session_type: string;
@@ -72,26 +73,57 @@ export default async function AdminReviewsPage() {
 
   const linkedBuildBySourceId = new Map<
     string,
-    { id: string; status: string; pr_url: string | null; pr_preview_url: string | null }
+    {
+      id: string;
+      status: string;
+      pr_url: string | null;
+      pr_preview_url: string | null;
+      checkpoint_progress_status: string | null;
+      consecutive_stuck_count: number;
+    }
   >();
 
   if (consolidatedReviewIds.length > 0) {
     const { data: linkedBuildRows } = await serviceClient
       .from("agent_sessions")
-      .select("id, status, pr_url, pr_preview_url, source_review_item_id, created_at")
+      .select("id, status, pr_url, pr_preview_url, checkpoint, source_review_item_id, created_at")
       .in("source_review_item_id", consolidatedReviewIds)
       .order("created_at", { ascending: false });
 
+    // Session 68 — group newest-first rows by source review item, rather than keeping only
+    // the single most-recent one (Session 66's original shape). Still surfaces just the
+    // latest build's own status/links, but now also walks back through the group to count
+    // how many times in a row it's failed while self-reporting stuck/blocked, so a Retry
+    // click can be an informed decision. See NOTES.md.
+    const rowsBySourceId = new Map<string, typeof linkedBuildRows>();
     for (const row of linkedBuildRows ?? []) {
       const sourceId = row.source_review_item_id as string;
-      if (!linkedBuildBySourceId.has(sourceId)) {
-        linkedBuildBySourceId.set(sourceId, {
-          id: row.id as string,
-          status: row.status as string,
-          pr_url: (row.pr_url as string | null) ?? null,
-          pr_preview_url: (row.pr_preview_url as string | null) ?? null,
-        });
+      if (!rowsBySourceId.has(sourceId)) rowsBySourceId.set(sourceId, []);
+      rowsBySourceId.get(sourceId)!.push(row);
+    }
+
+    for (const [sourceId, group] of rowsBySourceId) {
+      const newest = group![0];
+      const checkpoint = newest.checkpoint as { progress_status?: string } | null;
+
+      let consecutiveStuckCount = 0;
+      for (const row of group!) {
+        const rowCheckpoint = row.checkpoint as { progress_status?: string } | null;
+        if (row.status === "failed" && (rowCheckpoint?.progress_status === "stuck" || rowCheckpoint?.progress_status === "blocked")) {
+          consecutiveStuckCount++;
+        } else {
+          break;
+        }
       }
+
+      linkedBuildBySourceId.set(sourceId, {
+        id: newest.id as string,
+        status: newest.status as string,
+        pr_url: (newest.pr_url as string | null) ?? null,
+        pr_preview_url: (newest.pr_preview_url as string | null) ?? null,
+        checkpoint_progress_status: checkpoint?.progress_status ?? null,
+        consecutive_stuck_count: consecutiveStuckCount,
+      });
     }
   }
 
@@ -109,6 +141,7 @@ export default async function AdminReviewsPage() {
     drew_response: r.drew_response,
     status: r.status as ReviewItem["status"],
     created_at: r.created_at,
+    archived_at: r.archived_at ?? null,
     repo_id: r.agent_sessions?.repo_id ?? null,
     repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
     session_type: r.agent_sessions?.session_type ?? "planning",

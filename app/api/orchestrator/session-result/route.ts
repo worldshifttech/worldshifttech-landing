@@ -43,10 +43,26 @@ export async function POST(req: NextRequest) {
     merged_commit_sha?: string;
     github_run_id?: number;
     review?: ReviewInput;
+    // Session 68 — a build session's own self-reported progress, written by
+    // wst-orchestrator-runner (its own Session 9) at logical stopping points and sent
+    // regardless of final status (done or failed) — a session that finished cleanly just
+    // has an unused checkpoint sitting on its row. Stored as-is, no shape validation here;
+    // lib/orchestrator-dispatch.ts reads individual fields defensively when building a
+    // follow-up dispatch's resume_context.
+    checkpoint?: { progress_status?: string; narrative?: string; remaining_work?: string };
   };
 
-  const { session_id, status, build_prompt, pr_url, pr_preview_url, merged_commit_sha, github_run_id, review } =
-    body;
+  const {
+    session_id,
+    status,
+    build_prompt,
+    pr_url,
+    pr_preview_url,
+    merged_commit_sha,
+    github_run_id,
+    review,
+    checkpoint,
+  } = body;
 
   if (!session_id || !status) {
     return NextResponse.json({ error: "session_id and status are required" }, { status: 400 });
@@ -63,6 +79,7 @@ export async function POST(req: NextRequest) {
   if (typeof pr_preview_url === "string") sessionUpdate.pr_preview_url = pr_preview_url;
   if (typeof merged_commit_sha === "string") sessionUpdate.merged_commit_sha = merged_commit_sha;
   if (typeof github_run_id === "number") sessionUpdate.github_run_id = github_run_id;
+  if (checkpoint && typeof checkpoint === "object") sessionUpdate.checkpoint = checkpoint;
   if (status === "done" || status === "failed") sessionUpdate.completed_at = new Date().toISOString();
 
   const { error: updateError } = await supabase.from("agent_sessions").update(sessionUpdate).eq("id", session_id);

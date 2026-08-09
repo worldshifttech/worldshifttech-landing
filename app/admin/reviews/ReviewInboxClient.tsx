@@ -30,14 +30,26 @@ export type ReviewItem = {
   proposed_content: string | null;
   kb_draft: KbDraft | null;
   drew_response: string | null;
-  status: "pending" | "answered";
+  status: "pending" | "answered" | "archived";
   created_at: string;
+  archived_at: string | null;
   repo_id: string | null;
   repo_name: string;
   session_type: string;
   pr_url: string | null;
   pr_preview_url: string | null;
-  linked_build: { id: string; status: string; pr_url: string | null; pr_preview_url: string | null } | null;
+  linked_build: {
+    id: string;
+    status: string;
+    pr_url: string | null;
+    pr_preview_url: string | null;
+    // Session 68 — the build's own last self-reported checkpoint (null until
+    // wst-orchestrator-runner's Session 9 starts writing one) and how many times in a row
+    // it's failed while reporting "stuck"/"blocked", so a retry click can be an informed
+    // decision rather than a blind third attempt. See NOTES.md.
+    checkpoint_progress_status: string | null;
+    consecutive_stuck_count: number;
+  } | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -135,6 +147,8 @@ export function ReviewCard({
   const [mergeError, setMergeError] = useState("");
   const [discarding, setDiscarding] = useState(false);
   const [discardError, setDiscardError] = useState("");
+  const [archiving, setArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState("");
   const [kbTitle, setKbTitle] = useState(item.kb_draft?.title ?? "");
   const [kbProblemSolved, setKbProblemSolved] = useState(item.kb_draft?.problem_solved ?? "");
   const [kbDescription, setKbDescription] = useState(item.proposed_content ?? "");
@@ -217,8 +231,17 @@ export function ReviewCard({
   // the first UI path that can reach session_type: "build" at all. Confirmation state is
   // local only (not persisted), so a page refresh re-shows the button; no double-dispatch
   // guard, this is a manual click Drew controls. See NOTES.md Session 50.
+  //
+  // Also the "Retry Build Session" handler (same function, see the failed-status render
+  // branch below) — when retrying a failed linked build, auto-resume is transparent: no
+  // separate button, no confirmation dialog. dispatchOrchestratorSession() itself decides
+  // whether there's anything to actually resume from (the prior session may have failed
+  // before ever writing a checkpoint), so this always just points at it when retrying.
+  // See NOTES.md Session 68.
   async function handleRunBuildSession() {
     if (!item.repo_id || !item.proposed_content) return;
+
+    const isRetry = item.linked_build?.status === "failed";
 
     setBuildDispatching(true);
     setBuildDispatchError("");
@@ -241,6 +264,7 @@ export function ReviewCard({
           session_type: "build",
           brief: item.proposed_content,
           source_review_item_id: item.id,
+          ...(isRetry ? { resume_from_session_id: item.linked_build!.id } : {}),
         }),
       });
 
@@ -251,7 +275,14 @@ export function ReviewCard({
       }
 
       onAnswered(item.id, {
-        linked_build: { id: data.session_id, status: "running", pr_url: null, pr_preview_url: null },
+        linked_build: {
+          id: data.session_id,
+          status: "running",
+          pr_url: null,
+          pr_preview_url: null,
+          checkpoint_progress_status: null,
+          consecutive_stuck_count: 0,
+        },
       });
     } catch {
       setBuildDispatchError("Something went wrong. Please try again.");
@@ -378,6 +409,95 @@ export function ReviewCard({
     }
   }
 
+  // Manual archive/unarchive — Drew's own confirmation that whatever an answered card
+  // represents is actually live and working (or a reversal of that). Deliberately not tied
+  // to any deploy-succeeded signal; see NOTES.md Session 68 for why. Shared by every kind
+  // via the header row below rather than duplicated per render branch.
+  async function handleArchive() {
+    setArchiving(true);
+    setArchiveError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: "archived" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setArchiveError(data.error ?? "Failed to archive");
+        return;
+      }
+
+      onAnswered(item.id, { status: "archived", archived_at: new Date().toISOString() });
+    } catch {
+      setArchiveError("Something went wrong. Please try again.");
+    } finally {
+      setArchiving(false);
+    }
+  }
+
+  async function handleUnarchive() {
+    setArchiving(true);
+    setArchiveError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: "answered" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setArchiveError(data.error ?? "Failed to unarchive");
+        return;
+      }
+
+      onAnswered(item.id, { status: "answered" });
+    } catch {
+      setArchiveError("Something went wrong. Please try again.");
+    } finally {
+      setArchiving(false);
+    }
+  }
+
+  // Small shared control rendered in every card's header row (see the three spots below).
+  // Only relevant once a card has left "pending" — archiving a still-open question makes no
+  // sense.
+  function ArchiveControl() {
+    if (item.status === "pending") return null;
+    return (
+      <button
+        type="button"
+        onClick={item.status === "archived" ? handleUnarchive : handleArchive}
+        disabled={archiving}
+        className="text-xs font-medium text-[#76777A] hover:text-[#00205C] disabled:opacity-50 transition-colors"
+      >
+        {archiving ? "..." : item.status === "archived" ? "Unarchive" : "Archive"}
+      </button>
+    );
+  }
+
   // Promotes this draft into a real, permanent, embedded knowledge_base_entries row.
   // Sends whatever's currently in the (always-editable) fields below, not a re-read of
   // the original agent-drafted values — Drew's last edit wins. See NOTES.md Session 55.
@@ -436,6 +556,7 @@ export function ReviewCard({
           </span>
           <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
           <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+          <ArchiveControl />
           <button
             type="button"
             onClick={handleDelete}
@@ -447,6 +568,7 @@ export function ReviewCard({
         </div>
 
         {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
+        {archiveError && <p className="text-red-400 text-xs">{archiveError}</p>}
 
         <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
@@ -550,6 +672,7 @@ export function ReviewCard({
           </span>
           <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
           <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+          <ArchiveControl />
           <button
             type="button"
             onClick={handleDelete}
@@ -561,6 +684,7 @@ export function ReviewCard({
         </div>
 
         {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
+        {archiveError && <p className="text-red-400 text-xs">{archiveError}</p>}
 
         <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
@@ -650,6 +774,7 @@ export function ReviewCard({
         <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
         <span className="text-[#76777A] text-xs">{item.session_type}</span>
         <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
+        <ArchiveControl />
         <button
           type="button"
           onClick={handleDelete}
@@ -661,6 +786,7 @@ export function ReviewCard({
       </div>
 
       {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
+      {archiveError && <p className="text-red-400 text-xs">{archiveError}</p>}
 
       <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
 
@@ -778,7 +904,17 @@ export function ReviewCard({
                 </button>
               ) : item.linked_build.status === "failed" ? (
                 <>
-                  <p className="text-red-400 text-sm">Build session failed. Check this repo&apos;s Actions tab for details.</p>
+                  <p className="text-red-400 text-sm">
+                    Build session failed. Check this repo&apos;s Actions tab for details.
+                    {item.linked_build.checkpoint_progress_status &&
+                      ` Last attempt reported: ${item.linked_build.checkpoint_progress_status}.`}
+                  </p>
+                  {item.linked_build.consecutive_stuck_count >= 2 && (
+                    <p className="text-orange-500 text-sm">
+                      This session has failed and reported being stuck {item.linked_build.consecutive_stuck_count}{" "}
+                      times in a row. Consider rewriting the brief before retrying.
+                    </p>
+                  )}
                   <button
                     onClick={handleRunBuildSession}
                     disabled={buildDispatching}
@@ -840,7 +976,7 @@ export function ReviewList({
   emptyAnsweredLabel?: string;
 }) {
   const [items, setItems] = useState<ReviewItem[]>(initialItems);
-  const [activeTab, setActiveTab] = useState<"pending" | "answered">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "answered" | "archived">("pending");
 
   function handleAnswered(id: string, updated: Partial<ReviewItem>) {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...updated } : it)));
@@ -852,13 +988,17 @@ export function ReviewList({
 
   const pending = items.filter((i) => i.status === "pending");
   const answered = items.filter((i) => i.status === "answered");
-  const visible = activeTab === "pending" ? pending : answered;
+  // Session 68 — a manual, third status. Answered no longer accumulates everything ever
+  // answered forever; Drew archives a card once he's personally confirmed the real thing
+  // behind it is actually live and working. See NOTES.md.
+  const archived = items.filter((i) => i.status === "archived");
+  const visible = activeTab === "pending" ? pending : activeTab === "answered" ? answered : archived;
 
   return (
     <div>
       <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10] mb-6">
-        {(["pending", "answered"] as const).map((tab) => {
-          const count = tab === "pending" ? pending.length : answered.length;
+        {(["pending", "answered", "archived"] as const).map((tab) => {
+          const count = tab === "pending" ? pending.length : tab === "answered" ? answered.length : archived.length;
           const isActive = activeTab === tab;
           return (
             <button
@@ -878,7 +1018,7 @@ export function ReviewList({
 
       {visible.length === 0 ? (
         <p className="text-[#00205C] text-sm">
-          {activeTab === "pending" ? emptyPendingLabel : emptyAnsweredLabel}
+          {activeTab === "pending" ? emptyPendingLabel : activeTab === "answered" ? emptyAnsweredLabel : "Nothing archived yet."}
         </p>
       ) : (
         <div className="space-y-4">

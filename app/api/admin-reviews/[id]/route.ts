@@ -28,14 +28,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     open_questions?: OpenQuestionInput[];
     drew_response?: string;
     proposed_content?: string;
+    // Session 68 — the manual archive state. Anything other than "archived" (including
+    // absent, every pre-existing caller's shape) keeps today's only behavior. Archiving
+    // stamps archived_at and leaves answered_at untouched; un-archiving (status: "answered"
+    // sent explicitly on an already-archived card) re-stamps answered_at, same as any other
+    // answer — harmless, just reads as "last touched" rather than "originally answered".
+    status?: "answered" | "archived";
   };
 
   const supabase = getSupabase();
 
-  const updateFields: Record<string, unknown> = {
-    status: "answered",
-    answered_at: new Date().toISOString(),
-  };
+  const updateFields: Record<string, unknown> =
+    body.status === "archived"
+      ? { status: "archived", archived_at: new Date().toISOString() }
+      : { status: "answered", answered_at: new Date().toISOString() };
 
   if (Array.isArray(body.open_questions)) {
     updateFields.open_questions = body.open_questions;

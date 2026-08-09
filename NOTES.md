@@ -1,6 +1,83 @@
-﻿Last session: 67
+﻿Last session: 68
 
-## Next session pointer — read this first, Planning Mode starts here
+## Recent Changes (Session 68, August 9, 2026)
+
+**Manual Archive state for review_items + control-plane half of build-session resume**
+
+Planning session, both items from the prior "Next session pointer" (below this entry's
+own history, since it's now resolved) — see that record for the original asks in full.
+Drew's own answers to the open judgment calls, asked live rather than guessed at: build
+both in one planning pass (two build prompts, one per repo); once a failed build has a
+stored checkpoint, "Retry Build Session" auto-resumes transparently, no new button; the
+new Archive control is available on every answered card regardless of kind, not just
+build-linked ones; and the flagged "cost- or progress-based ceiling" tangent should be
+folded in now rather than deferred.
+
+**Archive.** `review_items.archived_at` (new, nullable timestamptz, mirrors
+`answered_at`). `/api/admin-reviews/[id]` PATCH gains an optional `status?: "answered" |
+"archived"` in the body — anything else (including every pre-existing caller that never
+sends it) keeps today's only behavior. `ReviewInboxClient.tsx` gained a single shared
+`ArchiveControl` rendered in each card's header row (not duplicated into the three
+separate per-kind render branches) so every kind gets Archive/Unarchive, not just
+build-linked cards. `ReviewList` is now a three-way Pending/Answered/Archived tab set —
+Answered no longer accumulates everything ever answered forever.
+
+**Resume mechanism, control-plane half (the runner-side checkpoint writer is a separate
+`wst-orchestrator-runner` session — Session 9, not yet run as of this entry).**
+`agent_sessions.checkpoint` (new, nullable jsonb): `{ progress_status: "on_track" |
+"stuck" | "blocked", narrative, remaining_work }`, self-reported by a build session at
+logical stopping points. `/api/orchestrator/session-result` accepts it as an optional
+field, stored regardless of final status. `dispatchOrchestratorSession()`
+(`lib/orchestrator-dispatch.ts`) gains an optional `resumeFromSessionId` — when set,
+looks up that prior session's `pr_url` + `checkpoint` (scoped to the same `repo_id`, fails
+open to `resume_context: null` on any mismatch or lookup error) and threads it into the
+dispatch's `client_payload.resume_context`, replacing the hardcoded `null` that field has
+carried since it was first added. `/api/orchestrator/dispatch` and
+`ReviewInboxClient.tsx`'s `handleRunBuildSession` thread `resume_from_session_id` through
+automatically on a retry (`item.linked_build.id`) — same button, same click, no new UI.
+
+**The ceiling tangent, folded in as its realistic version rather than a literal live cost
+meter** (a true mid-run kill switch isn't buildable — `claude-code-action` has no
+mid-run cost telemetry hook, cost is only known once the process exits): `--max-turns`
+stays at 120, unchanged. What actually resolves the underlying concern is the resume
+mechanism itself — a genuinely large task now safely spans multiple resumed dispatches
+instead of needing a bigger guessed ceiling, and `checkpoint.progress_status` gives a
+stuck/looping session a way to self-report instead of silently burning another 120 turns
+on a blind retry. Concretely: `page.tsx` (both `admin/reviews` and `admin/repos/[id]`)
+now widens its `linked_build` map to walk each source review item's build-session history
+newest-first and count a `consecutive_stuck_count` (consecutive `failed` +
+`stuck`/`blocked` runs); `ReviewInboxClient.tsx` surfaces `checkpoint_progress_status` on
+a failed build and a non-blocking warning once that streak reaches 2 — informational only,
+Retry still works, Drew stays the one deciding whether to keep going.
+
+**Explicitly deferred, not built here:** the planning job gets no checkpoint/resume
+round-trip — it already runs read-only to one atomic JSON output in ≤30 turns, no
+incremental state to interrupt.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean; `/admin/reviews`,
+`/admin/repos/[id]`, `/api/orchestrator/dispatch`, `/api/orchestrator/session-result`,
+`/api/admin-reviews/[id]` all listed among the built routes). `npm run lint` shows the
+same 6 pre-existing `@typescript-eslint/no-explicit-any` errors flagged as unrelated in
+prior sessions' own NOTES entries (`app/meet/page.tsx`, `FileUploads.tsx`,
+`MilestoneActionPanel.tsx`) — confirmed via `git status` that none of this session's
+changed files appear in the lint output. Separately noticed, not touched: `npm run lint`
+also reports several thousand additional problems from stale `.claude/worktrees/*`
+directories (full repo checkouts left over from past `isolation: "worktree"` agent runs
+that were apparently never auto-cleaned) being linted as if they were part of this
+tree — pre-existing environmental noise, not a regression from this session, but
+probably worth a `rm -rf .claude/worktrees` housekeeping pass at some point.
+
+**Needs Drew:** run this session's SQL migration in Supabase, then dispatch
+`wst-orchestrator-runner`'s own Session 9 (its own NOTES.md) — nothing here actually
+writes a checkpoint until that lands. Once both are live: click Archive on a real answered
+card and confirm it moves to the new Archived tab and back; separately, deliberately let a
+real build session fail after Session 9 lands, confirm its checkpoint shows up on the
+failed card, and click Retry to confirm it resumes rather than restarting cold.
+Unverified end-to-end past a clean build, same caveat as most sessions in this file.
+
+---
+
+## Prior session pointer (resolved by Session 68, above — kept for the historical record)
 
 Drew is closing out a very long same-day session and opening a fresh Claude Code
 session to continue deliberately, rather than keep going in an increasingly long

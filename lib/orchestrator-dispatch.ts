@@ -16,11 +16,18 @@ export async function dispatchOrchestratorSession({
   sessionType,
   brief,
   sourceReviewItemId,
+  resumeFromSessionId,
 }: {
   repoId: string;
   sessionType: "planning" | "build";
   brief: string;
   sourceReviewItemId?: string;
+  // Session 68 — when set, this dispatch is a retry of a specific prior session. Threads
+  // that prior session's self-reported checkpoint (if it wrote one before failing) into
+  // this dispatch's resume_context, so the build job can pick up where it left off instead
+  // of restarting from scratch. Never hard-fails a dispatch over a missing/mismatched id —
+  // worst case is the same as today, resume_context: null. See NOTES.md.
+  resumeFromSessionId?: string;
 }): Promise<DispatchResult> {
   const runnerRepo = process.env.WST_ORCHESTRATOR_RUNNER_REPO;
   if (!runnerRepo) {
@@ -92,6 +99,38 @@ export async function dispatchOrchestratorSession({
       }
     }
 
+    // Resume step (Session 68): look up the prior session's own pr_url + checkpoint, scoped
+    // to this same repo so a stray/mismatched id can never leak another repo's state into
+    // this dispatch. Fails open to null on any lookup issue, same posture as the knowledge
+    // base retrieve step above — a resume is a nice-to-have, never a reason to block a
+    // dispatch Drew explicitly clicked.
+    let resumeContext: Record<string, unknown> | null = null;
+    if (resumeFromSessionId) {
+      try {
+        const { data: priorSession } = await supabase
+          .from("agent_sessions")
+          .select("repo_id, pr_url, checkpoint")
+          .eq("id", resumeFromSessionId)
+          .single();
+
+        if (priorSession && priorSession.repo_id === repoId && priorSession.checkpoint) {
+          const checkpoint = priorSession.checkpoint as {
+            progress_status?: string;
+            narrative?: string;
+            remaining_work?: string;
+          };
+          resumeContext = {
+            pr_url: priorSession.pr_url ?? null,
+            progress_status: checkpoint.progress_status ?? null,
+            narrative: checkpoint.narrative ?? null,
+            remaining_work: checkpoint.remaining_work ?? null,
+          };
+        }
+      } catch (err) {
+        console.error("[orchestrator-dispatch] resume lookup failed:", err);
+      }
+    }
+
     const dispatchRes = await fetch(`https://api.github.com/repos/${runnerRepo}/dispatches`, {
       method: "POST",
       headers: {
@@ -108,7 +147,7 @@ export async function dispatchOrchestratorSession({
           brief,
           github_owner: repo.github_owner,
           github_repo: repo.github_repo,
-          resume_context: null,
+          resume_context: resumeContext,
           knowledge_context: knowledgeContext,
           // Purely a display label for the runner's run-name title — no dispatch
           // behavior depends on it. null when this repo has no group set.
