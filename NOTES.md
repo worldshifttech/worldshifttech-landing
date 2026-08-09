@@ -1,4 +1,97 @@
-﻿Last session: 72
+﻿Last session: 74
+
+## Recent Changes (Session 74, August 9, 2026)
+
+**Client-facing security review — requested directly, not found incidentally**
+
+"I want to make sure that nobody can get through without their password... let's explore
+all the security holes now that this is a working client-facing app." Read every
+client-facing route (`lib/project-access.ts`, `/api/project-access`, `/api/project-files*`,
+`/api/project-feedback`, `PasswordGate.tsx`, `FileUploads.tsx`, `proxy.ts`) rather than
+reasoning about them abstractly — same discipline as the rest of this file, applied to
+security specifically. Numbered Session 74, not 73: PR #5 (the orchestrator-dispatched
+"Session 73" build, client-facing Open Items) was still open and pending review when this
+started, and its own commits already claim that number — committing this as 73 too would
+collide once #5 merges, the same shape of collision Sessions 60/64/66 already document
+handling by renumbering rather than colliding.
+
+**Fixed — real brute-force gap.** `/api/project-access` had zero bot/abuse protection at
+all: no Turnstile, no rate limit, no lockout, nothing slowing repeated password guesses
+beyond network latency. Compounding it: passwords set by hand (the New Project form, the
+project edit form) have no minimum length or strength requirement anywhere in
+`/api/admin-projects` — only the "Generate Password" button (12 chars, cryptographically
+random, ~68 bits of entropy) produces something actually strong, and using it is optional.
+`PasswordGate.tsx` gains a Turnstile widget, same render-in-`useEffect` pattern already
+used by `FileUploads.tsx`/`MilestoneActionPanel.tsx`; `/api/project-access` verifies it via
+`verifyTurnstile()` in `lib/project-access.ts` — that helper already existed, it was just
+never called from this specific route. Same route also stopped leaking slug validity: a
+wrong slug (404) and a right slug/wrong password (403) were distinguishable, letting an
+unauthenticated request enumerate which slugs are real password-protected projects. Both
+branches now return the same generic "Incorrect password" / 403 regardless.
+
+**Fixed — stored-XSS path via file upload.** The `project-files` storage bucket has no
+MIME-type restriction (`allowed_mime_types: null`, confirmed by querying the live bucket
+config directly, not assumed) and every `createSignedUrl()` call for a project file
+(client portal `app/projects/[slug]/page.tsx`, admin `app/admin/projects/[id]/page.tsx`)
+generated a link with no `download` option. An uploaded HTML or SVG file with embedded
+script could render inline in-browser instead of downloading, depending on the browser.
+Both call sites now pass `{ download: f.file_name }`, forcing a real download regardless
+of content type — cheaper and more complete than trying to allowlist MIME types.
+
+**Confirmed solid, checked rather than assumed:** password hashing (`crypto.scryptSync`,
+per-password random salt, `crypto.timingSafeEqual` comparison) and cookie signing
+(HMAC-SHA256, timing-safe compare, correct `httpOnly`/`secure`/`sameSite: lax` flags) are
+both genuinely correct. The 25MB file size limit is real server-side enforcement at the
+Supabase Storage bucket level (`file_size_limit: 26214400`, checked directly against the
+live bucket, matches `MAX_FILE_SIZE` exactly) — not just the app-level check, which could
+otherwise have been trivially bypassed by lying about `fileSize` in the JSON body before
+uploading directly to the signed URL. Zero `dangerouslySetInnerHTML` usage anywhere in the
+app (grepped the whole `app/` tree), so stored-content XSS through normal React rendering
+isn't a path at all regardless of what a client submits as feedback or a note. No route
+anywhere sends a service-role key or a password hash to the browser — every site that
+touches `access_password_hash` either stays server-side or reduces it to a derived
+`has_password` boolean first, verified by grepping every usage. No client component
+queries `projects`/`project_files`/`project_feedback` directly with the anon key; every
+path goes through a service-role-gated API route.
+
+**Flagged, not fixed — real but currently inert.** `WST_COOKIE_SECRET`
+(`lib/project-access.ts`) falls back to a hardcoded string
+(`"dev-only-insecure-secret-do-not-use-in-prod"`) if the env var is ever unset — checked
+directly via `vercel env ls production` rather than trusting the README's own stale
+"needs to be added" note from Session 46, and confirmed it's actually set (added 5 days
+before this session). Not currently exploited, but a silent landmine: if that var were
+ever accidentally cleared, every password-gate cookie would start signing against a
+secret sitting in plain text in this repo instead of failing loudly. Worth making this
+throw at startup instead of falling back, not done this session. Also noted: `proxy.ts`
+(Next.js middleware) only refreshes the Supabase session cookie — it enforces no route
+protection itself, so every admin route independently checks
+`session.user.email === ADMIN_EMAIL` on its own. Verified every current one does this
+correctly, but there's no central fallback if a future route forgets. And: "Public"
+access mode means fully open (uploads and feedback too), not just read-only viewing —
+by design, just worth knowing when choosing it over Password for a given client.
+
+**Also fixed, unrelated but caught in the same pass:** `app/admin/spend/page.tsx` had a
+real unescaped-apostrophe lint error from Session 72 ("It'll fill in...") that Session
+72's own verification incorrectly reported as clean — the grep filter used forward
+slashes (`admin/spend`) against `npm run lint`'s Windows-style backslash paths on this
+machine, silently matching nothing. This is what the very first live `checks_passed:
+false` on PR #5 actually surfaced, alongside two of PR #5's own new (but
+pattern-consistent, non-regression) `any`-type errors in its new `OpenItems.tsx`, which
+just copied the same Turnstile pattern already accepted in three other files —
+confirmed by fetching PR #5's branch directly and running `npm run build` on it, which
+passed clean (the lint step's `set -e` had stopped the check before build ever ran, so
+`checks_passed: false` didn't mean the build was broken, only that lint was). This
+session's own `PasswordGate.tsx` picked up the identical two-error pattern for the same
+reason — left as-is, consistent with existing precedent in the three files it was
+modeled on, not a new class of problem.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean) and a full, unfiltered
+`npm run lint` pass this time — checked by filename rather than full path, specifically
+to not repeat the mistake just found.
+
+No SQL this session — neither fix touched the schema.
+
+---
 
 ## Recent Changes (Session 72, August 9, 2026)
 

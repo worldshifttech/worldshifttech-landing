@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
-import { verifyPassword, signAccessToken, accessCookieName } from "@/lib/project-access";
+import { verifyPassword, verifyTurnstile, signAccessToken, accessCookieName } from "@/lib/project-access";
 
 export async function POST(req: NextRequest) {
-  const { slug, password } = (await req.json()) as { slug?: string; password?: string };
+  const { slug, password, turnstileToken } = (await req.json()) as {
+    slug?: string;
+    password?: string;
+    turnstileToken?: string;
+  };
 
   if (!slug || !password) {
     return NextResponse.json({ error: "Missing slug or password" }, { status: 400 });
+  }
+
+  // Previously zero bot/abuse protection on this route at all — nothing slowed down
+  // repeated password guesses beyond network latency. verifyTurnstile() already existed
+  // in lib/project-access.ts, just never called from here. See same-day security review.
+  if (!(await verifyTurnstile(turnstileToken ?? ""))) {
+    return NextResponse.json({ error: "Bot detected" }, { status: 403 });
   }
 
   const supabase = getSupabase();
@@ -16,11 +27,16 @@ export async function POST(req: NextRequest) {
     .eq("slug", slug)
     .single();
 
-  if (!project || project.access_mode !== "password" || !project.access_password_hash) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  if (!verifyPassword(password, project.access_password_hash)) {
+  // Both branches return the same generic error now — previously "no such project" (404)
+  // and "wrong password" (403) were distinguishable, letting an unauthenticated request
+  // enumerate which slugs are real password-protected projects. Low practical impact
+  // (slugs are already handed directly to clients), but free to close.
+  if (
+    !project ||
+    project.access_mode !== "password" ||
+    !project.access_password_hash ||
+    !verifyPassword(password, project.access_password_hash)
+  ) {
     return NextResponse.json({ error: "Incorrect password" }, { status: 403 });
   }
 
