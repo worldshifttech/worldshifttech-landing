@@ -51,6 +51,15 @@ file — all clean. Confirmed live on production: `/projects/entos-website` now 
 `ClientPasswordGate` (not the old per-project `PasswordGate`) and unlocks together with
 `/clients/entos` using the same password.
 
+**Second real bug found by that same live test, fixed in the same push:** after unlocking
+the hub, `/clients/entos`'s own project list still showed each project's individual
+Public/Password badge — pulled from `projects.access_mode`, which Session 77's whole point
+was to stop being authoritative. Every project on a hub's list is, by definition, already
+gated by the password just entered to see it, so the badge was actively wrong, not just
+unused. Removed it from `app/clients/[slug]/page.tsx` (dropped `access_mode` from that
+page's own query too) — this is exactly why the live click-through mattered more than the
+typecheck/build/lint pass on its own.
+
 **Known, deliberate gap not closed this session:** `ProjectDetailClient.tsx` (the existing
 project's own edit page, `/admin/projects/[id]`) still shows and lets you edit a project's
 own `access_mode`/password fields even when that project has a `client_id` — those fields

@@ -7,11 +7,6 @@ import { verifyAccessToken } from "@/lib/project-access";
 import { clientAccessCookieName } from "@/lib/client-access";
 import ClientPasswordGate from "@/app/components/ClientPasswordGate";
 
-const ACCESS_BADGE: Record<string, string> = {
-  public: "border border-[#4B858E] text-[#4B858E]",
-  password: "bg-[#00205C]/[0.05] text-[#76777A] border border-[#00205C]/15",
-};
-
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -20,10 +15,13 @@ interface PageProps {
 // scoped for them as its own link. Built because a single client can have multiple distinct
 // projects (e.g. Entos: onboarding, and separately a website rebuild) and there was previously
 // no shared home for them — each project only ever had its own standalone /projects/{slug}
-// link with nothing tying sibling projects together. This page's own gate (below) only
-// protects the index itself — client name + list of project titles/links; each linked
-// project keeps its own independent access_mode and password gate exactly as before, unchanged.
-// See NOTES.md Session 76.
+// link with nothing tying sibling projects together. This page's own gate (below) protects
+// the index itself — client name + list of project titles/links. As of Session 77, it also
+// gates every linked project: a project's own access_mode is no longer consulted once it has
+// a client_id (see lib/project-access.ts's verifyClientAccess() and this project's own
+// app/projects/[slug]/page.tsx gate), so there's no per-project Public/Password badge to show
+// here anymore — every project listed on this page is, by definition, already gated by the
+// same password you just entered to see this list. See NOTES.md Session 76/77.
 export default async function ClientHubPage({ params }: PageProps) {
   const { slug } = await params;
   const supabase = getSupabase();
@@ -43,7 +41,7 @@ export default async function ClientHubPage({ params }: PageProps) {
 
   const { data: projects } = await supabase
     .from("projects")
-    .select("id, slug, title, percent_complete, access_mode")
+    .select("id, slug, title, percent_complete")
     .eq("client_id", client.id)
     .order("created_at", { ascending: false });
 
@@ -83,11 +81,7 @@ export default async function ClientHubPage({ params }: PageProps) {
                       <div className="h-full bg-[#4B858E] rounded-full" style={{ width: `${p.percent_complete}%` }} />
                     </div>
                   </div>
-                  <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[p.access_mode]}`}
-                  >
-                    {p.access_mode === "public" ? "Public" : "Password"}
-                  </span>
+                  <span className="text-[#76777A] text-xs flex-shrink-0">{p.percent_complete}%</span>
                 </Link>
               ))}
             </div>
