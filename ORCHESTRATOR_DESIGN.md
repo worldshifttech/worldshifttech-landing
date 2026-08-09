@@ -465,7 +465,12 @@ underneath it, not a report that something is currently broken:
 - **No spend visibility anywhere in the dashboard.** Session 58's own README entry
   documents a real failure that burned real cost with no PR to show for it — that's only
   discoverable by reading NOTES.md after the fact. No running total, per-repo or
-  time-windowed, exists anywhere in `/admin`. **Still open** — not attempted in Session 71.
+  time-windowed, exists anywhere in `/admin`. **Resolved (Session 72):** `agent_sessions.
+  cost_usd`, populated by `wst-orchestrator-runner`'s own Session 10 from Claude Code's own
+  JSON result, not the account-wide Admin API mechanism `ImpactTab` already uses for a
+  different feature. New `/admin/spend` — this-month/all-time totals, spend split into
+  done vs. failed, per-repo breakdown, most expensive sessions. Nothing before this session
+  is recoverable — cost capture only starts from here forward.
 - **Every repo gets identical trust regardless of what's actually at stake.**
   `entos-group-website` (real client work, `automation_enabled: true`, already dispatching
   unattended on a schedule) gets the exact same one-click merge flow as a personal test
@@ -490,8 +495,12 @@ underneath it, not a report that something is currently broken:
   Session 53/54 build prompts explicitly requested it and got real `npm run lint`/`npm run
   build` output back in the PR description) — but that's because the prompt asked, not
   because the workflow enforces it. Same convention-not-guarantee shape as the point above,
-  now confirmed rather than assumed. Not fixed here — would mean the runner's own job
-  running the checks itself as a hard gate, independent of what any given build prompt says.
+  now confirmed rather than assumed. **Resolved (Session 72, in `wst-orchestrator-runner`'s
+  own Session 10):** a real `npm install && npm run lint && npm run build` step runs
+  against the target repo's actual working tree after the build step, independent of what
+  any given build prompt says, sent as `checks_passed`. Deliberately never flips `status`
+  itself — see that repo's own NOTES.md for the full reasoning traced through; a failing
+  check surfaces as a warning on the `build_result` card instead of suppressing it.
 - **Good news, found while confirming the above, not degraded from optimism:** the
   resume/checkpoint mechanism this doc previously described as unbuilt on the runner side
   is actually fully wired as of today. `wst-orchestrator-runner`'s own Session 8 (landed

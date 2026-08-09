@@ -50,6 +50,15 @@ export async function POST(req: NextRequest) {
     // lib/orchestrator-dispatch.ts reads individual fields defensively when building a
     // follow-up dispatch's resume_context.
     checkpoint?: { progress_status?: string; narrative?: string; remaining_work?: string };
+    // Session 72 — wst-orchestrator-runner's own Session 10 sums modelUsage[].costUSD
+    // from Claude Code's own JSON result and sends it here on every report, regardless of
+    // status — a failed session's cost is the whole reason this exists. See
+    // ORCHESTRATOR_DESIGN.md §11.
+    cost_usd?: number;
+    // true/false/null — null means the target repo had no package.json to check at all,
+    // distinct from an actual failing check. Never used to override `status` itself; see
+    // that same runner session's own reasoning for why in its NOTES.md.
+    checks_passed?: boolean | null;
   };
 
   const {
@@ -62,6 +71,8 @@ export async function POST(req: NextRequest) {
     github_run_id,
     review,
     checkpoint,
+    cost_usd,
+    checks_passed,
   } = body;
 
   if (!session_id || !status) {
@@ -80,6 +91,8 @@ export async function POST(req: NextRequest) {
   if (typeof merged_commit_sha === "string") sessionUpdate.merged_commit_sha = merged_commit_sha;
   if (typeof github_run_id === "number") sessionUpdate.github_run_id = github_run_id;
   if (checkpoint && typeof checkpoint === "object") sessionUpdate.checkpoint = checkpoint;
+  if (typeof cost_usd === "number") sessionUpdate.cost_usd = cost_usd;
+  if (checks_passed !== undefined) sessionUpdate.checks_passed = checks_passed;
   if (status === "done" || status === "failed") sessionUpdate.completed_at = new Date().toISOString();
 
   const { error: updateError } = await supabase.from("agent_sessions").update(sessionUpdate).eq("id", session_id);

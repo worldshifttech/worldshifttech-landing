@@ -1,4 +1,73 @@
-﻿Last session: 71
+﻿Last session: 72
+
+## Recent Changes (Session 72, August 9, 2026)
+
+**Spend visibility — the last two open items from `ORCHESTRATOR_DESIGN.md` §11**
+
+Requested directly: "let's run another build as part of the admin side that addresses
+spend visibility... it's gonna be a dashboard." Paired with the enforced-quality-gate
+question, since both are the same shape once traced through — real signal Claude Code
+already computes (its own run cost, the actual pass/fail of a real command) that just
+wasn't being sent anywhere.
+
+**Data source decision, made explicit rather than defaulted into:** this app already has
+an unrelated usage-tracking mechanism (`ImpactTab`/`admin-sync-usage`/
+`wst_usage_snapshots`) pulling account-wide Anthropic Admin API usage for the
+environmental-redirect feature — every API call this account makes, personalize/audit/
+orchestrator/everything, mixed with no way to isolate what the orchestrator specifically
+costs. Not extended. Claude Code's own JSON result already computes the exact cost per
+session (`modelUsage[].costUSD`); capturing that at the source is both more accurate and
+simpler than reconstructing it from an account-wide API afterward.
+
+**Runner-side half lives in `wst-orchestrator-runner`'s own Session 10** (that repo's own
+NOTES.md has the full detail): both jobs sum `modelUsage[].costUSD` and send it as
+`cost_usd` on every `session-result` POST regardless of status — a failed session's cost
+is the entire reason this exists. The build job also adds a real
+`npm install && npm run lint && npm run build` step against the target repo after the
+build step itself (no per-repo config needed — every repo in the fleet follows the same
+`npm run lint`/`npm run build` Commands convention), sent as `checks_passed` (`true`/
+`false`, or `null` when there's no `package.json` to check).
+
+**The quality-gate design question had a real fork, resolved explicitly rather than
+picking the first instinct:** a failing check could flip the session's own `status` to
+`"failed"` — traced through what that actually does, and it's worse than the status quo.
+`status: "failed"` never creates a `build_result` review row (only `"done"` does), so a
+real PR with real, possibly-fine work would end up with **no card pointing at it at all**,
+visible only via Session 71's Slack alert and a manual trip to GitHub. Instead: `status`
+stays `"done"` whenever a real PR exists, `checks_passed` is still sent honestly, and a
+failing check surfaces as a warning folded into the card's own `summary` plus a dedicated
+red banner on the `build_result` card in `ReviewInboxClient.tsx` — visible before the
+merge click, not hidden behind a status that suppresses the card entirely.
+
+**This repo's own half:** `agent_sessions` gains `cost_usd numeric` and `checks_passed
+boolean` (migration below), both accepted by `/api/orchestrator/session-result` the same
+defensive way every other optional field already is. New `app/admin/spend/page.tsx`
+(linked from `AdminNav`) — this-month vs. all-time stat tiles, a third tile specifically
+isolating spend on failed sessions vs. done ones (the split that would have caught the
+$8.97 max-turns loss immediately instead of requiring a manual investigation), a
+per-repo breakdown with a magnitude bar reusing the same progress-bar visual language
+already used elsewhere in this dashboard, and the 10 most expensive sessions with links
+to their PRs. Loaded the `dataviz` skill before building it (explicit "dashboard"/"stat
+tile" trigger match) — reused this app's own already-established status colors (green/red
+for done/failed, teal for magnitude) rather than a new categorical palette, since this
+isn't introducing new hues, just reusing ones already live in production across this
+exact app.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean; `/admin/spend` listed
+among the built routes). `npm run lint` shows zero findings across every file this
+session touched, in either repo.
+
+**Not recoverable:** no spend data exists for anything dispatched before this session —
+cost capture only starts from here forward.
+
+**SQL to run:**
+```sql
+-- MIGRATION: agent_sessions.cost_usd + checks_passed (Session 72)
+ALTER TABLE agent_sessions ADD COLUMN IF NOT EXISTS cost_usd numeric NULL;
+ALTER TABLE agent_sessions ADD COLUMN IF NOT EXISTS checks_passed boolean NULL;
+```
+
+---
 
 ## Recent Changes (Session 71, August 9, 2026)
 

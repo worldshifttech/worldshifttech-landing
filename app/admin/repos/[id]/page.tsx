@@ -22,6 +22,7 @@ type RawReviewRow = {
     session_type: string;
     pr_url: string | null;
     pr_preview_url: string | null;
+    checks_passed: boolean | null;
     repos: { name: string; high_stakes: boolean } | null;
   } | null;
 };
@@ -85,7 +86,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
   // "Nothing to review" for a repo with a real, freshly-answered review). See NOTES.md.
   const { data: rawReviewRows, error: reviewRowsError } = await serviceClient
     .from("review_items")
-    .select("*, agent_sessions!review_items_session_id_fkey!inner(repo_id, session_type, pr_url, pr_preview_url, repos(name, high_stakes))")
+    .select("*, agent_sessions!review_items_session_id_fkey!inner(repo_id, session_type, pr_url, pr_preview_url, checks_passed, repos(name, high_stakes))")
     .eq("agent_sessions.repo_id", id)
     .order("created_at", { ascending: false });
 
@@ -174,6 +175,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
     repo_id: r.agent_sessions?.repo_id ?? null,
     repo_name: r.agent_sessions?.repos?.name ?? "Unknown repo",
     repo_high_stakes: Boolean(r.agent_sessions?.repos?.high_stakes),
+    checks_passed: r.agent_sessions?.checks_passed ?? null,
     session_type: r.agent_sessions?.session_type ?? "planning",
     pr_url: r.agent_sessions?.pr_url ?? null,
     pr_preview_url: r.agent_sessions?.pr_preview_url ?? null,

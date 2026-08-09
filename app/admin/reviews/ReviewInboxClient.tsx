@@ -37,6 +37,10 @@ export type ReviewItem = {
   // Session 71 — gates an extra confirmation step before Merge to Production. See
   // ORCHESTRATOR_DESIGN.md §11.
   repo_high_stakes: boolean;
+  // Session 72 — true/false/null (null = no package.json to check, distinct from an
+  // actual failure). Set by wst-orchestrator-runner's own Session 10. Never affects
+  // status itself — see that repo's NOTES.md for why — just a warning on the card.
+  checks_passed: boolean | null;
   session_type: string;
   pr_url: string | null;
   pr_preview_url: string | null;
@@ -821,6 +825,21 @@ export function ReviewCard({
         {archiveError && <p className="text-red-400 text-xs">{archiveError}</p>}
 
         <p className="text-[#00205C]/80 text-sm leading-relaxed">{item.summary}</p>
+
+        {/* Session 72 — checks_passed === false specifically, not falsy in general:
+            null means the target repo had no package.json to check at all, and shouldn't
+            read as a warning. Deliberately not a reason to block Merge to Production —
+            see wst-orchestrator-runner's own Session 10 NOTES.md for why a failing check
+            surfaces here instead of suppressing the card entirely. */}
+        {item.checks_passed === false && (
+          <div className="flex items-start gap-2 bg-red-50 border border-red-300 rounded-xl px-4 py-3">
+            <span className="text-red-500 text-sm font-bold flex-shrink-0">⚠️</span>
+            <p className="text-red-600 text-sm">
+              This repo&apos;s own lint/build did not pass after this session&apos;s changes.
+              Check the diff carefully before merging.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-3">
           {item.pr_url && (
