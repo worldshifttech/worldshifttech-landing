@@ -1,9 +1,13 @@
 # WST Orchestrator — Design Doc
 
-> Status: design locked, implementation not started. This doc is the source of truth for
-> the multi-repo Claude Code orchestration system. Update it as decisions change during
-> implementation — treat it the way NOTES.md treats session history, but for the project
-> as a whole rather than one session.
+> Status: all 6 phases from §10 shipped (closed as of `worldshifttech-landing`'s own
+> Session 56 — see its NOTES.md) — this describes a live system, not a plan. Still the
+> source of truth for the multi-repo Claude Code orchestration system; keep updating it as
+> the system evolves, the way NOTES.md treats session history but for the project as a
+> whole rather than one session. §2 (fleet) and §3 (data model) were checked against the
+> live database directly and corrected on August 9, 2026 (Session 69 follow-up) — both had
+> drifted well behind reality by then without anyone noticing, so re-verify them again
+> rather than trusting this doc blindly if it's been a while since the date above.
 
 ---
 
@@ -50,7 +54,8 @@ Per Drew: all repos here are his own except `entos-group-website`, which is clie
 
 **Three auth conventions exist across the fleet, not one** — `stack_type` needs to record
 auth convention as its own field, not fold it into a single enum with the frontend
-framework choice.
+framework choice. **Resolved:** this shipped exactly as described — `repos.stack_type`
+became two real columns, `framework_type` and `auth_convention`. See §3.
 
 **wst-build-manager's real gaps** (now in scope, see §8): non-idempotent bootstrap (no
 rollback, no resume-from-failure), no starter app template is actually scaffolded into new
@@ -58,6 +63,15 @@ repos today, and its cost-telemetry pipeline (`log-build-session.js` / `sync-bui
 is 100% manually estimated — no timer, no token count, human-guessed hours. This system
 doesn't have to fix that last one, but real per-session telemetry (§4) makes it obsolete as
 a side effect.
+
+**Fleet, as actually registered in `repos` on August 9, 2026 (verified live, not from
+memory of this table):** the four repos above, still — plus `wst-orchestrator-runner`
+itself, added as a `repos` row in Session 65 so the control plane can dispatch to its own
+compute-plane repo (see §4's own note that the GitHub App is "installed on every managed
+repo, including the runner repo itself"). `wst-build-manager` is correctly **not** a
+`repos` row — it was never meant to be a dispatch target, it's the local provisioning CLI,
+consistent with this table's own original "n/a — it's the tool itself." The three surfaced
+client repos below are still not folded in, unchanged since this design was written.
 
 ---
 
@@ -72,25 +86,37 @@ One row per codebase under management. Deliberately separate from `projects` (th
 client-roadmap table from Session 46) — most repos here have no client, no roadmap, no
 budget, and forcing them into that table would pollute its semantics.
 
+**Live columns as of August 9, 2026** (the original `stack_type` design below never
+shipped as one field — see §2's "Resolved" note):
+
 ```
-id                    uuid PK
-name                  text
-local_path            text
-github_owner          text            -- "worldshifttech"
-github_repo           text            -- "entos-group-website"
-vercel_project_id     text nullable
-stack_type            text            -- 'nextjs-supabase-auth' | 'vite-shared-secret' | 'vite-supabase-auth' | 'other'
-client_project_id     uuid nullable REFERENCES projects(id)   -- link when there IS a client roadmap
-automation_enabled    boolean default false
-planning_interval_hours integer nullable
-last_planning_session_at timestamptz nullable
-github_app_installation_id bigint nullable
-created_at            timestamptz default now()
-updated_at            timestamptz default now()
+id                          uuid PK
+name                        text
+local_path                  text
+github_owner                text            -- "worldshifttech"
+github_repo                 text            -- "entos-group-website"
+vercel_project_id           text nullable
+framework_type              text            -- 'nextjs' | 'vite' | 'other'
+auth_convention             text            -- 'supabase_auth' | 'shared_secret' | 'none' | 'other'
+client_project_id           uuid nullable REFERENCES projects(id)   -- link when there IS a client roadmap
+automation_enabled          boolean default false
+planning_interval_hours     integer nullable
+last_planning_session_at    timestamptz nullable
+github_app_installation_id  bigint nullable
+system_group                text nullable   -- Session 65; free-text tag — repos sharing a value are treated as one system in dispatch run titles
+target_supabase_url         text nullable   -- Session 51; a managed repo's own Supabase project, for reading its feedback backlog
+target_supabase_service_role_key text nullable  -- Session 51; write-only end to end, never returned by any route
+deployed_sha                text nullable   -- Session 54; Vercel production deployment's git SHA, from the drift-check cron
+github_head_sha              text nullable   -- Session 54; GitHub main HEAD SHA, from the drift-check cron
+drift_checked_at            timestamptz nullable  -- Session 54
+created_at                  timestamptz default now()
+updated_at                  timestamptz default now()
 ```
 
 ### `agent_sessions`
 One row per planning or build session, automated or manually triggered.
+
+**Live columns as of August 9, 2026** — two added since this table was first designed:
 
 ```
 id                    uuid PK
@@ -103,6 +129,8 @@ pr_url                text nullable   -- set once a build session opens a PR
 pr_preview_url        text nullable   -- Vercel's preview deployment for that PR
 merged_commit_sha     text nullable
 github_run_id         bigint nullable -- the Actions run that executed this
+source_review_item_id uuid nullable REFERENCES review_items(id)  -- Session 66; which review card, if any, this build was dispatched from
+checkpoint            jsonb nullable  -- Session 68; { progress_status: 'on_track'|'stuck'|'blocked', narrative, remaining_work }, self-reported by a build session at logical stopping points
 created_at            timestamptz default now()
 updated_at            timestamptz default now()
 completed_at          timestamptz nullable
@@ -111,28 +139,41 @@ completed_at          timestamptz nullable
 ### `review_items`
 The inbox. A consolidated card, not a back-and-forth chat — see §5 for why.
 
+**Live columns as of August 9, 2026** — a fourth `kind`, a `kb_draft` field, and a third
+`status` value all shipped since this table was first designed:
+
 ```
 id                    uuid PK
 session_id            uuid REFERENCES agent_sessions(id)
-kind                  text            -- 'consolidated_review' | 'production_risk_flag' | 'kb_entry_draft'
+kind                  text            -- 'consolidated_review' | 'production_risk_flag' | 'kb_entry_draft' | 'build_result'
 summary               text            -- what the agent decided on its own
 open_questions        jsonb           -- [{ question, suggested_options: [...] }]
-proposed_content      text nullable   -- e.g. the build prompt, or a drafted KB entry
+proposed_content      text nullable   -- e.g. the build prompt, a drafted KB entry's long-form description, or (build_result cards) SQL pulled from the PR description
+kb_draft              jsonb nullable  -- Session 55; kb_entry_draft only — structured metadata (title, problem_solved, tags, tech_stack, artifact_location)
 drew_response         text nullable
-status                text            -- 'pending' | 'answered'
+status                text            -- 'pending' | 'answered' | 'archived'
 created_at            timestamptz default now()
 answered_at           timestamptz nullable
+archived_at           timestamptz nullable  -- Session 68; set only by Drew manually confirming the real thing behind this card is actually live and working — never automatic on merge or deploy
 ```
 
 ### `knowledge_base_entries`
+
+**Live columns as of August 9, 2026** — `category`, `tool_slug`, and `reference_doc` all
+shipped in Session 55's Audit Knowledge Base consolidation, folding a second, previously
+disconnected system into this table rather than the two staying separate:
+
 ```
 id                    uuid PK
+category              text            -- Session 55; 'audit_reference' | 'build_artifact' — one table now holds both audit reference docs and build-session artifacts
 title                 text
-problem_solved        text
+tool_slug             text nullable   -- Session 55; audit_reference rows only, ties back to the original content/audit-knowledge/*.md doc it was migrated from
+problem_solved        text nullable
 tags                  text[]
 tech_stack            text[]
-artifact_description  text            -- what it is / how it works
+artifact_description  text nullable   -- what it is / how it works (build_artifact rows)
 artifact_location     text nullable   -- file path + repo + git ref, or an inline snippet
+reference_doc         text nullable   -- Session 55; audit_reference rows' full migrated markdown body
 source_repo_id        uuid nullable REFERENCES repos(id)
 source_session_id     uuid nullable REFERENCES agent_sessions(id)
 embedding             vector(1024)    -- Voyage voyage-3, matching the dimension already
@@ -141,10 +182,23 @@ reuse_count           integer default 0
 created_at            timestamptz default now()
 ```
 
-Requires `create extension if not exists vector;` on this Supabase project (not yet
-enabled here — it is already enabled and proven in `drew-griffiths-speak-easy`, this is
-just turning it on in a second project). An `ivfflat` or `hnsw` index gets added once
-there's enough data to make an index meaningful — not needed on day one.
+`create extension if not exists vector;` is enabled on this Supabase project (done during
+Phase 3). An `ivfflat` or `hnsw` index still hasn't been added — still not enough data to
+make one meaningful as of this check.
+
+### `session_drafts` (not in the original design — added Session 63)
+Saved-but-not-dispatched planning/build briefs, so a scoped brief can sit as "a ticket in
+the app I can look at later to run" (Drew's own words) instead of only living in a
+component's local state until dispatched or lost on refresh.
+
+```
+id            uuid PK
+repo_id       uuid REFERENCES repos(id)
+session_type  text            -- 'planning' | 'build'
+title         text
+brief         text
+created_at    timestamptz default now()
+```
 
 ---
 
