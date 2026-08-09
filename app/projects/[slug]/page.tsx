@@ -7,6 +7,7 @@ import { BUCKET } from "@/lib/project-files";
 import PasswordGate from "./PasswordGate";
 import FileUploads from "./FileUploads";
 import MilestoneActionPanel from "./MilestoneActionPanel";
+import OpenItems from "./OpenItems";
 
 const STATUS_LABEL: Record<string, string> = {
   not_started: "Not started",
@@ -89,6 +90,26 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
       };
     })
   );
+
+  // Open Items — general, non-milestone-scoped client feedback (Session 73). Plain select
+  // plus a JS-side map against the milestones array already fetched above, rather than a
+  // second `project_milestones(title)` embed — one less PostgREST relationship to get
+  // ambiguous later (see NOTES.md Session 67 for what that failure mode looks like).
+  const { data: feedbackRows } = await supabase
+    .from("project_feedback")
+    .select("*")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false });
+
+  const milestoneTitleById = new Map((milestones ?? []).map((m) => [m.id, m.title as string]));
+
+  const openItems = (feedbackRows ?? []).map((f) => ({
+    id: f.id as string,
+    message: f.message as string,
+    status: f.status as string,
+    created_at: f.created_at as string,
+    milestone_title: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
+  }));
 
   const nextDue = formatDate(project.next_due_date);
 
@@ -189,6 +210,10 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="mb-8">
+            <OpenItems projectId={project.id} slug={slug} items={openItems} />
           </div>
 
           <div className="mb-4">
