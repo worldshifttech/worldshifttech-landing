@@ -149,6 +149,7 @@ npm run dev  # http://localhost:3000
 - [x] `/ai-agent-setup` — static campaign landing page
 - [x] `/privacy` — Privacy Policy static page
 - [x] `/terms` — Terms and Conditions static page
+- [ ] Slack alert on a failed orchestrator session (`session-result`'s route, `status: "failed"`) — same pattern as `notify-slack`'s existing `file_upload`/`milestone_response` types. Closes the gap that let `entos-group-website`'s automation sit dead for four days before Session 65 caught it by accident; see `ORCHESTRATOR_DESIGN.md` §11.
 - [ ] Run `audit_estimates` migration in Supabase SQL editor (Session 33)
 - [ ] Visual polish pass on `/for-you/[industry]/[solution]`
 - [ ] `/api/ingest-case-study` — Zapier webhook for case study pipeline
