@@ -591,3 +591,14 @@ INSERT INTO session_drafts (repo_id, session_type, title, brief)
 SELECT id, 'planning', 'Admin nav cohesion audit',
   'The admin dashboard''s navigation feels disjointed, not cohesive or friendly. Audit navigation across /admin (dashboard home), /admin/repos (fleet list), /admin/repos/[id] (repo detail -- Settings/Reviews tabs), /admin/reviews (global inbox), /admin/knowledge-base, and /admin/projects/[id] (client project detail). Look at: is there a consistent top nav/header across all of these, or does each page reinvent its own? Is there any breadcrumb or clear way back up a level? Is it obvious which section of the app you''re in at a glance? How many clicks does it take to get from one related page to another (e.g. a repo''s own scoped reviews vs. the global reviews inbox vs. a linked client project)? Propose a more cohesive structure -- consistent header/nav across every admin page, clear active-state or breadcrumbs, fewer redundant clicks between related sections. This is a navigation/UX pass, not a rewrite of any page''s actual functionality -- don''t restructure data models or existing features, just how they''re navigated between.'
 FROM repos WHERE github_repo = 'worldshifttech-landing';
+
+-- ============================================================
+-- MIGRATION: repos.client_facing_name (Session 73)
+-- Repos are only ever labeled by internal name or github slug on the admin side, never by
+-- what the tool actually is to the client. Admin-side display only for now — a badge on
+-- the fleet list and a label on the dashboard's linked-repo chips, editable on the repo's
+-- own Settings tab. Not yet threaded into the client-facing /projects/[slug] portal's own
+-- heading (that page only ever queries `projects` directly, no join back to `repos`) —
+-- see NOTES.md.
+-- ============================================================
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS client_facing_name text;

@@ -75,6 +75,7 @@ export default async function AdminReposPage() {
     github_head_sha: (r.github_head_sha as string | null) ?? null,
     drift_checked_at: (r.drift_checked_at as string | null) ?? null,
     system_group: (r.system_group as string | null) ?? null,
+    client_facing_name: (r.client_facing_name as string | null) ?? null,
     high_stakes: Boolean(r.high_stakes),
   }));
 

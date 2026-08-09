@@ -27,6 +27,9 @@ export type Repo = {
   github_head_sha: string | null;
   drift_checked_at: string | null;
   system_group: string | null;
+  // Session 73 — what to call this repo to the client, distinct from its internal `name`.
+  // Falls back to `name` wherever it's shown. Admin-side display only for now.
+  client_facing_name: string | null;
   // Session 71 — gates an extra confirmation step before Merge to Production on this
   // repo's own review cards. Real client work (this flag) got the exact same one-click
   // merge trust as a personal test repo before this existed. See ORCHESTRATOR_DESIGN.md §11.
@@ -91,6 +94,7 @@ function isDrifted(repo: Repo): boolean {
 
 export default function RepoFleetClient({
   initialRepos,
+  projects,
   initialAutomationPaused,
 }: {
   initialRepos: Repo[];
@@ -99,6 +103,11 @@ export default function RepoFleetClient({
 }) {
   const router = useRouter();
   const [repos] = useState<Repo[]>(initialRepos);
+  // Session 73 — the repo<->client-project link was previously only visible from inside a
+  // repo's own Settings tab. Keyed by id, same lookup shape the build prompt asked for.
+  const projectsById: Record<string, ProjectOption> = Object.fromEntries(
+    projects.map((p) => [p.id, p])
+  );
   const [automationPaused, setAutomationPaused] = useState(initialAutomationPaused);
   const [pauseSaving, setPauseSaving] = useState(false);
   const [pauseError, setPauseError] = useState("");
@@ -360,7 +369,9 @@ export default function RepoFleetClient({
             </p>
           ) : (
             <div className="space-y-3">
-              {repos.map((repo) => (
+              {repos.map((repo) => {
+                const linkedProject = repo.client_project_id ? projectsById[repo.client_project_id] ?? null : null;
+                return (
                 <Link
                   key={repo.id}
                   href={`/admin/repos/${repo.id}`}
@@ -371,6 +382,24 @@ export default function RepoFleetClient({
                       <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
                         {repo.name}
                       </p>
+                      {linkedProject && (
+                        <span
+                          className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 flex-shrink-0 flex items-center gap-1.5"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                          title={`Linked to client project: ${linkedProject.title}`}
+                        >
+                          {linkedProject.title}
+                          <a
+                            href={`/projects/${linkedProject.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="underline hover:text-[#4B858E]"
+                          >
+                            Open Portal
+                          </a>
+                        </span>
+                      )}
                       {repo.high_stakes && (
                         <span
                           className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#00205C]/10 text-[#00205C] border border-[#00205C]/30 flex-shrink-0"
@@ -410,6 +439,11 @@ export default function RepoFleetClient({
                     <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
                       {repo.github_owner}/{repo.github_repo}
                     </p>
+                    {repo.client_facing_name && (
+                      <p className="text-[#76777A] text-xs mt-0.5" style={{ fontFamily: "var(--font-poppins)" }}>
+                        Client sees this as: {repo.client_facing_name}
+                      </p>
+                    )}
                   </div>
 
                   <span
@@ -444,7 +478,8 @@ export default function RepoFleetClient({
                     {repo.automation_enabled ? "Automation on" : "Paused"}
                   </span>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

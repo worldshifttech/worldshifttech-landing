@@ -30,6 +30,7 @@ type RepoFields = {
   github_head_sha: string | null;
   drift_checked_at: string | null;
   system_group: string | null;
+  client_facing_name: string | null;
   high_stakes: boolean;
 };
 
@@ -72,6 +73,7 @@ export default function RepoDetailClient({
   const [frameworkType, setFrameworkType] = useState(repo.framework_type);
   const [authConvention, setAuthConvention] = useState(repo.auth_convention);
   const [systemGroup, setSystemGroup] = useState(repo.system_group ?? "");
+  const [clientFacingName, setClientFacingName] = useState(repo.client_facing_name ?? "");
   // Session 71 — gates an extra confirmation step before Merge to Production on this
   // repo's own review cards. Real client work got the exact same one-click merge trust as
   // a personal test repo before this existed. See ORCHESTRATOR_DESIGN.md §11.
@@ -473,6 +475,7 @@ export default function RepoDetailClient({
           framework_type: frameworkType,
           auth_convention: authConvention,
           system_group: systemGroup.trim() || null,
+          client_facing_name: clientFacingName.trim() || null,
           high_stakes: highStakes,
           client_project_id: clientProjectId || null,
           automation_enabled: automationEnabled,
@@ -639,6 +642,22 @@ export default function RepoDetailClient({
               </label>
               <p className="text-[#76777A] text-xs mt-1">
                 Turn this on for repos where merging the wrong thing has real consequences.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                Client-Facing Name <span className="normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                value={clientFacingName}
+                onChange={(e) => setClientFacingName(e.target.value)}
+                placeholder="e.g. &quot;ENTOS Open Items&quot;"
+                className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+              />
+              <p className="text-[#76777A] text-xs mt-1">
+                What to call this to the client — e.g. &quot;ENTOS Open Items&quot;. Falls back to the repo
+                name above when blank.
               </p>
             </div>
 
