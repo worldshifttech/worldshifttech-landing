@@ -51,6 +51,23 @@ export default async function AdminPage() {
     created_at: p.created_at as string,
   }));
 
+  // Session 73 — the repo<->client-project link was previously only visible from inside a
+  // repo's own Settings tab. Grouped in JS (not a SQL group-by) since there's no RPC/view
+  // for this and the repo fleet is small — same pattern as the fleet list's own
+  // open-reviews count (Session 51).
+  const { data: rawLinkedRepos } = await serviceClient
+    .from("repos")
+    .select("id, name, client_facing_name, client_project_id")
+    .not("client_project_id", "is", null);
+
+  const linkedRepos: Record<string, { id: string; label: string }[]> = {};
+  for (const r of rawLinkedRepos ?? []) {
+    const projectId = r.client_project_id as string;
+    const label = (r.client_facing_name as string | null) ?? (r.name as string);
+    if (!linkedRepos[projectId]) linkedRepos[projectId] = [];
+    linkedRepos[projectId].push({ id: r.id as string, label });
+  }
+
   const { data: auditData } = await serviceClient
     .from("audit_estimates")
     .select("*")
@@ -69,5 +86,11 @@ export default async function AdminPage() {
     report: (a.report as AuditEstimate["report"]) ?? null,
   }));
 
-  return <AdminDashboard initialProjects={adminProjects} auditEstimates={auditEstimates} />;
+  return (
+    <AdminDashboard
+      initialProjects={adminProjects}
+      auditEstimates={auditEstimates}
+      linkedRepos={linkedRepos}
+    />
+  );
 }

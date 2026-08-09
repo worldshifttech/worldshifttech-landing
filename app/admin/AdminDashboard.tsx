@@ -103,9 +103,11 @@ const IMPACT_TEXT: Record<string, string> = {
 export default function AdminDashboard({
   initialProjects,
   auditEstimates,
+  linkedRepos,
 }: {
   initialProjects: AdminProject[];
   auditEstimates: AuditEstimate[];
+  linkedRepos: Record<string, { id: string; label: string }[]>;
 }) {
   const router = useRouter();
   const [projects] = useState<AdminProject[]>(initialProjects);
@@ -332,7 +334,9 @@ export default function AdminDashboard({
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {projects.map((project) => (
+                  {projects.map((project) => {
+                    const repoChips = linkedRepos[project.id] ?? [];
+                    return (
                     <Link
                       key={project.id}
                       href={`/admin/projects/${project.id}`}
@@ -351,6 +355,21 @@ export default function AdminDashboard({
                         >
                           {project.client_name ?? "No client name set"}
                         </p>
+                        {repoChips.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {repoChips.map((chip) => (
+                              <a
+                                key={chip.id}
+                                href={`/admin/repos/${chip.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 hover:bg-[#91B6BB]/30 transition-colors"
+                                style={{ fontFamily: "var(--font-poppins)" }}
+                              >
+                                {chip.label}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <div className="hidden sm:block w-32 flex-shrink-0">
@@ -382,7 +401,8 @@ export default function AdminDashboard({
                         {project.access_mode === "public" ? "Public" : "Password"}
                       </span>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </>
