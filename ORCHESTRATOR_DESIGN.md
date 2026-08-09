@@ -397,6 +397,20 @@ whether the happy path works. The happy path does work — every step of that te
 cleanly through `agent_sessions` and `review_items` exactly as designed. These are the gaps
 underneath it, not a report that something is currently broken:
 
+- **Answering a `consolidated_review` card's open questions does not change what a build
+  session executes.** Caught live during round 2 of this same test: `ReviewInboxClient.tsx`'s
+  `handleRunBuildSession` sends `brief: item.proposed_content` to `/api/orchestrator/dispatch`
+  — `item.drew_response` (and the answers to `open_questions`) are persisted to the row and
+  displayed on the card, but never read into the dispatch payload. If a planning session's
+  proposed build prompt contains something wrong and Drew corrects it via the open-questions
+  flow, clicking the card's own "Run Build Session" button silently discards that correction
+  and runs the original, uncorrected prompt. The only way to actually apply a correction
+  today is to bypass that button entirely and use "Run Custom Build Session" on the repo's
+  own page with a hand-edited brief — which most people would have no reason to know, since
+  the card's UI gives no indication that answering it doesn't do what it visually implies.
+  Real fix: either merge `drew_response` into the brief actually sent (append it as
+  additional context the build session must honor), or make `proposed_content` itself
+  editable on the card before dispatch, the way `kb_entry_draft` cards already are.
 - **"Review" can collapse into reading the agent's own account of its own work, not the
   diff.** The `build_result` card shows a summary, a PR link, a preview link — nothing
   inline shows the actual diff. Nothing in the UI requires the extra hop to GitHub before
