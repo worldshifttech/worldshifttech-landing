@@ -1,5 +1,51 @@
 ﻿Last session: 67
 
+## Next session pointer — read this first, Planning Mode starts here
+
+Drew is closing out a very long same-day session and opening a fresh Claude Code
+session to continue deliberately, rather than keep going in an increasingly long
+conversation. Next "Planning session" should cover these two, in whichever order makes
+sense once actually explored — both are real, motivated asks from today, not
+speculative:
+
+**1. A real resume/handoff mechanism for orchestrator build sessions.** Today, a build
+session that runs long (turn-limit or timeout cutoff) has no structured way to hand off
+"here's what's done, here's what's left" to a follow-up dispatch — every split/follow-up
+prompt so far has been hand-written by a human/Claude after manually reading what
+happened. The dispatch payload already has a `resume_context` field
+(`lib/orchestrator-dispatch.ts` → `wst-orchestrator-runner`'s `client_payload`) that's
+existed since early on but has always been sent as `null`, explicitly commented
+`// reserved; unused`. This spans both repos: the runner side needs a self-reported
+checkpoint file (same proven pattern as `/tmp/kb-draft.json` and `/tmp/pr-result.json` —
+see `wst-orchestrator-runner`'s own NOTES.md Sessions 2 and 5) written on a cutoff or
+at logical stopping points, and the control plane needs to actually read/thread that
+into `resume_context` on a follow-up dispatch instead of leaving it null forever. Also
+worth revisiting while in this area: `wst-orchestrator-runner`'s build job's
+`--max-turns` is a flat count (currently 120, raised from 60 same day — see that repo's
+NOTES.md Session 7), which can't distinguish "stuck/looping" from "genuinely large task
+making real progress" — the actual thing worth guarding against (a runaway unattended
+session) might be better served by a cost- or progress-based ceiling than a turn count.
+Not required for item 1 to land, but flagged since it came up in the same discussion.
+
+**2. An "Archive" state for review_items — the Pending/Answered split is confusing in
+practice.** Drew's own words: "if the build is live and working... it removes the
+answer. The answer needs to be just a way to get archived once it's actually been
+successfully implemented." Concretely: "Answered" currently accumulates everything ever
+answered, mixing "just merged, not yet confirmed live" with "confirmed working weeks
+ago" — no way to tell which is which at a glance. The shape that matches what Drew
+described is a **manual** archive action (a button, Drew clicks it once *he's* personally
+confirmed the real thing is actually live and working) — explicitly not an automatic
+"deploy succeeded so mark it archived" system. Today's own session found multiple real
+cases where a deploy succeeded cleanly but the actual feature was still broken (the
+ambiguous-PostgREST-embed bug, the contact-form honeypot overflow) — a deploy-success
+signal alone is not trustworthy evidence a specific change actually works, so this
+shouldn't try to infer that automatically. Likely shape: a third `review_items.status`
+value (`'archived'`, alongside the existing `'pending' | 'answered'`), an "Archive"
+button on answered cards, and a third tab (or a toggle) on `ReviewList` so the default
+Answered view only shows things still worth glancing at.
+
+---
+
 ## Recent Changes (Session 67, August 8, 2026)
 
 **Fix: reviews silently disappeared — an unhinted PostgREST embed became ambiguous**
