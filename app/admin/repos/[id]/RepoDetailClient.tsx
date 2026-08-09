@@ -30,6 +30,7 @@ type RepoFields = {
   github_head_sha: string | null;
   drift_checked_at: string | null;
   system_group: string | null;
+  high_stakes: boolean;
 };
 
 type FeedbackItem = {
@@ -71,6 +72,10 @@ export default function RepoDetailClient({
   const [frameworkType, setFrameworkType] = useState(repo.framework_type);
   const [authConvention, setAuthConvention] = useState(repo.auth_convention);
   const [systemGroup, setSystemGroup] = useState(repo.system_group ?? "");
+  // Session 71 — gates an extra confirmation step before Merge to Production on this
+  // repo's own review cards. Real client work got the exact same one-click merge trust as
+  // a personal test repo before this existed. See ORCHESTRATOR_DESIGN.md §11.
+  const [highStakes, setHighStakes] = useState(repo.high_stakes);
   const [clientProjectId, setClientProjectId] = useState(repo.client_project_id ?? "");
   const [automationEnabled, setAutomationEnabled] = useState(repo.automation_enabled);
   const [planningIntervalHours, setPlanningIntervalHours] = useState(
@@ -468,6 +473,7 @@ export default function RepoDetailClient({
           framework_type: frameworkType,
           auth_convention: authConvention,
           system_group: systemGroup.trim() || null,
+          high_stakes: highStakes,
           client_project_id: clientProjectId || null,
           automation_enabled: automationEnabled,
           planning_interval_hours: planningIntervalHours ? Number(planningIntervalHours) : null,
@@ -618,6 +624,21 @@ export default function RepoDetailClient({
               <p className="text-[#76777A] text-xs mt-1">
                 Shown as a badge on the fleet list and in this repo&apos;s dispatched GitHub Actions run titles.
                 Repos sharing the same text are treated as one system — free text, not a fixed list.
+              </p>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                <input
+                  type="checkbox"
+                  checked={highStakes}
+                  onChange={(e) => setHighStakes(e.target.checked)}
+                />
+                High stakes
+                <InfoTooltip text="Adds an extra confirmation step before Merge to Production on this repo's own review cards — real client work, or anything else where a mistake actually costs something. Everything else about the flow stays identical." />
+              </label>
+              <p className="text-[#76777A] text-xs mt-1">
+                Turn this on for repos where merging the wrong thing has real consequences.
               </p>
             </div>
 

@@ -34,6 +34,9 @@ export type ReviewItem = {
   archived_at: string | null;
   repo_id: string | null;
   repo_name: string;
+  // Session 71 — gates an extra confirmation step before Merge to Production. See
+  // ORCHESTRATOR_DESIGN.md §11.
+  repo_high_stakes: boolean;
   session_type: string;
   pr_url: string | null;
   pr_preview_url: string | null;
@@ -120,6 +123,36 @@ const DECISION_BUTTON_STYLE_UNSELECTED: Record<DecisionOption["style"], string> 
   danger: "border border-red-300 text-red-400 hover:bg-red-50",
 };
 
+// ─── Diff view (Session 71) ─────────────────────────────────────────────────
+// Plain unified-diff text, colored per line the same way GitHub does — additions green,
+// removals red, hunk headers teal, everything else (file headers, context lines) default.
+// No syntax highlighting beyond that; this is meant to make it fast to see what actually
+// changed, not to replace GitHub's own PR view for anything more involved.
+
+function diffLineClass(line: string): string {
+  if (line.startsWith("+++") || line.startsWith("---")) return "text-[#76777A]";
+  if (line.startsWith("+")) return "text-green-600";
+  if (line.startsWith("-")) return "text-red-500";
+  if (line.startsWith("@@")) return "text-[#4B858E] font-semibold";
+  if (line.startsWith("diff --git") || line.startsWith("index ")) return "text-[#76777A]";
+  return "text-[#00205C]";
+}
+
+function DiffView({ diff }: { diff: string }) {
+  if (!diff.trim()) {
+    return <p className="text-[#76777A] text-xs">Empty diff.</p>;
+  }
+  return (
+    <pre className="max-h-96 overflow-y-auto overflow-x-auto bg-[#F4F2EE] border border-[#00205C]/[0.08] rounded-xl p-4 text-xs font-mono leading-relaxed">
+      {diff.split("\n").map((line, i) => (
+        <div key={i} className={diffLineClass(line)}>
+          {line || " "}
+        </div>
+      ))}
+    </pre>
+  );
+}
+
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function ReviewCard({
@@ -163,6 +196,15 @@ export function ReviewCard({
   // ORCHESTRATOR_DESIGN.md §11. Defaults to the original text; untouched, behavior is
   // identical to before.
   const [editedProposedContent, setEditedProposedContent] = useState(item.proposed_content ?? "");
+  // Session 71 — the actual PR diff, fetched on demand rather than eagerly on every card
+  // render (no reason to spend a GitHub API call on a card nobody opens). Closes a real
+  // gap: reviewing a build_result card meant reading its summary, not the change itself,
+  // since nothing here showed the diff without leaving for GitHub. See
+  // ORCHESTRATOR_DESIGN.md §11.
+  const [diffOpen, setDiffOpen] = useState(false);
+  const [diffText, setDiffText] = useState<string | null>(null);
+  const [diffLoading, setDiffLoading] = useState(false);
+  const [diffError, setDiffError] = useState("");
 
   const hasQuestions = item.open_questions.length > 0;
   const decisionOptions = hasQuestions ? undefined : DECISION_OPTIONS[item.kind];
@@ -337,6 +379,43 @@ export function ReviewCard({
     }
   }
 
+  // Toggles the inline diff view (Session 71). Fetches once and caches in state — reopening
+  // after a close doesn't re-fetch. No refetch-on-stale-close either: a build_result card's
+  // PR content doesn't change after the fact, so there's nothing to go stale.
+  async function handleToggleDiff() {
+    if (diffOpen) {
+      setDiffOpen(false);
+      return;
+    }
+    setDiffOpen(true);
+    if (diffText !== null) return;
+
+    setDiffLoading(true);
+    setDiffError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-reviews/${item.id}/diff`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDiffError(data.error ?? "Failed to load diff");
+        return;
+      }
+      setDiffText(data.diff ?? "");
+    } catch {
+      setDiffError("Something went wrong loading the diff.");
+    } finally {
+      setDiffLoading(false);
+    }
+  }
+
   // Removes the card outright, for stray/test dispatches that never should have been
   // real inbox items. Only pending cards get this control (see render below) — an
   // answered card is a real decision on record, not something to casually erase.
@@ -378,6 +457,14 @@ export function ReviewCard({
   // confirmation dialog beyond the button's own label — the whole point of this card
   // existing is that Drew already reviewed the preview before clicking it.
   async function handleMerge() {
+    // Session 71 — the one extra gate a high-stakes repo gets over any other: a plain
+    // confirm dialog naming the repo, same window.confirm() pattern already used for
+    // Delete elsewhere on this page. Everything else about the merge stays identical.
+    // See ORCHESTRATOR_DESIGN.md §11.
+    if (item.repo_high_stakes && !window.confirm(`${item.repo_name} is marked High Stakes. Merge to production anyway?`)) {
+      return;
+    }
+
     setMerging(true);
     setMergeError("");
 
@@ -713,6 +800,11 @@ export function ReviewCard({
           </span>
           <InfoTooltip text="A build session finished and opened a PR. Merge to Production squash-merges it to the target repo's main branch and triggers Vercel's auto-deploy — the one irreversible action in this whole flow." />
           <span className="text-[#00205C] text-sm font-medium">{item.repo_name}</span>
+          {item.repo_high_stakes && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#00205C]/10 text-[#00205C] border border-[#00205C]/30">
+              High Stakes
+            </span>
+          )}
           <span className="text-[#76777A] text-xs ml-auto">{relativeDate(item.created_at)}</span>
           <ArchiveControl />
           <button
@@ -751,7 +843,24 @@ export function ReviewCard({
               View Preview &rarr;
             </a>
           )}
+          {item.pr_url && (
+            <button
+              type="button"
+              onClick={handleToggleDiff}
+              disabled={diffLoading}
+              className="text-sm font-semibold text-[#4B858E] hover:underline disabled:opacity-50"
+            >
+              {diffLoading ? "Loading diff..." : diffOpen ? "Hide Diff" : "View Diff"}
+            </button>
+          )}
         </div>
+
+        {diffOpen && (
+          <div className="space-y-1">
+            {diffError && <p className="text-red-400 text-xs">{diffError}</p>}
+            {diffText !== null && <DiffView diff={diffText} />}
+          </div>
+        )}
 
         {/* proposed_content is unused by every other build_result field — repurposed
             here to carry SQL the build session extracted from its own PR description

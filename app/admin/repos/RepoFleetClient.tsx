@@ -27,6 +27,10 @@ export type Repo = {
   github_head_sha: string | null;
   drift_checked_at: string | null;
   system_group: string | null;
+  // Session 71 — gates an extra confirmation step before Merge to Production on this
+  // repo's own review cards. Real client work (this flag) got the exact same one-click
+  // merge trust as a personal test repo before this existed. See ORCHESTRATOR_DESIGN.md §11.
+  high_stakes: boolean;
 };
 
 // slug/access_mode/has_password added for the repo detail page's Client Portal section —
@@ -367,6 +371,15 @@ export default function RepoFleetClient({
                       <p className="text-[#00205C] font-medium truncate" style={{ fontFamily: "var(--font-poppins)" }}>
                         {repo.name}
                       </p>
+                      {repo.high_stakes && (
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#00205C]/10 text-[#00205C] border border-[#00205C]/30 flex-shrink-0"
+                          style={{ fontFamily: "var(--font-poppins)" }}
+                          title="Merge to Production requires an extra confirmation step on this repo's review cards"
+                        >
+                          High Stakes
+                        </span>
+                      )}
                       {repo.system_group && (
                         <span
                           className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 flex-shrink-0"

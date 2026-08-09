@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { projectTitle, userEmail, type, fileName, projectId, milestoneTitle, message } = body;
+  const { projectTitle, userEmail, type, fileName, projectId, milestoneTitle, message, repoName, repoId, sessionType } = body;
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) return NextResponse.json({}, { status: 200 });
 
   let text: string;
-  if (type === "file_upload") {
+  if (type === "session_failed") {
+    // Session 71 — closes a real gap found live: three orchestrator sessions failed
+    // silently on entos-group-website with zero notification anywhere, only discoverable
+    // by directly querying agent_sessions or GitHub Actions. See ORCHESTRATOR_DESIGN.md §11.
+    const label = sessionType === "build" ? "Build" : "Planning";
+    text = `🔴 ${label} session failed on *${repoName}*\nhttps://worldshifttech.com/admin/repos/${repoId}`;
+  } else if (type === "file_upload") {
     text = `📎 File uploaded: *${fileName}* on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\nhttps://worldshifttech.com/admin/projects/${projectId}`;
   } else if (type === "milestone_response") {
     text = `💬 Client response on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\n"${message}"\nhttps://worldshifttech.com/admin/projects/${projectId}`;

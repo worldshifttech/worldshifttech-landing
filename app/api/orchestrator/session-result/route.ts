@@ -88,6 +88,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
+  // Session 71 — closes a real gap found live during a full orchestrator test: three
+  // sessions failed on entos-group-website with zero notification anywhere, only
+  // discoverable by directly querying agent_sessions or GitHub Actions. Fire-and-forget,
+  // same pattern as every other notify-slack call site — a Slack hiccup must never fail
+  // this route, which is the one thing standing between a real failure and total silence.
+  // See ORCHESTRATOR_DESIGN.md §11.
+  if (status === "failed") {
+    const { data: sessionRow } = await supabase
+      .from("agent_sessions")
+      .select("session_type, repo_id, repos(name)")
+      .eq("id", session_id)
+      .single();
+
+    if (sessionRow?.repo_id) {
+      const repoName = (sessionRow.repos as unknown as { name: string } | null)?.name ?? "Unknown repo";
+      fetch(new URL("/api/notify-slack", req.nextUrl.origin), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "session_failed",
+          repoName,
+          repoId: sessionRow.repo_id,
+          sessionType: sessionRow.session_type,
+        }),
+      }).catch(() => {});
+    }
+  }
+
   if (review) {
     const { error: reviewError } = await supabase.from("review_items").insert({
       session_id,

@@ -1,4 +1,70 @@
-﻿Last session: 70
+﻿Last session: 71
+
+## Recent Changes (Session 71, August 9, 2026)
+
+**Three fixes closing risks from `ORCHESTRATOR_DESIGN.md` §11, scored and prioritized
+after the live test wrapped**
+
+Drew asked for a risk score on running new complex planning/build sessions. Scored eight
+dimensions against what the live test (Sessions 69-70, plus a real-history investigation
+of `entos-group-website`) actually found — five were genuinely fixable through code,
+three closed here, two (the resume/checkpoint writer, an enforced build-time quality
+gate) live in `wst-orchestrator-runner` and need their own exploration pass before
+touching. One (the agent's own reasoning being accurate) never fully goes to Low through
+tooling alone — the diff-view fix below reduces the friction of catching it, it doesn't
+eliminate the need to actually read it.
+
+**Silent failure → Low.** `notify-slack` gains a `session_failed` type
+(`app/api/notify-slack/route.ts`). `/api/orchestrator/session-result` fires it
+fire-and-forget (same `.catch(() => {})` pattern as `project-feedback`'s own Slack call,
+never allowed to fail the route it's attached to) whenever a session reports `status:
+"failed"`, looking up the repo name via a quick `agent_sessions` → `repos(name)` select.
+This closes a gap found live, not hypothetical: investigating `entos-group-website`'s
+real automation history surfaced three build failures over the prior few days with zero
+notification anywhere — one confirmed via GitHub Actions logs to have hit
+`terminal_reason: "max_turns"` after 34.6 minutes and $8.97 in Sonnet spend, producing no
+PR at all. All three were deleted from `agent_sessions` after investigation (per Drew's
+own request — nothing referenced them except one already-archived card's `linked_build`
+lookup, checked first).
+
+**Review without the diff → Low.** New `app/api/admin-reviews/[id]/diff/route.ts` —
+same GitHub App token-exchange pattern `[id]/merge` already uses, fetches a `build_result`
+card's actual PR via `Accept: application/vnd.github.v3.diff` and returns the raw text.
+`ReviewInboxClient.tsx` gains a "View Diff" toggle next to View PR/View Preview on
+`build_result` cards, fetched once on click and cached in state (no refetch on
+reopen — a merged/opened PR's diff doesn't change), rendered via a new `DiffView`
+component that colors each line the way GitHub does (green additions, red removals, teal
+hunk headers) without any real syntax highlighting beyond that. This directly targets the
+round 2 finding — the flawed dodge-fix framing was only caught because a diff got read by
+hand outside the dashboard; this makes that the default path, not an extra step.
+
+**Uniform trust regardless of stakes → Low.** New `repos.high_stakes` column (migration
+below). A checkbox on the repo's own Settings tab (`RepoDetailClient.tsx`, next to System
+Group), a badge on the fleet list (`RepoFleetClient.tsx`) and on that repo's own
+`build_result` cards, threaded through both review queries' `repos(...)` embed
+(`app/admin/reviews/page.tsx`, `app/admin/repos/[id]/page.tsx`) the same way `repo_name`
+already was. `handleMerge` in `ReviewInboxClient.tsx` gains one extra gate when the flag
+is set: a plain `window.confirm()` naming the repo, same pattern already used for
+Delete elsewhere on this page — no new UI paradigm, no per-repo config beyond the one
+checkbox. Everything else about the merge flow is byte-identical either way.
+
+**Deliberately not attempted here:** the resume/checkpoint writer and an enforced
+build-time lint/build gate both live in `wst-orchestrator-runner`, a repo whose actual
+source (workflow YAML, the scripts driving the Claude Code invocation) hasn't been read
+at all yet from this side — only its run logs and outcomes, from the outside via `gh`.
+Next step is reading that repo properly before proposing anything there, not guessing.
+
+Verified with `npx tsc --noEmit` and `npm run build` (both clean;
+`/api/admin-reviews/[id]/diff` listed among the built routes). `npm run lint` shows zero
+findings across every file this session touched.
+
+**SQL to run:**
+```sql
+-- MIGRATION: repos.high_stakes (Session 71)
+ALTER TABLE repos ADD COLUMN IF NOT EXISTS high_stakes boolean DEFAULT false;
+```
+
+---
 
 ## Recent Changes (Session 70, August 9, 2026)
 

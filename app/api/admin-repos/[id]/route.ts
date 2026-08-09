@@ -31,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     automation_enabled?: boolean;
     planning_interval_hours?: number | null;
     github_app_installation_id?: number | null;
+    high_stakes?: boolean;
   };
 
   const supabase = getSupabase();
@@ -48,6 +49,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     automation_enabled: Boolean(body.automation_enabled),
     planning_interval_hours: body.planning_interval_hours || null,
     github_app_installation_id: body.github_app_installation_id || null,
+    // Session 71 — real client work gets the exact same one-click merge trust as a
+    // personal test repo today. This is the only lever: an extra confirm step on Merge to
+    // Production, gated by this flag rather than inferred automatically. See
+    // ORCHESTRATOR_DESIGN.md §11.
+    high_stakes: Boolean(body.high_stakes),
     updated_at: new Date().toISOString(),
   };
 
