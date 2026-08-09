@@ -451,3 +451,19 @@ scrutiny because a second party (Claude, guiding the test) did it by hand, not b
 system enforces it structurally. Next rounds should specifically try to exercise the gaps
 above rather than repeat a trivial doc-only change: a `production_risk_flag` card, a build
 touching actual application logic, or a repo with real stakes.
+
+---
+
+## 12. Workflow ergonomics noted during live testing
+
+Distinct from §11 above — not risks to correctness or safety, just friction found while
+actually using the dashboard for a real test.
+
+- **No live update on `/admin/reviews`.** A pending card doesn't appear until the page is
+  manually refreshed after the session that produces it finishes — no polling, websocket,
+  or Supabase Realtime subscription tells the client anything changed. Noticed directly
+  during round 2 of the Session 69 live test: had to refresh to see the card land. The same
+  gap likely applies to watching a dispatched build session resolve on an already-open
+  answered card. Lightweight fix: poll `review_items`/`agent_sessions` on an interval
+  while any session tied to the current view is non-terminal, or subscribe via Supabase
+  Realtime on inserts/updates to those two tables scoped to what's currently visible.
