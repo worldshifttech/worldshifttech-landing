@@ -437,3 +437,17 @@ underneath it, not a report that something is currently broken:
 What's already solid and worth keeping exactly as-is: PR-not-direct-push, admin-only auth
 on every route, write-once credential fields, GitHub App short-lived tokens over a PAT, and
 Archive being a manual, deliberate action instead of automatic on deploy.
+
+**Round 1 confirmed clean (August 9, 2026):** the full loop — dispatch planning, review
+card, answer it, dispatch build, merge, archive — traced correctly against
+`forgotten-realms-dm` at every step, checked independently rather than taking the
+dashboard's own word for it: the merged commit SHA matched between the control plane and
+GitHub directly, the actual `main` branch content was fetched and confirmed to hold the
+change (not just the merge API's success response), and the build prompt's own claimed
+spell count was re-derived from the live source file rather than trusted. This doesn't
+retire any of the risks above — that independent verification is exactly the extra step
+risks 1 and 2 say the built-in workflow doesn't require on its own. This round got that
+scrutiny because a second party (Claude, guiding the test) did it by hand, not because the
+system enforces it structurally. Next rounds should specifically try to exercise the gaps
+above rather than repeat a trivial doc-only change: a `production_risk_flag` card, a build
+touching actual application logic, or a repo with real stakes.
