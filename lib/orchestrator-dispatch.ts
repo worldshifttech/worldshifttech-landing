@@ -17,6 +17,7 @@ export async function dispatchOrchestratorSession({
   brief,
   sourceReviewItemId,
   resumeFromSessionId,
+  contextFiles,
 }: {
   repoId: string;
   sessionType: "planning" | "build";
@@ -28,6 +29,11 @@ export async function dispatchOrchestratorSession({
   // of restarting from scratch. Never hard-fails a dispatch over a missing/mismatched id —
   // worst case is the same as today, resume_context: null. See NOTES.md.
   resumeFromSessionId?: string;
+  // Session 80 — files/screenshots an admin attached as extra context before dispatching.
+  // Control-plane half only: this signs read URLs and threads them into the dispatch
+  // payload, but nothing in wst-orchestrator-runner reads them into a run yet. See
+  // ORCHESTRATOR_DESIGN.md §4.
+  contextFiles?: { file_name: string; storage_path: string; content_type?: string }[];
 }): Promise<DispatchResult> {
   const runnerRepo = process.env.WST_ORCHESTRATOR_RUNNER_REPO;
   if (!runnerRepo) {
@@ -131,6 +137,46 @@ export async function dispatchOrchestratorSession({
       }
     }
 
+    // Context files (Session 80): an admin can attach files/screenshots as extra context
+    // before dispatching. Best-effort per file, same fail-open posture as the reuse_count
+    // bump and the resume lookup above — a signing hiccup on one file must never block the
+    // dispatch itself. Control-plane half only: nothing downloads these URLs into the
+    // runner's checkout yet, see ORCHESTRATOR_DESIGN.md §4.
+    let sessionContextFiles: { file_name: string; url: string; content_type: string | null }[] | null = null;
+    if (contextFiles && contextFiles.length > 0) {
+      const signed: { file_name: string; url: string; content_type: string | null }[] = [];
+      for (const file of contextFiles) {
+        try {
+          const { data: signedUrlData, error: signError } = await supabase.storage
+            .from("session-context-files")
+            .createSignedUrl(file.storage_path, 60 * 60 * 24);
+          if (signError || !signedUrlData) {
+            console.error("[orchestrator-dispatch] context file sign failed:", signError?.message);
+            continue;
+          }
+
+          const { error: insertError } = await supabase.from("agent_session_context_files").insert({
+            session_id: session.id,
+            file_name: file.file_name,
+            storage_path: file.storage_path,
+            content_type: file.content_type ?? null,
+          });
+          if (insertError) {
+            console.error("[orchestrator-dispatch] context file insert failed:", insertError.message);
+          }
+
+          signed.push({
+            file_name: file.file_name,
+            url: signedUrlData.signedUrl,
+            content_type: file.content_type ?? null,
+          });
+        } catch (err) {
+          console.error("[orchestrator-dispatch] context file handling failed:", err);
+        }
+      }
+      sessionContextFiles = signed.length > 0 ? signed : null;
+    }
+
     const dispatchRes = await fetch(`https://api.github.com/repos/${runnerRepo}/dispatches`, {
       method: "POST",
       headers: {
@@ -149,6 +195,7 @@ export async function dispatchOrchestratorSession({
           github_repo: repo.github_repo,
           resume_context: resumeContext,
           knowledge_context: knowledgeContext,
+          context_files: sessionContextFiles,
           // Purely a display label for the runner's run-name title — no dispatch
           // behavior depends on it. null when this repo has no group set.
           system_group: repo.system_group ?? null,
