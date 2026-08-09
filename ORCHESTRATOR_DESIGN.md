@@ -421,6 +421,18 @@ underneath it, not a report that something is currently broken:
   it, specifically to test whether the last gate before merge (reading the actual diff)
   catches and corrects a problem that slipped past an earlier one — see the round 2 result
   entry below once it lands.
+
+  **Round 2's actual outcome:** the flawed dispatch ran to completion and opened PR #2 on
+  `forgotten-realms-dm`. The inaccurate framing landed exactly where predicted, verbatim,
+  in both `NOTES.md` and `README.md` — the built-in workflow did not stop it. Reading the
+  diff before merge did: caught immediately, corrected with a follow-up commit pushed
+  directly to the PR branch before Drew clicked merge, verified the fix reads correctly
+  afterward. The actual code change (`KW_COMBAT`'s bare `'dodge'` → the specific phrase
+  list) was correct and safe the whole time; only the prose explaining it was wrong. Net
+  result: the last gate held, but only because it was actually used — the same point risk
+  1 below makes, now demonstrated rather than just argued. Session 70 (this repo) shipped
+  the same day to close the actual gap: a `consolidated_review` card's build prompt is now
+  editable before dispatch, so a correction like this one can be applied, not just recorded.
 - **"Review" can collapse into reading the agent's own account of its own work, not the
   diff.** The `build_result` card shows a summary, a PR link, a preview link — nothing
   inline shows the actual diff. Nothing in the UI requires the extra hop to GitHub before
