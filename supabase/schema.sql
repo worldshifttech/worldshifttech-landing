@@ -652,3 +652,13 @@ ON CONFLICT (slug) DO NOTHING;
 UPDATE projects
 SET title = 'Onboarding', client_id = (SELECT id FROM client_hubs WHERE slug = 'entos')
 WHERE slug = 'client-onboarding' AND client_id IS NULL;
+
+-- ============================================================
+-- MIGRATION: project_feedback.attached_file_id (Session 78)
+-- Raising an open item and attaching a file used to be two disconnected actions — this
+-- column lets one submission carry both. The upload itself still goes through the existing
+-- project_files table/signed-URL flow unchanged; this is just the link back to whichever
+-- feedback row it was submitted with. ON DELETE SET NULL — deleting the file shouldn't
+-- delete the ticket, just drop its attachment.
+-- ============================================================
+ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS attached_file_id uuid REFERENCES project_files(id) ON DELETE SET NULL;

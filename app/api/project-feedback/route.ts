@@ -13,9 +13,10 @@ export async function POST(req: NextRequest) {
     milestoneId?: string;
     message?: string;
     turnstileToken?: string;
+    attachedFileId?: string;
   };
 
-  const { projectId, slug, milestoneId, message, turnstileToken } = body;
+  const { projectId, slug, milestoneId, message, turnstileToken, attachedFileId } = body;
 
   if (!projectId || !slug || !message) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -34,6 +35,22 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = getSupabase();
+
+  // Session 78 — a ticket can now carry one attached file (uploaded just before this call,
+  // same signed-URL flow /api/project-files already gates). Confirm it actually belongs to
+  // this project before linking it — cheap defense in depth; the display side already only
+  // resolves a download URL for files matching the current project regardless.
+  let verifiedAttachedFileId: string | null = null;
+  if (attachedFileId) {
+    const { data: attachedFile } = await supabase
+      .from("project_files")
+      .select("id")
+      .eq("id", attachedFileId)
+      .eq("project_id", projectId)
+      .single();
+    verifiedAttachedFileId = attachedFile?.id ?? null;
+  }
+
   const { data, error } = await supabase
     .from("project_feedback")
     .insert({
@@ -41,6 +58,7 @@ export async function POST(req: NextRequest) {
       milestone_id: milestoneId ?? null,
       message: message.trim(),
       status: "new",
+      attached_file_id: verifiedAttachedFileId,
     })
     .select("id")
     .single();

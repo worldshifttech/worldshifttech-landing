@@ -1,4 +1,56 @@
-﻿Last session: 77
+﻿Last session: 78
+
+## Recent Changes (Session 78, August 9, 2026)
+
+**Progress bar hidden until there's something to actually track**
+
+"For a [project] with no set milestones given the project scope the progress bar is no
+longer needed" — a stalled 0% bar reads as broken, not "nothing started yet." Both surfaces
+now hide it the same way: `app/projects/[slug]/page.tsx`'s own Progress card only shows the
+percent bar/number when `milestones.length > 0` (the card itself is only omitted entirely if
+there's *also* no next-update note, expected-by date, or budget line — otherwise those still
+render on their own). `app/clients/[slug]/page.tsx`'s hub list does the same per project, now
+fetching milestone counts for every listed project (grouped in JS, same pattern as the admin
+dashboard's linked-repo chips — no RPC/view for this, counts are small) rather than trusting
+`percent_complete` alone, since that field is set manually and isn't actually derived from
+milestones. Both reappear automatically the moment a first milestone is added — nothing to
+toggle by hand.
+
+**Open Items can carry one attached file, submitted as a single action**
+
+"The client should be able to open an item... and the ability to attach files, or paste
+text, will be part of that submission" — raising a ticket and attaching a file used to be
+two disconnected UI sections (`OpenItems.tsx`'s form, and a completely separate `Files`
+list) with no way to say "this file is about that message." New
+`project_feedback.attached_file_id` (FK to `project_files`, `ON DELETE SET NULL`) links
+them. `OpenItems.tsx`'s form gains an optional file input; on submit, a selected file goes
+through the exact same signed-upload-URL flow `FileUploads.tsx` already used
+(`/api/project-files/upload-url` → `uploadToSignedUrl` → `/api/project-files` to confirm),
+then the returned file id is sent alongside the feedback submission.
+`/api/project-feedback` verifies server-side that a client-supplied `attachedFileId`
+actually belongs to the same project before storing it (cheap defense in depth — the
+display side already only resolves a download URL for files matching the current project
+regardless, so this couldn't have leaked anything, just tightens the data itself).
+`app/projects/[slug]/page.tsx` resolves each item's attachment against the `files` array
+already fetched for the Files section (same already-signed, forced-download URLs, no second
+query) rather than a fresh lookup.
+
+**Deliberately unchanged:** the standalone `Files` section (`FileUploads.tsx`) stays exactly
+as it was — it's not redundant with this, since it's also how Drew sends files *down* to a
+client (`uploaded_by: "drew"`, a separate admin-side uploader), not just how a client sends
+files up. Only the client's own "raise a ticket" flow gained the ability to attach something
+at submission time.
+
+Verified with `npx tsc --noEmit`, `npm run build`, and `npx eslint` scoped to every changed
+file — lint caught one real unescaped apostrophe in `OpenItems.tsx`'s new copy before it
+shipped, not after.
+
+**SQL to run — before deploy, same discipline as Session 76's `client_hubs` migration:**
+```sql
+ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS attached_file_id uuid REFERENCES project_files(id) ON DELETE SET NULL;
+```
+
+---
 
 ## Recent Changes (Session 77, August 9, 2026)
 

@@ -45,6 +45,21 @@ export default async function ClientHubPage({ params }: PageProps) {
     .eq("client_id", client.id)
     .order("created_at", { ascending: false });
 
+  // Session 78 — same reasoning as the project's own Progress card: a mini bar stuck at 0%
+  // reads as stalled, not "not started yet," so it's hidden per-project until that project
+  // has at least one milestone. Grouped in JS, not a SQL group-by — same pattern already used
+  // for the admin dashboard's linked-repo chips (no RPC/view for this, the counts are small).
+  const projectIds = (projects ?? []).map((p) => p.id);
+  const { data: milestoneRows } =
+    projectIds.length > 0
+      ? await supabase.from("project_milestones").select("project_id").in("project_id", projectIds)
+      : { data: [] as { project_id: string }[] };
+  const milestoneCounts = new Map<string, number>();
+  for (const m of milestoneRows ?? []) {
+    const pid = m.project_id as string;
+    milestoneCounts.set(pid, (milestoneCounts.get(pid) ?? 0) + 1);
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F2EE]">
       <nav className="w-full bg-white border-b border-[#00205C]/10">
@@ -69,21 +84,31 @@ export default async function ClientHubPage({ params }: PageProps) {
             <p className="text-[#76777A] text-sm">No projects yet. Check back soon.</p>
           ) : (
             <div className="space-y-3">
-              {projects.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/projects/${p.slug}`}
-                  className="flex items-center justify-between gap-4 px-6 py-5 border border-[#00205C]/10 rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[#00205C] font-medium truncate">{p.title}</p>
-                    <div className="h-1.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden mt-2 w-40">
-                      <div className="h-full bg-[#4B858E] rounded-full" style={{ width: `${p.percent_complete}%` }} />
+              {projects.map((p) => {
+                const hasMilestones = (milestoneCounts.get(p.id) ?? 0) > 0;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/projects/${p.slug}`}
+                    className="flex items-center justify-between gap-4 px-6 py-5 border border-[#00205C]/10 rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#00205C] font-medium truncate">{p.title}</p>
+                      {hasMilestones && (
+                        <div className="h-1.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden mt-2 w-40">
+                          <div
+                            className="h-full bg-[#4B858E] rounded-full"
+                            style={{ width: `${p.percent_complete}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <span className="text-[#76777A] text-xs flex-shrink-0">{p.percent_complete}%</span>
-                </Link>
-              ))}
+                    {hasMilestones && (
+                      <span className="text-[#76777A] text-xs flex-shrink-0">{p.percent_complete}%</span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

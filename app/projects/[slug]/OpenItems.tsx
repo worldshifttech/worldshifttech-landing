@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
+import { getSupabaseBrowser } from "@/lib/supabase";
 
 export type OpenItem = {
   id: string;
@@ -10,6 +11,7 @@ export type OpenItem = {
   status: string;
   created_at: string;
   milestone_title: string | null;
+  attached_file: { file_name: string; downloadUrl: string | null } | null;
 };
 
 const STATUS_BADGE: Record<string, string> = {
@@ -24,6 +26,8 @@ const STATUS_LABEL: Record<string, string> = {
   resolved: "Resolved",
 };
 
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
 function relativeDate(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / 86400000);
@@ -36,6 +40,14 @@ function relativeDate(dateStr: string): string {
 // General, always-available place to raise or track an open item that isn't tied to a
 // specific milestone's "Action needed" panel — closes the gap that blocked this portal
 // from replacing a client's own separate feedback/open-items site. See NOTES.md Session 73.
+//
+// Session 78 — a ticket and an attachment used to be two disconnected actions (this form,
+// and a completely separate Files section with no way to say "this file is about that
+// message"). An open item can now carry one optional file, submitted together as a single
+// action: uploads through the same signed-URL flow FileUploads.tsx already uses, then links
+// the resulting project_files row to this feedback row via attached_file_id. The standalone
+// Files section is unchanged and still exists — it's also where Drew sends files down to the
+// client, not just where the client sends files up, so it isn't redundant with this.
 export default function OpenItems({
   projectId,
   slug,
@@ -47,6 +59,7 @@ export default function OpenItems({
 }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -83,8 +96,54 @@ export default function OpenItems({
       return;
     }
 
+    const file = fileInputRef.current?.files?.[0];
+    if (file && file.size > MAX_FILE_SIZE) {
+      setError("Files are limited to 25MB.");
+      return;
+    }
+
     setSubmitting(true);
     try {
+      let attachedFileId: string | undefined;
+
+      if (file) {
+        const urlRes = await fetch("/api/project-files/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId,
+            slug,
+            fileName: file.name,
+            fileSize: file.size,
+            uploadedBy: "client",
+            turnstileToken,
+          }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok) throw new Error(urlData.error ?? "Could not start upload");
+
+        const supabase = getSupabaseBrowser();
+        const { error: uploadError } = await supabase.storage
+          .from("project-files")
+          .uploadToSignedUrl(urlData.path, urlData.token, file);
+        if (uploadError) throw new Error(uploadError.message);
+
+        const confirmRes = await fetch("/api/project-files", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId,
+            slug,
+            storagePath: urlData.path,
+            fileName: file.name,
+            uploadedBy: "client",
+          }),
+        });
+        const confirmData = await confirmRes.json().catch(() => ({}));
+        if (!confirmRes.ok) throw new Error(confirmData.error ?? "Could not save the attached file");
+        attachedFileId = confirmData.id;
+      }
+
       const res = await fetch("/api/project-feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,12 +153,14 @@ export default function OpenItems({
           milestoneId: null,
           message: message.trim(),
           turnstileToken,
+          attachedFileId,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Could not submit");
 
       setMessage("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setSent(true);
       router.refresh();
     } catch (err) {
@@ -138,6 +199,14 @@ export default function OpenItems({
                 </span>
               </div>
               <p className="text-[#00205C] text-sm">{item.message}</p>
+              {item.attached_file && item.attached_file.downloadUrl && (
+                <a
+                  href={item.attached_file.downloadUrl}
+                  className="inline-block mt-2 text-xs font-semibold px-3 py-1 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                >
+                  {item.attached_file.file_name}
+                </a>
+              )}
               <p className="text-[#76777A] text-xs mt-1">{relativeDate(item.created_at)}</p>
             </div>
           ))}
@@ -152,6 +221,10 @@ export default function OpenItems({
           rows={3}
           className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 resize-none"
         />
+        <div>
+          <input ref={fileInputRef} type="file" className="block w-full text-sm text-[#00205C]" />
+          <p className="text-[#76777A] text-xs mt-1">Attach a file if it&apos;s relevant — optional.</p>
+        </div>
         {/* Turnstile widget — rendered explicitly via turnstile.render() in useEffect */}
         <div id={widgetId} />
         {error && <p className="text-red-400 text-xs">{error}</p>}

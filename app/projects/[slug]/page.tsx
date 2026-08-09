@@ -128,16 +128,32 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
     .order("created_at", { ascending: false });
 
   const milestoneTitleById = new Map((milestones ?? []).map((m) => [m.id, m.title as string]));
+  // Session 78 — an open item's attached file is resolved against the same `files` array
+  // already fetched above (with its already-signed, forced-download URL), not a second
+  // query. Also means a feedback row pointing at a file outside this project (shouldn't
+  // happen — /api/project-feedback verifies ownership before storing it — but belt and
+  // braces) just resolves to no attachment instead of leaking anything.
+  const fileById = new Map(files.map((f) => [f.id, f]));
 
-  const openItems = (feedbackRows ?? []).map((f) => ({
-    id: f.id as string,
-    message: f.message as string,
-    status: f.status as string,
-    created_at: f.created_at as string,
-    milestone_title: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
-  }));
+  const openItems = (feedbackRows ?? []).map((f) => {
+    const attachedFile = f.attached_file_id ? fileById.get(f.attached_file_id as string) : undefined;
+    return {
+      id: f.id as string,
+      message: f.message as string,
+      status: f.status as string,
+      created_at: f.created_at as string,
+      milestone_title: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
+      attached_file: attachedFile ? { file_name: attachedFile.file_name, downloadUrl: attachedFile.downloadUrl } : null,
+    };
+  });
 
   const nextDue = formatDate(project.next_due_date);
+  // Session 78 — the percent bar reads as a stalled 0% before any milestone exists rather
+  // than "no data yet," so it's hidden until there's at least one to actually track against.
+  // Reappears automatically the moment a milestone is added. The rest of the status card
+  // (next update / expected by / budget) is independent of milestones and unaffected.
+  const hasMilestoneProgress = (milestones ?? []).length > 0;
+  const hasAnyStatusInfo = hasMilestoneProgress || project.next_update_note || nextDue || budgetLine;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F2EE]">
@@ -164,39 +180,45 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
           )}
           <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] leading-snug mb-6">{project.title}</h1>
 
-          {/* Status summary */}
-          <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">Progress</span>
-              <span className="text-[#00205C] text-sm font-semibold">{project.percent_complete}%</span>
-            </div>
-            <div className="h-2 bg-[#00205C]/[0.08] rounded-full overflow-hidden mb-5">
-              <div
-                className="h-full bg-[#4B858E] rounded-full"
-                style={{ width: `${project.percent_complete}%` }}
-              />
-            </div>
+          {/* Status summary — omitted entirely if there's nothing to show yet */}
+          {hasAnyStatusInfo && (
+            <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6 mb-8">
+              {hasMilestoneProgress && (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E]">Progress</span>
+                    <span className="text-[#00205C] text-sm font-semibold">{project.percent_complete}%</span>
+                  </div>
+                  <div className="h-2 bg-[#00205C]/[0.08] rounded-full overflow-hidden mb-5">
+                    <div
+                      className="h-full bg-[#4B858E] rounded-full"
+                      style={{ width: `${project.percent_complete}%` }}
+                    />
+                  </div>
+                </>
+              )}
 
-            {project.next_update_note && (
-              <div className="mb-2">
-                <span className="text-[#76777A] text-xs block mb-0.5">Next update</span>
-                <p className="text-[#00205C] text-sm">{project.next_update_note}</p>
-              </div>
-            )}
-            {nextDue && (
-              <div>
-                <span className="text-[#76777A] text-xs block mb-0.5">Expected by</span>
-                <p className="text-[#00205C] text-sm">{nextDue}</p>
-              </div>
-            )}
+              {project.next_update_note && (
+                <div className="mb-2">
+                  <span className="text-[#76777A] text-xs block mb-0.5">Next update</span>
+                  <p className="text-[#00205C] text-sm">{project.next_update_note}</p>
+                </div>
+              )}
+              {nextDue && (
+                <div>
+                  <span className="text-[#76777A] text-xs block mb-0.5">Expected by</span>
+                  <p className="text-[#00205C] text-sm">{nextDue}</p>
+                </div>
+              )}
 
-            {budgetLine && (
-              <div className="mt-4 pt-4 border-t border-[#00205C]/[0.08]">
-                <span className="text-[#76777A] text-xs block mb-0.5">Budget</span>
-                <p className="text-[#00205C] text-sm">{budgetLine}</p>
-              </div>
-            )}
-          </div>
+              {budgetLine && (
+                <div className="mt-4 pt-4 border-t border-[#00205C]/[0.08]">
+                  <span className="text-[#76777A] text-xs block mb-0.5">Budget</span>
+                  <p className="text-[#00205C] text-sm">{budgetLine}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Milestones */}
           <div className="mb-8">
