@@ -78,7 +78,13 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
 
   const files = await Promise.all(
     (fileRows ?? []).map(async (f) => {
-      const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(f.storage_path, 3600);
+      // download option forces Content-Disposition: attachment regardless of the
+      // uploaded file's content type — the bucket has no MIME-type restriction, so
+      // without this an uploaded HTML/SVG file could render inline in-browser instead
+      // of downloading, a stored-XSS path. See same-day security review.
+      const { data: signed } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(f.storage_path, 3600, { download: f.file_name });
       return {
         id: f.id,
         file_name: f.file_name,

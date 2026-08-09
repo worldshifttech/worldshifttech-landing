@@ -125,7 +125,7 @@ export default async function AdminSpendPage() {
           {sessions.length === 0 ? (
             <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6">
               <p className="text-[#00205C] text-sm">
-                No spend data yet — cost tracking started August 9, 2026 (Session 72). It'll
+                No spend data yet — cost tracking started August 9, 2026 (Session 72). It&apos;ll
                 fill in as new planning and build sessions dispatch.
               </p>
             </div>

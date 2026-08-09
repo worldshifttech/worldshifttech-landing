@@ -71,7 +71,12 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
 
   const files = await Promise.all(
     (fileRows ?? []).map(async (f) => {
-      const { data: signed } = await serviceClient.storage.from(BUCKET).createSignedUrl(f.storage_path, 3600);
+      // download option forces Content-Disposition: attachment regardless of the
+      // uploaded file's content type — see app/projects/[slug]/page.tsx's own comment
+      // and the same-day security review for why this matters even on the admin side.
+      const { data: signed } = await serviceClient.storage
+        .from(BUCKET)
+        .createSignedUrl(f.storage_path, 3600, { download: f.file_name });
       return {
         id: f.id,
         file_name: f.file_name,

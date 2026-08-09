@@ -46,8 +46,8 @@ export default function FileUploads({
   useEffect(() => {
     if (!scriptLoaded) return;
     const el = document.getElementById("cf-widget-files");
-    if (!el || !(window as any).turnstile) return;
-    (window as any).turnstile.render(el, {
+    if (!el || !window.turnstile) return;
+    window.turnstile.render(el, {
       sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
       callback: (token: string) => setTurnstileToken(token),
     });
