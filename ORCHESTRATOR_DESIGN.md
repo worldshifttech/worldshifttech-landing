@@ -411,6 +411,16 @@ underneath it, not a report that something is currently broken:
   Real fix: either merge `drew_response` into the brief actually sent (append it as
   additional context the build session must honor), or make `proposed_content` itself
   editable on the card before dispatch, the way `kb_entry_draft` cards already are.
+
+  **This actually happened, not just a hypothetical:** during round 2 of this same test,
+  Drew answered the card correctly (see the free-text correction above) and then clicked
+  the card's own "Run Build Session" anyway, dispatching the original uncorrected prompt.
+  His own words on it: "I made a mistake and that's bound to happen, the system needs to
+  catch when I potentially make mistakes like this one, or a corrected prompt needs to be
+  added before built." Decided to let that dispatch run to completion rather than cancel
+  it, specifically to test whether the last gate before merge (reading the actual diff)
+  catches and corrects a problem that slipped past an earlier one — see the round 2 result
+  entry below once it lands.
 - **"Review" can collapse into reading the agent's own account of its own work, not the
   diff.** The `build_result` card shows a summary, a PR link, a preview link — nothing
   inline shows the actual diff. Nothing in the UI requires the extra hop to GitHub before
