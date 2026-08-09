@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
-import { getSupabaseBrowser } from "@/lib/supabase";
 
 type ProjectFile = {
   id: string;
@@ -14,8 +12,6 @@ type ProjectFile = {
   downloadUrl: string | null;
 };
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
-
 function relativeDate(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / 86400000);
@@ -25,115 +21,51 @@ function relativeDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+// Read-only list of files, plus deletion for the client's own uploads only — Drew's own
+// uploads (deliverables sent down) aren't deletable from here, only from the admin side.
+// The upload action itself moved to SubmitFeedback.tsx — a file only ever arrives here as
+// part of a feedback submission now, not through a standalone upload widget on this page,
+// so there's no Turnstile here anymore either.
 export default function FileUploads({
-  projectId,
   slug,
   files,
 }: {
-  projectId: string;
   slug: string;
   files: ProjectFile[];
 }) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [note, setNote] = useState("");
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Explicit Turnstile render, same pattern as app/meet/page.tsx.
-  useEffect(() => {
-    if (!scriptLoaded) return;
-    const el = document.getElementById("cf-widget-files");
-    if (!el || !window.turnstile) return;
-    window.turnstile.render(el, {
-      sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
-      callback: (token: string) => setTurnstileToken(token),
-    });
-  }, [scriptLoaded]);
-
-  async function handleUpload(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleDelete(id: string) {
     setError("");
-
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      setError("Choose a file first.");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      setError("Files are limited to 25MB.");
-      return;
-    }
-    if (!turnstileToken) {
-      setError("Please complete the verification widget.");
-      return;
-    }
-
-    setUploading(true);
+    setDeletingId(id);
     try {
-      const urlRes = await fetch("/api/project-files/upload-url", {
-        method: "POST",
+      const res = await fetch(`/api/project-files/${id}`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          slug,
-          fileName: file.name,
-          fileSize: file.size,
-          uploadedBy: "client",
-          turnstileToken,
-        }),
+        body: JSON.stringify({ slug }),
       });
-      const urlData = await urlRes.json();
-      if (!urlRes.ok) throw new Error(urlData.error ?? "Could not start upload");
-
-      const supabase = getSupabaseBrowser();
-      const { error: uploadError } = await supabase.storage
-        .from("project-files")
-        .uploadToSignedUrl(urlData.path, urlData.token, file);
-      if (uploadError) throw new Error(uploadError.message);
-
-      const confirmRes = await fetch("/api/project-files", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          slug,
-          storagePath: urlData.path,
-          fileName: file.name,
-          uploadedBy: "client",
-          note: note.trim() || undefined,
-        }),
-      });
-      if (!confirmRes.ok) {
-        const confirmData = await confirmRes.json().catch(() => ({}));
-        throw new Error(confirmData.error ?? "Could not save file");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Could not delete file");
       }
-
-      setNote("");
-      if (fileInputRef.current) fileInputRef.current.value = "";
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
-      setUploading(false);
+      setDeletingId(null);
     }
   }
 
   return (
     <div className="bg-white border border-[#00205C]/10 rounded-2xl p-6">
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-        strategy="afterInteractive"
-        onLoad={() => setScriptLoaded(true)}
-      />
       <span className="text-xs font-bold tracking-widest uppercase text-[#4B858E] block mb-4">Files</span>
 
       {files.length === 0 ? (
-        <p className="text-[#76777A] text-sm mb-6">No files yet.</p>
+        <p className="text-[#76777A] text-sm">No files yet.</p>
       ) : (
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3">
           {files.map((f) => (
             <div
               key={f.id}
@@ -146,39 +78,31 @@ export default function FileUploads({
                   {f.uploaded_by === "drew" ? "World Shift Technologies" : "You"} &middot; {relativeDate(f.created_at)}
                 </p>
               </div>
-              {f.downloadUrl && (
-                <a
-                  href={f.downloadUrl}
-                  className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
-                >
-                  Download
-                </a>
-              )}
+              <div className="flex-shrink-0 flex items-center gap-2">
+                {f.downloadUrl && (
+                  <a
+                    href={f.downloadUrl}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                  >
+                    Download
+                  </a>
+                )}
+                {f.uploaded_by === "client" && (
+                  <button
+                    onClick={() => handleDelete(f.id)}
+                    disabled={deletingId === f.id}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#76777A] hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+                    aria-label="Delete file"
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      <form onSubmit={handleUpload} className="border-t border-[#00205C]/[0.08] pt-5 space-y-3">
-        <input ref={fileInputRef} type="file" className="block w-full text-sm text-[#00205C]" />
-        <input
-          type="text"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Optional note"
-          className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
-        />
-        {/* Turnstile widget — rendered explicitly via turnstile.render() in useEffect */}
-        <div id="cf-widget-files" />
-        {error && <p className="text-red-400 text-xs">{error}</p>}
-        <button
-          type="submit"
-          disabled={uploading || !turnstileToken}
-          className="text-sm font-semibold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {uploading ? "Uploading..." : "Upload File"}
-        </button>
-      </form>
+      {error && <p className="text-red-400 text-xs mt-3">{error}</p>}
     </div>
   );
 }

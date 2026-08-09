@@ -10,6 +10,7 @@ import ClientPasswordGate from "@/app/components/ClientPasswordGate";
 import FileUploads from "./FileUploads";
 import MilestoneActionPanel from "./MilestoneActionPanel";
 import OpenItems from "./OpenItems";
+import SubmitFeedback from "./SubmitFeedback";
 
 const STATUS_LABEL: Record<string, string> = {
   not_started: "Not started",
@@ -261,11 +262,15 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
           </div>
 
           <div className="mb-8">
-            <OpenItems projectId={project.id} slug={slug} items={openItems} />
+            <OpenItems items={openItems} />
+          </div>
+
+          <div className="mb-8">
+            <FileUploads slug={slug} files={files} />
           </div>
 
           <div className="mb-4">
-            <FileUploads projectId={project.id} slug={slug} files={files} />
+            <SubmitFeedback projectId={project.id} slug={slug} />
           </div>
         </div>
       </main>

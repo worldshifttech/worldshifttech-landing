@@ -1,4 +1,50 @@
-﻿Last session: 78
+﻿Last session: 79
+
+## Recent Changes (Session 79, August 9, 2026)
+
+**Split every list from its form on the client project page, consolidated the two upload
+paths into one submission**
+
+Ask, verbatim: "This should just be the list of files available. Also the option to delete
+files as well. Meaning theire shouldn't be a turnstile needed since the attachments are
+from the submission. Make sure its clear you can select choose file (hover change color or
+make bigger). Also change Open items to be its own section, and make the form its on
+section called submit Feedback/Files."
+
+`app/projects/[slug]/OpenItems.tsx` and the client-facing `app/projects/[slug]/FileUploads.tsx`
+each used to bundle a read-only list and a submission form (each with its own Turnstile
+widget) into one box. Split into three sections, in this order on the page: **Open Items**
+(list only, no form), **Files** (list only, plus a delete button — client's own uploads
+only, Drew's admin-side uploads aren't deletable from here), **Submit Feedback/Files** (new
+`SubmitFeedback.tsx` — the one remaining form, message + optional file attach + the one
+remaining Turnstile widget). An attachment now only ever arrives through this one
+submission, so the Files list needs no upload UI or bot-check of its own — this also removes
+a second live surface where the single-use-Turnstile-token bug from Session 78 could recur.
+`SubmitFeedback.tsx`'s actual request logic (upload-url → uploadToSignedUrl → confirm →
+project-feedback, skip-reverify-turnstile-when-a-file-was-attached) is moved unchanged from
+`OpenItems.tsx`, not rewritten — the fix that already existed stays intact.
+
+File input restyled with Tailwind's `file:` variant (pill button matching the app's existing
+button style, `hover:file:bg-[#5a9aa4]` state, larger click target) so "Choose File" reads as
+clearly interactive rather than the default tiny native control.
+
+`app/api/project-files/[id]/route.ts`'s DELETE now allows a client to remove their own
+upload (`uploaded_by === 'client'`), not just admin — verified via `verifyClientAccess`
+against a `slug` the client sends in the request body, since there's no bearer token on that
+path. A client still can't delete a file Drew uploaded to them.
+
+**Verified:** `npx tsc --noEmit`, `npm run build`, `npx eslint` on every changed file — all
+clean. **Not verified live** — no accessible public test project (the one used in earlier
+sessions is now password-protected under a password only Drew has) and no admin credentials
+available to create a fresh one from this session. Flagged for Drew to click through once
+deployed: submit a message with a file attached, confirm it appears in both Open Items and
+Files, confirm the client can delete their own upload but a Drew-uploaded file shows no
+delete control.
+
+No SQL this session — presentation-layer split plus one permission-check change, no schema
+changes.
+
+---
 
 ## Recent Changes (Session 78, August 9, 2026)
 
