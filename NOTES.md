@@ -45,6 +45,27 @@ Verified with `npx tsc --noEmit`, `npm run build`, and `npx eslint` scoped to ev
 file — lint caught one real unescaped apostrophe in `OpenItems.tsx`'s new copy before it
 shipped, not after.
 
+**Real bug found by live testing right after deploy, fixed in the same push:** every
+attach-a-file submission failed with "Bot detected." Cloudflare Turnstile tokens are
+single-use — `OpenItems.tsx`'s `handleSubmit` was sending the *same* `turnstileToken` to
+both `/api/project-files/upload-url` (which spends it) and `/api/project-feedback`
+(which then re-verifies an already-spent token and always fails). This is exactly why the
+live click-through mattered more than a clean typecheck/build/lint pass — a synthetic
+file-upload test (`DataTransfer` injection, since the browser tool has no native file-picker
+automation) caught it immediately; a stray orphaned `project_files` row from that failed
+attempt was left visible on Entos Website's live Files section, flagged for Drew to remove
+himself rather than deleted directly. **Fix:** `/api/project-feedback` no longer blindly
+re-verifies Turnstile when a file is attached — it first checks whether the referenced
+`project_files` row is real, belongs to this project, was uploaded by the client, was
+created in the last 5 minutes, and isn't already linked to some other ticket; if all of
+that holds, it's treated as sufficient proof the earlier upload-url call already did the
+real Turnstile check a moment ago in the same submission, and the second, doomed
+re-verification is skipped. A text-only submission (no attachment) still verifies Turnstile
+exactly as before — this only changes the attach-a-file path. No client-side changes needed
+(no second widget solve, no UX change) — verified locally with `npx tsc --noEmit`,
+`npm run build`, `npx eslint`; re-tested live after this same push (see below for the
+outcome, not assumed here).
+
 **SQL to run — before deploy, same discipline as Session 76's `client_hubs` migration:**
 ```sql
 ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS attached_file_id uuid REFERENCES project_files(id) ON DELETE SET NULL;
