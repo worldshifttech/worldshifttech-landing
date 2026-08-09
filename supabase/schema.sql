@@ -602,3 +602,53 @@ FROM repos WHERE github_repo = 'worldshifttech-landing';
 -- see NOTES.md.
 -- ============================================================
 ALTER TABLE repos ADD COLUMN IF NOT EXISTS client_facing_name text;
+
+-- ============================================================
+-- MIGRATION: client_hubs table + projects.client_id (Session 76)
+-- A single client can have multiple distinct projects (e.g. Entos: an onboarding project,
+-- and separately a future website rebuild) — previously "client" was only ever a free-text
+-- client_name string on `projects`, no grouping, no shared home page. `client_hubs` is the
+-- new first-class entity; `projects.client_id` optionally links a project to one. Named
+-- client_hubs, not clients — a real `clients` table already existed (leftover from the old
+-- retired client-accounts system: id/user_id/created_at/updated_at, no slug/name, confirmed
+-- empty and unreferenced by any current code), and CREATE TABLE IF NOT EXISTS clients
+-- silently no-op'd against it the first time this migration ran, catching nothing after it.
+-- Left that legacy table untouched rather than dropping it — not this session's call to make.
+-- Client hub page lives at worldshifttech.com/clients/{slug} (app/clients/[slug]/page.tsx,
+-- URL path unaffected by the table rename) — its own password gate protects only the index
+-- (client name + list of project titles/links); each linked project keeps its own
+-- independent access_mode/password exactly as before. Same
+-- hashPassword/verifyPassword/signAccessToken/verifyTurnstile primitives from
+-- lib/project-access.ts, reused as-is (already slug-generic) — only the cookie name
+-- (lib/client-access.ts) is kept separate so a client slug and a project slug can never
+-- collide on the same cookie. ON DELETE SET NULL on the FK — no client-delete UI exists yet,
+-- but a project should never become unreachable if one is added later.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS client_hubs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  access_mode text NOT NULL DEFAULT 'public' CHECK (access_mode IN ('public', 'password')),
+  access_password_hash text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+-- No RLS — same rationale as `projects`: no client accounts, access mediated entirely by
+-- server-side route handlers (/admin's Supabase Auth check, or the per-client password
+-- cookie enforced in app/clients/[slug]/page.tsx).
+
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS client_id uuid REFERENCES client_hubs(id) ON DELETE SET NULL;
+
+-- Seed: Entos already has one project ("Client Onboarding", public, slug client-onboarding)
+-- created before this session — this is the actual data decision Session 73's own notes
+-- left open for Drew ("a data decision for Drew to make via the now-visible UI"), made here
+-- directly in response to that same-day conversation. Renamed to "Onboarding" so it reads as
+-- one project among several once the hub exists, not the whole relationship with Entos.
+-- Idempotent — ON CONFLICT / WHERE guard on both statements, safe to re-run.
+INSERT INTO client_hubs (slug, name, access_mode)
+VALUES ('entos', 'Entos', 'public')
+ON CONFLICT (slug) DO NOTHING;
+
+UPDATE projects
+SET title = 'Onboarding', client_id = (SELECT id FROM client_hubs WHERE slug = 'entos')
+WHERE slug = 'client-onboarding' AND client_id IS NULL;

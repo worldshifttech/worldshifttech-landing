@@ -1,4 +1,97 @@
-﻿Last session: 75
+﻿Last session: 76
+
+## Recent Changes (Session 76, August 9, 2026)
+
+**Clients are now a first-class entity above projects, with a shared hub page**
+
+Prompted directly: "That's one project that Entos can have, but Entos can have multiple
+projects... there needs to be some differentiation." Confirmed there was genuinely nothing
+to differentiate with — `client_name` was a free-text string on `projects`, no grouping, no
+relation between two projects that happened to share a name, and each project only ever had
+its own standalone `/projects/{slug}` link with no shared home.
+
+**New `client_hubs` table** — id, slug (unique), name, access_mode (`public`/`password`),
+access_password_hash. **`projects.client_id`** (new, nullable, `ON DELETE SET NULL`) links a
+project to one. New client hub page at `worldshifttech.com/clients/{slug}`
+(`app/clients/[slug]/page.tsx`, URL path unaffected by the table name below) lists every
+project scoped to that client as its own link — title, progress bar, access badge. Its own
+password gate (`ClientPasswordGate.tsx`, `/api/client-access`) protects only the index
+itself — client name + list of project titles/links; each linked project keeps its own
+independent `access_mode`/password exactly as before, unchanged. Built with Turnstile bot
+protection from day one this time (the project-access route didn't get that until Session
+74, after the fact) — same `hashPassword`/`verifyPassword`/`signAccessToken`/`verifyTurnstile`
+primitives from `lib/project-access.ts` reused directly (already slug-generic, nothing
+project-specific about them), only the cookie name is kept separate (`lib/client-access.ts`,
+`wst_ca_{slug}`) so a client slug and a project slug can never collide on the same cookie.
+
+**Real mid-session mistake, caught before it did damage:** first drafted this table as
+`CREATE TABLE IF NOT EXISTS clients`. Drew ran that SQL, and a follow-up verification query
+(same discipline as every other session — check the live database directly, don't trust
+that a migration landed just because it was written) found `clients` existed but was
+completely empty and missing every expected column. Turned out a real `clients` table
+already existed — leftover from the old, fully-retired client-accounts system (`id`,
+`user_id`, `created_at`, `updated_at`, no `slug`/`name`; confirmed empty and unreferenced by
+any current code before touching anything further). `CREATE TABLE IF NOT EXISTS` silently
+no-op'd against it, so the `ALTER TABLE projects ADD COLUMN client_id` and the Entos seed
+data after it never ran either — caught immediately by that same verification query rather
+than shipping code against a table that didn't have the columns it needed. Renamed the new
+table to `client_hubs` everywhere (schema, all four query call sites, this SQL block) and
+left the legacy `clients` table untouched — dropping it isn't this session's call to make,
+and `IF NOT EXISTS` meant it was never at risk in the first place. Should have grepped for
+an existing `clients` table before naming a new one that; didn't, this is why the check
+matters even on a "new" name.
+
+**Admin side (`AdminDashboard.tsx`)** — new "+ New Client" form alongside "+ New Project"
+(name, slug, access mode, password). The existing "+ New Project" form gains an optional
+"Client hub" dropdown; picking one sets `client_id` on creation (`/api/admin-projects`,
+`/api/admin-clients`, both admin-auth-gated same as every other admin route). The project
+list itself now groups by client — a header per client (name, access badge, "+ Add Project"
+shortcut that pre-fills the dropdown, "View Hub →" link) with that client's projects nested
+below; projects with no `client_id` fall into a trailing ungrouped section rendered exactly
+as every project rendered before this session, so nothing regresses for a project that
+doesn't need this.
+
+**Data decision, made directly in response to the same conversation, not left open again:**
+Entos already had one project (public, `client-onboarding` slug) predating this feature —
+Session 73's own notes had explicitly left "which project this actually represents" as an
+open question for Drew. Seeded a real `client_hubs` row (`entos`, public — matches the
+existing project's own access mode) and renamed that project from "Client Onboarding" to
+"Onboarding," linking it to the new client — it reads as one project among several now
+instead of standing in for the whole relationship with Entos. Idempotent (`ON CONFLICT
+DO NOTHING` / `WHERE client_id IS NULL` guards), safe to re-run.
+
+Verified with `npx tsc --noEmit`, `npm run build`, and `npx eslint` scoped directly to
+every new/changed file — all clean.
+
+**SQL to run — before deploy, not after.** Session 71's `repos.high_stakes` incident (code
+shipped assuming a column that hadn't been migrated yet, broke the Reviews inbox silently)
+is exactly the failure mode being avoided here: this session's code was written and
+committed locally but **held, not pushed**, until this SQL runs and is confirmed against
+the live database first. Corrected version below (`client_hubs`, not `clients`) — every
+statement is idempotent, safe to run even though the first (colliding) attempt already ran.
+```sql
+CREATE TABLE IF NOT EXISTS client_hubs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  access_mode text NOT NULL DEFAULT 'public' CHECK (access_mode IN ('public', 'password')),
+  access_password_hash text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS client_id uuid REFERENCES client_hubs(id) ON DELETE SET NULL;
+
+INSERT INTO client_hubs (slug, name, access_mode)
+VALUES ('entos', 'Entos', 'public')
+ON CONFLICT (slug) DO NOTHING;
+
+UPDATE projects
+SET title = 'Onboarding', client_id = (SELECT id FROM client_hubs WHERE slug = 'entos')
+WHERE slug = 'client-onboarding' AND client_id IS NULL;
+```
+
+---
 
 ## Recent Changes (Session 75, August 9, 2026)
 

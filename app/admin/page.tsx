@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabase } from "@/lib/supabase";
-import AdminDashboard, { type AdminProject, type AuditEstimate } from "./AdminDashboard";
+import AdminDashboard, { type AdminProject, type AdminClient, type AuditEstimate } from "./AdminDashboard";
 
 const ADMIN_EMAIL = "drew@worldshifttech.com";
 
@@ -32,7 +32,7 @@ export default async function AdminPage() {
   const { data: rawProjects } = await serviceClient
     .from("projects")
     .select(
-      "id, slug, client_name, title, percent_complete, next_update_note, next_due_date, access_mode, budget_type, budget_hours_cap, hourly_rate, created_at"
+      "id, slug, client_name, client_id, title, percent_complete, next_update_note, next_due_date, access_mode, budget_type, budget_hours_cap, hourly_rate, created_at"
     )
     .order("created_at", { ascending: false });
 
@@ -40,6 +40,7 @@ export default async function AdminPage() {
     id: p.id as string,
     slug: p.slug as string,
     client_name: (p.client_name as string | null) ?? null,
+    client_id: (p.client_id as string | null) ?? null,
     title: p.title as string,
     percent_complete: (p.percent_complete as number) ?? 0,
     next_update_note: (p.next_update_note as string | null) ?? null,
@@ -68,6 +69,21 @@ export default async function AdminPage() {
     linkedRepos[projectId].push({ id: r.id as string, label });
   }
 
+  // Session 76 — clients are a first-class grouping above projects now (one client can have
+  // several projects, e.g. Entos: onboarding, and separately a future website rebuild), each
+  // with a shared hub page at worldshifttech.com/clients/{slug}. See ClientHubPage.
+  const { data: rawClients } = await serviceClient
+    .from("client_hubs")
+    .select("id, slug, name, access_mode")
+    .order("name", { ascending: true });
+
+  const clients: AdminClient[] = (rawClients ?? []).map((c) => ({
+    id: c.id as string,
+    slug: c.slug as string,
+    name: c.name as string,
+    access_mode: (c.access_mode as "public" | "password") ?? "public",
+  }));
+
   const { data: auditData } = await serviceClient
     .from("audit_estimates")
     .select("*")
@@ -89,6 +105,7 @@ export default async function AdminPage() {
   return (
     <AdminDashboard
       initialProjects={adminProjects}
+      clients={clients}
       auditEstimates={auditEstimates}
       linkedRepos={linkedRepos}
     />

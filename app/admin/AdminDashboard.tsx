@@ -9,10 +9,18 @@ import { getSupabaseBrowser } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type AdminClient = {
+  id: string;
+  slug: string;
+  name: string;
+  access_mode: "public" | "password";
+};
+
 export type AdminProject = {
   id: string;
   slug: string;
   client_name: string | null;
+  client_id: string | null;
   title: string;
   percent_complete: number;
   next_update_note: string | null;
@@ -102,10 +110,12 @@ const IMPACT_TEXT: Record<string, string> = {
 
 export default function AdminDashboard({
   initialProjects,
+  clients,
   auditEstimates,
   linkedRepos,
 }: {
   initialProjects: AdminProject[];
+  clients: AdminClient[];
   auditEstimates: AuditEstimate[];
   linkedRepos: Record<string, { id: string; label: string }[]>;
 }) {
@@ -118,6 +128,7 @@ export default function AdminDashboard({
   const [showNewForm, setShowNewForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newClientName, setNewClientName] = useState("");
+  const [newProjectClientId, setNewProjectClientId] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [newAccessMode, setNewAccessMode] = useState<"public" | "password">("password");
@@ -125,7 +136,89 @@ export default function AdminDashboard({
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
+  // New client form — Session 76. A client is the hub multiple projects can share
+  // (worldshifttech.com/clients/{slug}); "New Project" above stays how you add one more
+  // project once a client already exists (via the dropdown in that same form).
+  const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [ncName, setNcName] = useState("");
+  const [ncSlug, setNcSlug] = useState("");
+  const [ncSlugTouched, setNcSlugTouched] = useState(false);
+  const [ncAccessMode, setNcAccessMode] = useState<"public" | "password">("public");
+  const [ncPassword, setNcPassword] = useState("");
+  const [creatingClient, setCreatingClient] = useState(false);
+  const [clientCreateError, setClientCreateError] = useState("");
+
   const total = projects.length;
+
+  // Group projects by client (Session 76) — named clients first (alphabetical), a project
+  // with no client_id falls into the trailing ungrouped bucket rendered exactly as every
+  // project rendered before this session (no header, own client_name line).
+  const clientById = new Map(clients.map((c) => [c.id, c]));
+  const groupMap = new Map<string, { client: AdminClient | null; projects: AdminProject[] }>();
+  for (const project of projects) {
+    const client = project.client_id ? clientById.get(project.client_id) ?? null : null;
+    const key = client?.id ?? "__none__";
+    if (!groupMap.has(key)) groupMap.set(key, { client, projects: [] });
+    groupMap.get(key)!.projects.push(project);
+  }
+  const projectGroups = [...groupMap.values()].sort((a, b) => {
+    if (!a.client && !b.client) return 0;
+    if (!a.client) return 1;
+    if (!b.client) return -1;
+    return a.client.name.localeCompare(b.client.name);
+  });
+
+  function openNewProjectForm(prefillClientId?: string) {
+    setNewProjectClientId(prefillClientId ?? "");
+    setShowNewForm(true);
+  }
+
+  async function handleCreateClient(e: React.FormEvent) {
+    e.preventDefault();
+    setCreatingClient(true);
+    setClientCreateError("");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/admin-clients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: ncName,
+          slug: ncSlug || slugify(ncName),
+          access_mode: ncAccessMode,
+          password: ncPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setClientCreateError(data.error ?? "Failed to create client");
+        return;
+      }
+
+      setShowNewClientForm(false);
+      setNcName("");
+      setNcSlug("");
+      setNcSlugTouched(false);
+      setNcAccessMode("public");
+      setNcPassword("");
+      router.refresh();
+    } catch {
+      setClientCreateError("Something went wrong. Please try again.");
+    } finally {
+      setCreatingClient(false);
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -148,6 +241,7 @@ export default function AdminDashboard({
         body: JSON.stringify({
           title: newTitle,
           client_name: newClientName,
+          client_id: newProjectClientId || undefined,
           slug: newSlug || slugify(newTitle),
           access_mode: newAccessMode,
           password: newPassword,
@@ -218,14 +312,110 @@ export default function AdminDashboard({
                 <p className="text-[#76777A] text-sm" style={{ fontFamily: "var(--font-poppins)" }}>
                   {total} project{total !== 1 ? "s" : ""}
                 </p>
-                <button
-                  onClick={() => setShowNewForm((v) => !v)}
-                  className="text-xs font-semibold px-4 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors"
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                >
-                  {showNewForm ? "Cancel" : "+ New Project"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowNewClientForm((v) => !v)}
+                    className="text-xs font-semibold px-4 py-2.5 rounded-full border border-[#00205C]/20 text-[#00205C] hover:border-[#00205C]/40 transition-colors"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {showNewClientForm ? "Cancel" : "+ New Client"}
+                  </button>
+                  <button
+                    onClick={() => (showNewForm ? setShowNewForm(false) : openNewProjectForm())}
+                    className="text-xs font-semibold px-4 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {showNewForm ? "Cancel" : "+ New Project"}
+                  </button>
+                </div>
               </div>
+
+              {showNewClientForm && (
+                <form
+                  onSubmit={handleCreateClient}
+                  className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-6 mb-6 space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">Client Name</label>
+                      <input
+                        required
+                        value={ncName}
+                        onChange={(e) => {
+                          setNcName(e.target.value);
+                          if (!ncSlugTouched) setNcSlug(slugify(e.target.value));
+                        }}
+                        placeholder="Entos"
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">URL slug</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#76777A] whitespace-nowrap">
+                          worldshifttech.com/clients/
+                        </span>
+                        <input
+                          required
+                          value={ncSlug}
+                          onChange={(e) => {
+                            setNcSlugTouched(true);
+                            setNcSlug(slugify(e.target.value));
+                          }}
+                          className="flex-1 bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                      <input
+                        type="radio"
+                        checked={ncAccessMode === "public"}
+                        onChange={() => setNcAccessMode("public")}
+                      />
+                      Public
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                      <input
+                        type="radio"
+                        checked={ncAccessMode === "password"}
+                        onChange={() => setNcAccessMode("password")}
+                      />
+                      Password protected
+                    </label>
+                  </div>
+
+                  {ncAccessMode === "password" && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">Password</label>
+                      <input
+                        required
+                        type="text"
+                        value={ncPassword}
+                        onChange={(e) => setNcPassword(e.target.value)}
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      />
+                    </div>
+                  )}
+
+                  {clientCreateError && (
+                    <p className="text-red-400 text-xs" style={{ fontFamily: "var(--font-poppins)" }}>
+                      {clientCreateError}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={creatingClient}
+                    className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    style={{ fontFamily: "var(--font-poppins)" }}
+                  >
+                    {creatingClient ? "Creating..." : "Create Client"}
+                  </button>
+                </form>
+              )}
 
               {showNewForm && (
                 <form
@@ -258,6 +448,30 @@ export default function AdminDashboard({
                       />
                     </div>
                   </div>
+
+                  {clients.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                        Client hub (optional)
+                      </label>
+                      <select
+                        value={newProjectClientId}
+                        onChange={(e) => setNewProjectClientId(e.target.value)}
+                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                      >
+                        <option value="">No client hub</option>
+                        {clients.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[#76777A] text-xs mt-1">
+                        Lists this project alongside that client&apos;s other projects at
+                        worldshifttech.com/clients/{"{"}slug{"}"}.
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-medium text-[#76777A] mb-1.5">URL slug</label>
@@ -333,76 +547,121 @@ export default function AdminDashboard({
                   No projects yet.
                 </p>
               ) : (
-                <div className="space-y-3">
-                  {projects.map((project) => {
-                    const repoChips = linkedRepos[project.id] ?? [];
-                    return (
-                    <Link
-                      key={project.id}
-                      href={`/admin/projects/${project.id}`}
-                      className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 border border-[#00205C]/[0.12] rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className="text-[#00205C] font-medium truncate"
-                          style={{ fontFamily: "var(--font-poppins)" }}
-                        >
-                          {project.title}
-                        </p>
-                        <p
-                          className="text-[#76777A] text-xs mt-0.5"
-                          style={{ fontFamily: "var(--font-poppins)" }}
-                        >
-                          {project.client_name ?? "No client name set"}
-                        </p>
-                        {repoChips.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                            {repoChips.map((chip) => (
-                              <a
-                                key={chip.id}
-                                href={`/admin/repos/${chip.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 hover:bg-[#91B6BB]/30 transition-colors"
+                <div className="space-y-8">
+                  {projectGroups.map((group) => (
+                    <div key={group.client?.id ?? "__none__"}>
+                      {group.client && (
+                        <div className="flex items-center justify-between mb-3 px-1">
+                          <div className="flex items-center gap-2">
+                            <h2
+                              className="text-[#00205C] font-bold text-lg"
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              {group.client.name}
+                            </h2>
+                            <span
+                              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ACCESS_BADGE[group.client.access_mode]}`}
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              {group.client.access_mode === "public" ? "Public" : "Password"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openNewProjectForm(group.client!.id)}
+                              className="text-xs font-semibold text-[#4B858E] hover:text-[#00205C] transition-colors"
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              + Add Project
+                            </button>
+                            <a
+                              href={`/clients/${group.client.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-semibold text-[#4B858E] hover:text-[#00205C] transition-colors"
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              View Hub &rarr;
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        {group.projects.map((project) => {
+                          const repoChips = linkedRepos[project.id] ?? [];
+                          return (
+                          <Link
+                            key={project.id}
+                            href={`/admin/projects/${project.id}`}
+                            className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 border border-[#00205C]/[0.12] rounded-2xl bg-white hover:border-[#4B858E]/40 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className="text-[#00205C] font-medium truncate"
                                 style={{ fontFamily: "var(--font-poppins)" }}
                               >
-                                {chip.label}
-                              </a>
-                            ))}
-                          </div>
-                        )}
+                                {project.title}
+                              </p>
+                              {!group.client && (
+                                <p
+                                  className="text-[#76777A] text-xs mt-0.5"
+                                  style={{ fontFamily: "var(--font-poppins)" }}
+                                >
+                                  {project.client_name ?? "No client name set"}
+                                </p>
+                              )}
+                              {repoChips.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                  {repoChips.map((chip) => (
+                                    <a
+                                      key={chip.id}
+                                      href={`/admin/repos/${chip.id}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 hover:bg-[#91B6BB]/30 transition-colors"
+                                      style={{ fontFamily: "var(--font-poppins)" }}
+                                    >
+                                      {chip.label}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="hidden sm:block w-32 flex-shrink-0">
+                              <div className="h-1.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-[#4B858E] rounded-full"
+                                  style={{ width: `${project.percent_complete}%` }}
+                                />
+                              </div>
+                              <p
+                                className="text-[#76777A] text-xs mt-1"
+                                style={{ fontFamily: "var(--font-poppins)" }}
+                              >
+                                {project.percent_complete}% complete
+                              </p>
+                            </div>
+
+                            <span
+                              className="hidden md:block text-[#76777A] text-xs flex-shrink-0 max-w-[220px] truncate"
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              {project.next_update_note ?? "No update set"}
+                            </span>
+
+                            <span
+                              className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[project.access_mode]}`}
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              {project.access_mode === "public" ? "Public" : "Password"}
+                            </span>
+                          </Link>
+                          );
+                        })}
                       </div>
-
-                      <div className="hidden sm:block w-32 flex-shrink-0">
-                        <div className="h-1.5 bg-[#00205C]/[0.08] rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-[#4B858E] rounded-full"
-                            style={{ width: `${project.percent_complete}%` }}
-                          />
-                        </div>
-                        <p
-                          className="text-[#76777A] text-xs mt-1"
-                          style={{ fontFamily: "var(--font-poppins)" }}
-                        >
-                          {project.percent_complete}% complete
-                        </p>
-                      </div>
-
-                      <span
-                        className="hidden md:block text-[#76777A] text-xs flex-shrink-0 max-w-[220px] truncate"
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        {project.next_update_note ?? "No update set"}
-                      </span>
-
-                      <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[project.access_mode]}`}
-                        style={{ fontFamily: "var(--font-poppins)" }}
-                      >
-                        {project.access_mode === "public" ? "Public" : "Password"}
-                      </span>
-                    </Link>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               )}
             </>
