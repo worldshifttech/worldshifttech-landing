@@ -1,4 +1,32 @@
-﻿Last session: 74
+﻿Last session: 75
+
+## Recent Changes (Session 75, August 9, 2026)
+
+**Closed the `(window as any).turnstile` pattern for real, instead of leaving it as
+documented precedent.** Session 74's own notes (above) explicitly left this as "consistent
+with existing precedent, not a new class of problem" across four files —
+`app/meet/page.tsx`, `app/projects/[slug]/FileUploads.tsx`,
+`app/projects/[slug]/MilestoneActionPanel.tsx`, `app/projects/[slug]/PasswordGate.tsx` —
+each carrying two `no-explicit-any` errors from the same `(window as any).turnstile` cast,
+copied forward every time a new Turnstile widget was added rather than fixed once. New
+`types/turnstile.d.ts` declares `Window.turnstile` globally (matching how the widget
+actually loads — a `<Script>` tag already on the page, never imported as a module); all
+four call sites now reference `window.turnstile` directly, no cast. One real type instead
+of four copies of `any`. Verified with `npx tsc --noEmit`, `npm run build`, and a full,
+unfiltered `npm run lint` pass, checked by filename against the real `app/`/`types/` tree
+(not the stale `.claude/worktrees/*` copies that also show up in lint output) — all three
+clean.
+
+PR #5 (`session-73-open-items-portal`) picked up the identical pattern independently in its
+own new `app/projects/[slug]/OpenItems.tsx`, since it was branched before this fix existed.
+Pushed the same `window.turnstile` change to that file directly on the PR branch, plus its
+own copy of `types/turnstile.d.ts` (simpler and safer than relying on merge timing between
+two independently-evolving branches — once PR #5 merges, both copies are identical and the
+merge is a no-op on that file).
+
+No SQL this session.
+
+---
 
 ## Recent Changes (Session 74, August 9, 2026)
 

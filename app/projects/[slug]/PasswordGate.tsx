@@ -22,8 +22,8 @@ export default function PasswordGate({ slug }: { slug: string }) {
   useEffect(() => {
     if (!scriptLoaded) return;
     const el = document.getElementById("cf-widget-password-gate");
-    if (!el || el.childElementCount > 0 || !(window as any).turnstile) return;
-    (window as any).turnstile.render(el, {
+    if (!el || el.childElementCount > 0 || !window.turnstile) return;
+    window.turnstile.render(el, {
       sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
       callback: (token: string) => setTurnstileToken(token),
     });
