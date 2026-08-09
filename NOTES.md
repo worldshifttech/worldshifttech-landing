@@ -1,4 +1,68 @@
-﻿Last session: 76
+﻿Last session: 77
+
+## Recent Changes (Session 77, August 9, 2026)
+
+**Cascading hub access — one password for a whole client's project area, not one per project**
+
+Direct follow-up the same day Session 76 shipped, prompted by: "each hub should be password
+protected, and one password grants access to their dashboard and associated projects." As
+built, a client hub and each of its linked projects had fully independent passwords — a
+client would have had to enter a password twice (once for the hub, once again per project),
+which defeats the point of a shared hub in the first place.
+
+**Fixed — a project linked to a client hub now defers entirely to that hub's own
+access_mode/password.** `app/projects/[slug]/page.tsx`'s gate: if `project.client_id` is
+set, fetch the linked `client_hubs` row and gate on *its* `access_mode` and cookie
+(`clientAccessCookieName`) instead of the project's own — rendering the same
+`ClientPasswordGate` the hub itself uses when locked, not `PasswordGate`. Mirrored in
+`lib/project-access.ts`'s `verifyClientAccess()` (used by the file-upload and feedback API
+routes) so a client who's unlocked their hub can actually submit feedback or upload files on
+a linked project without a second, separate 403 — the page-level gate and the API-level gate
+have to agree, or the page renders fine but every form on it silently fails. A project's own
+`access_mode` column is simply not consulted once it has a `client_id` — kept in the schema
+for standalone projects (e.g. the internal "WST Orchestrator" one), which behave exactly as
+before, unchanged. `ClientPasswordGate.tsx` moved from `app/clients/[slug]/` to
+`app/components/` since it's now shared by both the hub page and any linked project page.
+
+**Admin side** — new `POST /api/admin-clients/[id]/generate-password` (exact mirror of the
+existing per-project one: same unambiguous charset, same one-time-reveal — plaintext
+returned once, only the hash persists — always flips `access_mode` to `'password'`). A
+"Password" / "Set Password" button on each client group header in `AdminDashboard.tsx`
+opens an inline reveal panel, same pattern as `RepoDetailClient.tsx`'s existing project
+password generator. The New Project form's own access-mode radio + password field now only
+render when no client hub is selected — showing them for a client-linked project would be
+offering a control that's silently ignored, worse than not showing it. Same reasoning on the
+grouped project list: a project's own Public/Password badge only renders for the ungrouped
+(no-client) case now; a client-linked project's real access state is the group header's own
+badge. New Client form now defaults to password (was public) to match "each hub should be
+password protected."
+
+**Data correction, same conversation:** the project Session 76 renamed "Client Onboarding" →
+"Onboarding" turned out to actually be the Entos website project, not a distinct onboarding
+one — renamed again to "Entos Website," slug changed `client-onboarding` → `entos-website`
+(safe — 0% complete, no milestones, nothing shared externally yet, confirmed before
+changing). Entos's hub switched from public to password-protected with a freshly generated
+password, told to Drew once in chat and nowhere else — same one-time-reveal discipline as
+the endpoint above, just run directly via script since no admin UI existed for it before
+this session built one.
+
+Verified with `npx tsc --noEmit`, `npm run build`, and `npx eslint` scoped to every changed
+file — all clean. Confirmed live on production: `/projects/entos-website` now renders
+`ClientPasswordGate` (not the old per-project `PasswordGate`) and unlocks together with
+`/clients/entos` using the same password.
+
+**Known, deliberate gap not closed this session:** `ProjectDetailClient.tsx` (the existing
+project's own edit page, `/admin/projects/[id]`) still shows and lets you edit a project's
+own `access_mode`/password fields even when that project has a `client_id` — those fields
+are now inert for a client-linked project (same "unused once linked" logic as everywhere
+else in this session), but that specific page wasn't touched, so editing them there silently
+does nothing. Worth a follow-up if it causes real confusion; not done now to keep this
+session's actual scope (the ask, verbatim) from creeping further.
+
+No SQL this session — no schema changes, only code + two direct data corrections (documented
+above), same discipline as every other direct-DB fix this conversation has made.
+
+---
 
 ## Recent Changes (Session 76, August 9, 2026)
 

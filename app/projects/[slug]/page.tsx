@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { getSupabase } from "@/lib/supabase";
 import { verifyAccessToken, accessCookieName } from "@/lib/project-access";
+import { clientAccessCookieName } from "@/lib/client-access";
 import { BUCKET } from "@/lib/project-files";
 import PasswordGate from "./PasswordGate";
+import ClientPasswordGate from "@/app/components/ClientPasswordGate";
 import FileUploads from "./FileUploads";
 import MilestoneActionPanel from "./MilestoneActionPanel";
 import OpenItems from "./OpenItems";
@@ -38,12 +40,30 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
 
   if (!project) notFound();
 
-  if (project.access_mode === "password") {
+  // Session 76 — a project linked to a client hub defers entirely to that hub's own
+  // access_mode/cookie ("one password grants access to their dashboard and associated
+  // projects"); the project's own access_mode is only consulted when it has no client_id.
+  // Mirrored in lib/project-access.ts's verifyClientAccess() — keep both in sync.
+  let gateHub: { slug: string; access_mode: string } | null = null;
+  if (project.client_id) {
+    const { data: hub } = await supabase
+      .from("client_hubs")
+      .select("slug, access_mode")
+      .eq("id", project.client_id)
+      .single();
+    gateHub = hub ?? null;
+  }
+
+  const gateAccessMode = gateHub ? gateHub.access_mode : project.access_mode;
+  const gateSlug = gateHub ? gateHub.slug : slug;
+
+  if (gateAccessMode === "password") {
     const cookieStore = await cookies();
-    const token = cookieStore.get(accessCookieName(slug))?.value;
-    const unlocked = token ? verifyAccessToken(slug, token) : false;
+    const cookieName = gateHub ? clientAccessCookieName(gateSlug) : accessCookieName(gateSlug);
+    const token = cookieStore.get(cookieName)?.value;
+    const unlocked = token ? verifyAccessToken(gateSlug, token) : false;
     if (!unlocked) {
-      return <PasswordGate slug={slug} />;
+      return gateHub ? <ClientPasswordGate slug={gateHub.slug} /> : <PasswordGate slug={slug} />;
     }
   }
 

@@ -143,10 +143,56 @@ export default function AdminDashboard({
   const [ncName, setNcName] = useState("");
   const [ncSlug, setNcSlug] = useState("");
   const [ncSlugTouched, setNcSlugTouched] = useState(false);
-  const [ncAccessMode, setNcAccessMode] = useState<"public" | "password">("public");
+  // Defaults to password, not public — "each hub should be password protected" (Session 76).
+  const [ncAccessMode, setNcAccessMode] = useState<"public" | "password">("password");
   const [ncPassword, setNcPassword] = useState("");
   const [creatingClient, setCreatingClient] = useState(false);
   const [clientCreateError, setClientCreateError] = useState("");
+
+  // Generate/regenerate a client hub's password — one-time-reveal, same pattern as
+  // RepoDetailClient.tsx's project password generator. Keyed by client id since this lives
+  // inside the grouped project list, not a per-client detail page.
+  const [genPasswordForClientId, setGenPasswordForClientId] = useState<string | null>(null);
+  const [generatingClientPassword, setGeneratingClientPassword] = useState(false);
+  const [clientGenPasswordError, setClientGenPasswordError] = useState("");
+  const [generatedClientPassword, setGeneratedClientPassword] = useState<string | null>(null);
+  const [clientPasswordCopied, setClientPasswordCopied] = useState(false);
+
+  async function handleGenerateClientPassword(clientId: string) {
+    setGeneratingClientPassword(true);
+    setClientGenPasswordError("");
+    setClientPasswordCopied(false);
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch(`/api/admin-clients/${clientId}/generate-password`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setClientGenPasswordError(data.error ?? "Failed to generate password");
+        return;
+      }
+      setGeneratedClientPassword(data.password);
+      router.refresh();
+    } catch {
+      setClientGenPasswordError("Something went wrong. Please try again.");
+    } finally {
+      setGeneratingClientPassword(false);
+    }
+  }
+
+  async function handleCopy(text: string, setCopied: (v: boolean) => void) {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const total = projects.length;
 
@@ -243,8 +289,11 @@ export default function AdminDashboard({
           client_name: newClientName,
           client_id: newProjectClientId || undefined,
           slug: newSlug || slugify(newTitle),
-          access_mode: newAccessMode,
-          password: newPassword,
+          // A client-linked project's own access_mode is unused (gated by the hub's password
+          // instead) — send "public" regardless of the (hidden, in that case) radio state so
+          // the API's password-required check never fires for a field the form doesn't show.
+          access_mode: newProjectClientId ? "public" : newAccessMode,
+          password: newProjectClientId ? undefined : newPassword,
         }),
       });
 
@@ -491,38 +540,50 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
-                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
-                      <input
-                        type="radio"
-                        checked={newAccessMode === "password"}
-                        onChange={() => setNewAccessMode("password")}
-                      />
-                      Password protected
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-[#00205C]">
-                      <input
-                        type="radio"
-                        checked={newAccessMode === "public"}
-                        onChange={() => setNewAccessMode("public")}
-                      />
-                      Public
-                    </label>
-                  </div>
+                  {/* Session 76 — a project linked to a client hub is gated by that hub's own
+                      password ("Password" button on the group header), not its own — these
+                      controls would just be unused/misleading once a client is selected. */}
+                  {newProjectClientId ? (
+                    <p className="text-[#76777A] text-xs">
+                      Access is controlled by the selected client&apos;s hub password, not set here —
+                      manage it from that client&apos;s group header once created.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-6">
+                        <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                          <input
+                            type="radio"
+                            checked={newAccessMode === "password"}
+                            onChange={() => setNewAccessMode("password")}
+                          />
+                          Password protected
+                        </label>
+                        <label className="flex items-center gap-2 text-sm text-[#00205C]">
+                          <input
+                            type="radio"
+                            checked={newAccessMode === "public"}
+                            onChange={() => setNewAccessMode("public")}
+                          />
+                          Public
+                        </label>
+                      </div>
 
-                  {newAccessMode === "password" && (
-                    <div>
-                      <label className="block text-xs font-medium text-[#76777A] mb-1.5">
-                        Password
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
-                      />
-                    </div>
+                      {newAccessMode === "password" && (
+                        <div>
+                          <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                            Password
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60"
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {createError && (
@@ -568,6 +629,18 @@ export default function AdminDashboard({
                           </div>
                           <div className="flex items-center gap-3">
                             <button
+                              onClick={() => {
+                                const opening = genPasswordForClientId !== group.client!.id;
+                                setGenPasswordForClientId(opening ? group.client!.id : null);
+                                setGeneratedClientPassword(null);
+                                setClientGenPasswordError("");
+                              }}
+                              className="text-xs font-semibold text-[#4B858E] hover:text-[#00205C] transition-colors"
+                              style={{ fontFamily: "var(--font-poppins)" }}
+                            >
+                              {group.client.access_mode === "password" ? "Password" : "Set Password"}
+                            </button>
+                            <button
                               onClick={() => openNewProjectForm(group.client!.id)}
                               className="text-xs font-semibold text-[#4B858E] hover:text-[#00205C] transition-colors"
                               style={{ fontFamily: "var(--font-poppins)" }}
@@ -584,6 +657,54 @@ export default function AdminDashboard({
                               View Hub &rarr;
                             </a>
                           </div>
+                        </div>
+                      )}
+
+                      {group.client && genPasswordForClientId === group.client.id && (
+                        <div className="border border-[#00205C]/[0.12] rounded-2xl bg-white p-5 mb-4 space-y-3">
+                          <p className="text-[#76777A] text-xs">
+                            One password unlocks the {group.client.name} hub and every project
+                            scoped under it — nothing on the individual projects themselves.
+                          </p>
+
+                          {clientGenPasswordError && (
+                            <p className="text-red-400 text-xs">{clientGenPasswordError}</p>
+                          )}
+
+                          {generatedClientPassword ? (
+                            <div>
+                              <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                                New Password — copy it now, it won&apos;t be shown again
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  readOnly
+                                  value={generatedClientPassword}
+                                  onClick={(e) => e.currentTarget.select()}
+                                  className="flex-1 bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] font-mono focus:outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(generatedClientPassword, setClientPasswordCopied)}
+                                  className="text-xs font-semibold px-4 py-2 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] transition-colors flex-shrink-0"
+                                >
+                                  {clientPasswordCopied ? "Copied ✓" : "Copy Password"}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleGenerateClientPassword(group.client!.id)}
+                              disabled={generatingClientPassword}
+                              className="text-sm font-semibold px-6 py-2.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
+                            >
+                              {generatingClientPassword
+                                ? "Generating..."
+                                : group.client.access_mode === "password"
+                                ? "Generate New Password"
+                                : "Generate Password"}
+                            </button>
+                          )}
                         </div>
                       )}
 
@@ -650,12 +771,18 @@ export default function AdminDashboard({
                               {project.next_update_note ?? "No update set"}
                             </span>
 
-                            <span
-                              className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[project.access_mode]}`}
-                              style={{ fontFamily: "var(--font-poppins)" }}
-                            >
-                              {project.access_mode === "public" ? "Public" : "Password"}
-                            </span>
+                            {/* Own access_mode badge only means anything for an ungrouped project —
+                                a client-linked one is gated by its hub's password instead (see the
+                                group header above), so its own access_mode is unused and would be
+                                misleading to show here. */}
+                            {!group.client && (
+                              <span
+                                className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${ACCESS_BADGE[project.access_mode]}`}
+                                style={{ fontFamily: "var(--font-poppins)" }}
+                              >
+                                {project.access_mode === "public" ? "Public" : "Password"}
+                              </span>
+                            )}
                           </Link>
                           );
                         })}

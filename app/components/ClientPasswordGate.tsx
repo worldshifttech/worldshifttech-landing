@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Script from "next/script";
 
-// Same Turnstile-render-in-useEffect pattern as app/projects/[slug]/PasswordGate.tsx,
-// window.turnstile typed via types/turnstile.d.ts (Session 75) — no (window as any) cast.
+// Shared by app/clients/[slug]/page.tsx (the hub itself) and app/projects/[slug]/page.tsx
+// (any project linked to a client hub — Session 76's cascading access: unlocking a hub's
+// password also unlocks every project scoped under it, one password, not one per project).
+// Same Turnstile-render-in-useEffect pattern as PasswordGate.tsx, window.turnstile typed
+// via types/turnstile.d.ts (Session 75) — no (window as any) cast.
 export default function ClientPasswordGate({ slug }: { slug: string }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -75,7 +78,9 @@ export default function ClientPasswordGate({ slug }: { slug: string }) {
             priority
           />
         </div>
-        <p className="text-center text-[#76777A] text-sm mb-6">This project area is password protected.</p>
+        <p className="text-center text-[#76777A] text-sm mb-6">
+          This project area is password protected. One password unlocks everything in it.
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"

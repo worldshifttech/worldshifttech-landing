@@ -6,6 +6,7 @@
 import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { clientAccessCookieName } from "@/lib/client-access";
 
 // Required in production — set in Vercel env vars. Falling back to a fixed
 // dev-only value keeps `npm run dev` working without a local .env entry.
@@ -48,11 +49,35 @@ export function accessCookieName(slug: string): string {
 // (file uploads, feedback submission): public projects pass automatically,
 // password-protected ones need the signed per-project cookie set after a
 // correct password entry.
+//
+// Session 76 — a project linked to a client hub (`client_id` set) defers entirely to that
+// hub's own access_mode/cookie instead of its own: "one password grants access to their
+// dashboard and associated projects" was the explicit ask, so a project's own access_mode
+// column is simply not consulted once it belongs to a hub (kept in the schema for
+// standalone projects, which behave exactly as before). Mirrored in
+// app/projects/[slug]/page.tsx's own page-level gate — keep both in sync.
 export async function verifyClientAccess(req: NextRequest, slug: string): Promise<boolean> {
   const supabase = getSupabase();
-  const { data: project } = await supabase.from("projects").select("access_mode").eq("slug", slug).single();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("access_mode, client_id")
+    .eq("slug", slug)
+    .single();
 
   if (!project) return false;
+
+  if (project.client_id) {
+    const { data: hub } = await supabase
+      .from("client_hubs")
+      .select("slug, access_mode")
+      .eq("id", project.client_id)
+      .single();
+    if (!hub) return false;
+    if (hub.access_mode === "public") return true;
+    const token = req.cookies.get(clientAccessCookieName(hub.slug))?.value;
+    return !!token && verifyAccessToken(hub.slug, token);
+  }
+
   if (project.access_mode === "public") return true;
 
   const token = req.cookies.get(accessCookieName(slug))?.value;

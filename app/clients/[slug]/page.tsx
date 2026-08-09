@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 import { verifyAccessToken } from "@/lib/project-access";
 import { clientAccessCookieName } from "@/lib/client-access";
-import ClientPasswordGate from "./ClientPasswordGate";
+import ClientPasswordGate from "@/app/components/ClientPasswordGate";
 
 const ACCESS_BADGE: Record<string, string> = {
   public: "border border-[#4B858E] text-[#4B858E]",
