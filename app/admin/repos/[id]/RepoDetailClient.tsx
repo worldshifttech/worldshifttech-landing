@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getSupabaseBrowser } from "@/lib/supabase";
+import {
+  ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR,
+  ACCEPTED_CONTEXT_FILE_HELP_TEXT,
+  isAcceptedContextFileType,
+} from "@/lib/accepted-context-file-types";
 import AdminNav from "../../AdminNav";
 import InfoTooltip from "../../InfoTooltip";
 import { FRAMEWORK_OPTIONS, AUTH_OPTIONS, type ProjectOption } from "../RepoFleetClient";
@@ -129,6 +134,10 @@ export default function RepoDetailClient({
       for (const file of Array.from(files)) {
         if (file.size > CONTEXT_FILE_MAX_SIZE) {
           setAttachError(`${file.name} is over 25MB and was skipped.`);
+          continue;
+        }
+        if (!isAcceptedContextFileType(file)) {
+          setAttachError(`${file.name} isn't a supported file type and was skipped.`);
           continue;
         }
 
@@ -1041,6 +1050,7 @@ export default function RepoDetailClient({
               <input
                 type="file"
                 multiple
+                accept={ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR}
                 disabled={attachingFile}
                 onChange={(e) => {
                   handleAttachContextFiles(e.target.files);
@@ -1048,6 +1058,7 @@ export default function RepoDetailClient({
                 }}
                 className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors disabled:opacity-50"
               />
+              <p className="text-[#76777A] text-xs mt-2">{ACCEPTED_CONTEXT_FILE_HELP_TEXT}</p>
               {contextFiles.length > 0 && (
                 <ul className="flex flex-wrap gap-2 mt-3">
                   {contextFiles.map((f) => (
@@ -1070,10 +1081,6 @@ export default function RepoDetailClient({
                 </ul>
               )}
               {attachError && <p className="text-red-400 text-xs mt-2">{attachError}</p>}
-              <p className="text-[#76777A] text-xs mt-2">
-                Files upload now, but a wst-orchestrator-runner update is still needed before a
-                planning session actually reads them, tracked separately.
-              </p>
             </div>
             {dispatchError && <p className="text-red-400 text-xs">{dispatchError}</p>}
             {draftError && <p className="text-red-400 text-xs">{draftError}</p>}

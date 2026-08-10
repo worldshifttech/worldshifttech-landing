@@ -1,4 +1,49 @@
-﻿Last session: 83
+﻿Last session: 84
+
+## Recent Changes (Session 84, August 10, 2026)
+
+**Restrict context-file uploads to types Claude Code can actually use**
+
+Ask, following directly from "will this work for most files?" — images and PDFs and
+plain text genuinely work once a file reaches a run (per `wst-orchestrator-runner`'s own
+Session 11), Word/Excel/PowerPoint and video/audio don't, since Claude Code's Read tool
+doesn't parse the former and has no transcription path for the latter. Until now nothing
+told anyone that before they attached something.
+
+New `lib/accepted-context-file-types.ts` — one shared source of truth (extensions list,
+an `accept` attribute string, human-readable help text, and `isAcceptedContextFileType()`)
+rather than duplicating the list across the three places a file can become session
+context, which would drift the moment one got updated and the others didn't:
+
+- `app/projects/[slug]/SubmitFeedback.tsx` — the client's feedback attachment
+- `app/admin/projects/[id]/ProjectDetailClient.tsx` — the per-feedback "Attach additional
+  files" panel from Session 82
+- `app/admin/repos/[id]/RepoDetailClient.tsx` — the repo-level "Run Planning Session" box
+  from Session 80
+
+Each gets three things: the `accept` attribute on the `<input type="file">` (a picker-level
+hint, not an enforced boundary — browsers vary in whether they honor it and a user can
+often override it), visible help text near the input so it's unambiguous either way, and
+a real check on the selected file (`isAcceptedContextFileType`, extension-based) that
+sets an inline error and refuses the file rather than silently uploading something that
+would later just sit unread. Accepted: PNG/JPG/GIF/WebP, PDF, TXT/MD/CSV/JSON.
+
+**Also fixed while touching `RepoDetailClient.tsx`:** its caption said "a
+wst-orchestrator-runner update is still needed before a planning session actually reads
+them, tracked separately" — true when it was written, false as of that repo's own Session
+11 last turn. Removed rather than left to mislead the next person who reads it.
+
+Deliberately not done: no server-side enforcement of the accepted list (in
+`/api/project-files/upload-url` or `/api/admin-repos/context-files/upload-url`). This is
+about steering normal use through the normal UI toward what's actually useful, not a
+security boundary — nothing unsafe happens if an unsupported type slipped through, it
+just wouldn't be readable, and that gap already exists today for every file already in
+the system. Worth adding if that judgment ever changes, not assumed here.
+
+Verified with `npx tsc --noEmit`, `npm run build`, `npx eslint` on every changed file —
+all clean. No SQL — no schema changes, purely client-side.
+
+---
 
 ## Recent Changes (Session 83, August 9, 2026)
 

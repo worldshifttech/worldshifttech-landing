@@ -4,6 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { getSupabaseBrowser } from "@/lib/supabase";
+import {
+  ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR,
+  ACCEPTED_CONTEXT_FILE_HELP_TEXT,
+  isAcceptedContextFileType,
+} from "@/lib/accepted-context-file-types";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
@@ -58,6 +63,10 @@ export default function SubmitFeedback({
     const file = fileInputRef.current?.files?.[0];
     if (file && file.size > MAX_FILE_SIZE) {
       setError("Files are limited to 25MB.");
+      return;
+    }
+    if (file && !isAcceptedContextFileType(file)) {
+      setError(`That file type isn't supported. ${ACCEPTED_CONTEXT_FILE_HELP_TEXT}`);
       return;
     }
 
@@ -159,8 +168,10 @@ export default function SubmitFeedback({
           <input
             ref={fileInputRef}
             type="file"
+            accept={ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR}
             className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors"
           />
+          <p className="text-[#76777A] text-xs mt-1.5">{ACCEPTED_CONTEXT_FILE_HELP_TEXT}</p>
         </div>
         {/* Turnstile widget — rendered explicitly via turnstile.render() in useEffect */}
         <div id={widgetId} />

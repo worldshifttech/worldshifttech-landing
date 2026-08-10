@@ -3,6 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { getSupabaseBrowser } from "@/lib/supabase";
+import {
+  ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR,
+  ACCEPTED_CONTEXT_FILE_HELP_TEXT,
+  isAcceptedContextFileType,
+} from "@/lib/accepted-context-file-types";
 import AdminNav from "../../AdminNav";
 import FileUploads from "./FileUploads";
 
@@ -223,6 +228,10 @@ export default function ProjectDetailClient({
       for (const file of Array.from(fileList)) {
         if (file.size > 25 * 1024 * 1024) {
           setPlanningAttachError(`${file.name} is over 25MB and was skipped.`);
+          continue;
+        }
+        if (!isAcceptedContextFileType(file)) {
+          setPlanningAttachError(`${file.name} isn't a supported file type and was skipped.`);
           continue;
         }
 
@@ -702,6 +711,7 @@ export default function ProjectDetailClient({
                           <input
                             type="file"
                             multiple
+                            accept={ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR}
                             disabled={attachingPlanningFile}
                             onChange={(e) => {
                               handleAttachPlanningFile(e.target.files);
@@ -709,6 +719,7 @@ export default function ProjectDetailClient({
                             }}
                             className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors disabled:opacity-50"
                           />
+                          <p className="text-[#76777A] text-xs mt-1.5">{ACCEPTED_CONTEXT_FILE_HELP_TEXT}</p>
                           {planningContextFiles.length > 0 && (
                             <ul className="flex flex-wrap gap-2 mt-2">
                               {planningContextFiles.map((cf) => (
