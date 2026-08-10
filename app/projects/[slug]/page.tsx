@@ -114,6 +114,7 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
         created_at: f.created_at,
         downloadUrl: signed?.signedUrl ?? null,
         milestone_id: f.milestone_id ?? null,
+        feedback_id: f.feedback_id ?? null,
       };
     })
   );
@@ -135,16 +136,33 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
   // happen — /api/project-feedback verifies ownership before storing it — but belt and
   // braces) just resolves to no attachment instead of leaking anything.
   const fileById = new Map(files.map((f) => [f.id, f]));
+  // Session 81 — files attached during an edit link via feedback_id instead of the single
+  // Session 78 attached_file_id slot, so an item can carry more than one file over time.
+  // Grouped in JS against the same already-fetched `files` array, same pattern as
+  // milestone_id grouping in MilestoneActionPanel — no new query.
+  const filesByFeedbackId = new Map<string, typeof files>();
+  for (const f of files) {
+    if (!f.feedback_id) continue;
+    const existing = filesByFeedbackId.get(f.feedback_id);
+    if (existing) existing.push(f);
+    else filesByFeedbackId.set(f.feedback_id, [f]);
+  }
 
   const openItems = (feedbackRows ?? []).map((f) => {
     const attachedFile = f.attached_file_id ? fileById.get(f.attached_file_id as string) : undefined;
+    const editFiles = filesByFeedbackId.get(f.id as string) ?? [];
+    const attachedFiles = [
+      ...(attachedFile ? [attachedFile] : []),
+      ...editFiles,
+    ].map((file) => ({ file_name: file.file_name, downloadUrl: file.downloadUrl }));
     return {
       id: f.id as string,
       message: f.message as string,
       status: f.status as string,
       created_at: f.created_at as string,
+      updated_at: (f.updated_at as string | null) ?? null,
       milestone_title: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
-      attached_file: attachedFile ? { file_name: attachedFile.file_name, downloadUrl: attachedFile.downloadUrl } : null,
+      attached_files: attachedFiles,
     };
   });
 
@@ -262,7 +280,7 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
           </div>
 
           <div className="mb-8">
-            <OpenItems items={openItems} />
+            <OpenItems items={openItems} projectId={project.id} slug={slug} />
           </div>
 
           <div className="mb-8">
