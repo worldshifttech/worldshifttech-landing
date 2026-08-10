@@ -48,6 +48,7 @@ type FeedbackItem = {
   status: "new" | "read" | "resolved";
   created_at: string;
   milestoneTitle: string | null;
+  attachedFile: { file_name: string; downloadUrl: string | null } | null;
 };
 
 const STATUS_OPTIONS: { value: Milestone["status"]; label: string }[] = [
@@ -476,6 +477,14 @@ export default function ProjectDetailClient({
                   >
                     <div className="min-w-0">
                       <p className="text-[#00205C] text-sm">{f.message}</p>
+                      {f.attachedFile && f.attachedFile.downloadUrl && (
+                        <a
+                          href={f.attachedFile.downloadUrl}
+                          className="inline-block mt-1.5 text-xs font-semibold px-3 py-1 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                        >
+                          {f.attachedFile.file_name}
+                        </a>
+                      )}
                       <p className="text-[#76777A] text-xs mt-1">
                         {f.milestoneTitle ?? "General"} &middot; {relativeDate(f.created_at)} &middot;{" "}
                         {f.status === "resolved" ? "Resolved" : "New"}

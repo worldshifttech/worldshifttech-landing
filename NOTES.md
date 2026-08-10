@@ -1,4 +1,32 @@
-﻿Last session: 79
+﻿Last session: 80
+
+## Recent Changes (Session 80, August 9, 2026)
+
+**Fix: Bot detected on attach-a-file submissions**
+
+Drew reported an Open Item on Entos Website's client page (with a screenshot attached)
+wasn't showing up in `/admin/reviews`. Traced, not a bug in the sense reported — `/admin/reviews`
+is the orchestrator's agent-session review inbox (`review_items`/`agent_sessions`), entirely
+unrelated to client project feedback. Confirmed via direct Supabase query that the
+`project_feedback` row landed correctly (`status: 'new'`, `attached_file_id` set) — the
+actual surface for it is the **Client Feedback** section on that project's own admin page,
+`/admin/projects/[id]` → `ProjectDetailClient.tsx`, which already fetches and renders it.
+
+**Real gap found while checking, fixed in the same pass:** that Client Feedback section
+rendered the message and a resolve button, but never surfaced the attached file at all —
+`FeedbackItem` didn't carry it and the query never selected `attached_file_id`. Drew could
+see "Fix this image" but had no way to see or open the actual screenshot from the admin
+side, even on the correct page. `app/admin/projects/[id]/page.tsx`: query now also selects
+`attached_file_id`, resolved against the already-fetched `files` array (same
+already-signed, forced-download URLs, no second query — mirrors
+`app/projects/[slug]/page.tsx`'s existing pattern exactly). `ProjectDetailClient.tsx`:
+`FeedbackItem` type gains `attachedFile`, rendered as the same download-pill style used on
+the client-facing `OpenItems.tsx`.
+
+Verified with `npx tsc --noEmit`, `npm run build`, `npx eslint` on both changed files — all
+clean. No SQL — read path only, `attached_file_id` already existed on the table.
+
+---
 
 ## Recent Changes (Session 79, August 9, 2026)
 

@@ -91,17 +91,27 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
 
   const { data: feedbackRows } = await serviceClient
     .from("project_feedback")
-    .select("id, message, status, created_at, milestone_id, project_milestones(title)")
+    .select("id, message, status, created_at, milestone_id, attached_file_id, project_milestones(title)")
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
-  const feedback = (feedbackRows ?? []).map((f) => ({
-    id: f.id as string,
-    message: f.message as string,
-    status: f.status as "new" | "read" | "resolved",
-    created_at: f.created_at as string,
-    milestoneTitle: (f.project_milestones as unknown as { title: string } | null)?.title ?? null,
-  }));
+  // Resolved against the same `files` array already fetched above (already-signed,
+  // forced-download URLs) — same pattern as app/projects/[slug]/page.tsx, no second query.
+  const fileById = new Map(files.map((f) => [f.id, f]));
+
+  const feedback = (feedbackRows ?? []).map((f) => {
+    const attachedFile = f.attached_file_id ? fileById.get(f.attached_file_id as string) : undefined;
+    return {
+      id: f.id as string,
+      message: f.message as string,
+      status: f.status as "new" | "read" | "resolved",
+      created_at: f.created_at as string,
+      milestoneTitle: (f.project_milestones as unknown as { title: string } | null)?.title ?? null,
+      attachedFile: attachedFile
+        ? { file_name: attachedFile.file_name, downloadUrl: attachedFile.downloadUrl }
+        : null,
+    };
+  });
 
   return (
     <ProjectDetailClient
