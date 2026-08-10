@@ -85,6 +85,10 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
         created_at: f.created_at,
         downloadUrl: signed?.signedUrl ?? null,
         milestoneTitle: f.milestone_id ? milestoneTitleById.get(f.milestone_id) ?? null : null,
+        // Session 83 — needed (not just the downloadUrl above) so a feedback item's
+        // attachment can be re-signed fresh at dispatch time as real planning-session
+        // context, rather than reusing a URL that's only valid for the next hour.
+        storage_path: f.storage_path as string,
       };
     })
   );
@@ -108,7 +112,11 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
       created_at: f.created_at as string,
       milestoneTitle: (f.project_milestones as unknown as { title: string } | null)?.title ?? null,
       attachedFile: attachedFile
-        ? { file_name: attachedFile.file_name, downloadUrl: attachedFile.downloadUrl }
+        ? {
+            file_name: attachedFile.file_name,
+            downloadUrl: attachedFile.downloadUrl,
+            storagePath: attachedFile.storage_path,
+          }
         : null,
     };
   });

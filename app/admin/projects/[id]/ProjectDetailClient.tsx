@@ -48,7 +48,7 @@ type FeedbackItem = {
   status: "new" | "read" | "resolved";
   created_at: string;
   milestoneTitle: string | null;
-  attachedFile: { file_name: string; downloadUrl: string | null } | null;
+  attachedFile: { file_name: string; downloadUrl: string | null; storagePath: string } | null;
 };
 
 type LinkedRepo = {
@@ -276,6 +276,27 @@ export default function ProjectDetailClient({
     }
     const brief = briefParts.join("\n\n");
 
+    // The feedback's own attachment (project-files bucket) plus anything Drew adds in this
+    // panel (session-context-files bucket) — dispatchOrchestratorSession signs each against
+    // its own bucket rather than assuming one, see lib/orchestrator-dispatch.ts.
+    const contextFilesPayload = [
+      ...(item.attachedFile
+        ? [
+            {
+              file_name: item.attachedFile.file_name,
+              storage_path: item.attachedFile.storagePath,
+              bucket: "project-files",
+            },
+          ]
+        : []),
+      ...planningContextFiles.map((f) => ({
+        file_name: f.fileName,
+        storage_path: f.storagePath,
+        content_type: f.contentType,
+        bucket: "session-context-files",
+      })),
+    ];
+
     const supabase = getSupabaseBrowser();
     const {
       data: { session },
@@ -293,15 +314,7 @@ export default function ProjectDetailClient({
           repo_id: linkedRepo.id,
           session_type: "planning",
           brief,
-          ...(planningContextFiles.length > 0
-            ? {
-                context_files: planningContextFiles.map((f) => ({
-                  file_name: f.fileName,
-                  storage_path: f.storagePath,
-                  content_type: f.contentType,
-                })),
-              }
-            : {}),
+          ...(contextFilesPayload.length > 0 ? { context_files: contextFilesPayload } : {}),
         }),
       });
 

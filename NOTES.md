@@ -1,4 +1,61 @@
-﻿Last session: 82
+﻿Last session: 83
+
+## Recent Changes (Session 83, August 9, 2026)
+
+**A feedback item's attached file now actually threads through as real dispatch context**
+
+Ask: "build the mechanism to see that attached file as it will be needed for context to
+create a planning session" — closing the gap Session 82 explicitly flagged as deliberately
+not done, rather than leaving it as a permanent limitation.
+
+The blocker was that `dispatchOrchestratorSession()` (`lib/orchestrator-dispatch.ts`)
+hardcoded `session-context-files` as the only bucket a context file could come from, but a
+feedback attachment lives in `project-files` — a different bucket entirely. Fixed by making
+bucket a per-file property instead of an assumption:
+
+- `contextFiles` entries gain an optional `bucket` field (`file.bucket ?? "session-context-files"`
+  keeps every existing caller — the repo-level "Run Planning Session" box — working
+  unchanged). Checked against a small `ALLOWED_CONTEXT_BUCKETS` safelist
+  (`session-context-files`, `project-files`) before signing — this endpoint is admin-only so
+  it's not a privilege-escalation concern, but an unrecognized bucket should fail closed on
+  that one file (same fail-open-per-file posture as everything else in this function)
+  rather than attempt a sign against something unintended.
+- `agent_session_context_files` gains a `bucket` column (`NOT NULL DEFAULT
+  'session-context-files'` — correctly backfills every existing row, since that was the only
+  bucket in use until now) so a stored context file's source is never ambiguous later.
+- `app/admin/projects/[id]/page.tsx`: the `files` array (used both for the Files list and to
+  resolve a feedback item's `attachedFile`) now also carries the file's real `storage_path` —
+  the `downloadUrl` alone is a signed URL good for the next hour, not a stable identifier
+  dispatch can re-sign fresh at click time.
+- `ProjectDetailClient.tsx`'s dispatch handler now builds `context_files` from *two* sources:
+  the feedback's own attachment (`bucket: "project-files"`) plus whatever Drew adds in the
+  panel (`bucket: "session-context-files"`), not just the latter.
+
+**Backfilled while touching this:** `agent_session_context_files` and the
+`session-context-files` storage bucket were created live in Session 80 but never actually
+landed in `supabase/schema.sql` — added here alongside the new `bucket` column so the file
+matches reality again, per its own stated job as source of truth.
+
+**Still not done, unchanged from Session 82's own caveat:** this is still the control-plane
+half only — `wst-orchestrator-runner` doesn't download any context file into a run's
+checkout yet, regardless of source bucket. This session makes the *right* file reach the
+dispatch payload; consuming it during an actual run is a separate `wst-orchestrator-runner`
+change.
+
+**SQL to run — before deploy:**
+```sql
+ALTER TABLE agent_session_context_files ADD COLUMN IF NOT EXISTS bucket text NOT NULL DEFAULT 'session-context-files';
+```
+(The backfilled `CREATE TABLE agent_session_context_files` / storage bucket insert in
+`supabase/schema.sql` are both `IF NOT EXISTS`/`ON CONFLICT DO NOTHING` — safe to run again
+even though they already exist live from Session 80.)
+
+Verified with `npx tsc --noEmit`, `npm run build`, `npx eslint` on every changed file — all
+clean. **Not verified live** — same constraint as Sessions 81–82, no admin credentials or a
+repo with a real GitHub App Installation ID available in this session to fire an actual
+dispatch and confirm the signed URL resolves correctly end to end.
+
+---
 
 ## Recent Changes (Session 82, August 9, 2026)
 

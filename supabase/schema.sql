@@ -662,3 +662,35 @@ WHERE slug = 'client-onboarding' AND client_id IS NULL;
 -- delete the ticket, just drop its attachment.
 -- ============================================================
 ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS attached_file_id uuid REFERENCES project_files(id) ON DELETE SET NULL;
+
+-- ============================================================
+-- MIGRATION: session-context-files bucket + agent_session_context_files (Session 80)
+-- Backfilled here — this migration was run against the live database in Session 80 but
+-- never landed in this file at the time. Lets an admin attach files/screenshots to a Run
+-- Planning Session dispatch as extra context. Same private-bucket-plus-signed-URL
+-- convention as project-files (Session 47) — no storage.objects RLS policies, every
+-- read/write goes through the service-role client. No RLS on the table either,
+-- service-role only, same convention as agent_sessions/review_items.
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit)
+VALUES ('session-context-files', 'session-context-files', false, 26214400)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS agent_session_context_files (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id    uuid NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  file_name     text NOT NULL,
+  storage_path  text NOT NULL,
+  content_type  text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- MIGRATION: agent_session_context_files.bucket (Session 83)
+-- Context files could only ever come from session-context-files until now — every existing
+-- row really was from that bucket, so DEFAULT backfills them correctly. Needed so a
+-- context file can come from project-files too (a client's own feedback attachment,
+-- see lib/orchestrator-dispatch.ts's ALLOWED_CONTEXT_BUCKETS) without losing track of
+-- which bucket to sign it against.
+-- ============================================================
+ALTER TABLE agent_session_context_files ADD COLUMN IF NOT EXISTS bucket text NOT NULL DEFAULT 'session-context-files';

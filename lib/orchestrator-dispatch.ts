@@ -11,6 +11,14 @@ export type DispatchResult =
   | { ok: true; sessionId: string }
   | { ok: false; error: string; status: number };
 
+// Session 83 — a context file can now come from a bucket other than session-context-files
+// (e.g. project-files, for a client's own feedback attachment). Kept as an explicit
+// safelist rather than trusting whatever string the caller sends — this endpoint is
+// admin-only so it's not a privilege-escalation concern, but a typo'd/unexpected bucket
+// name should fail closed on that one file (same fail-open-per-file posture otherwise)
+// rather than signing against something unintended.
+const ALLOWED_CONTEXT_BUCKETS = ["session-context-files", "project-files"];
+
 export async function dispatchOrchestratorSession({
   repoId,
   sessionType,
@@ -30,10 +38,13 @@ export async function dispatchOrchestratorSession({
   // worst case is the same as today, resume_context: null. See NOTES.md.
   resumeFromSessionId?: string;
   // Session 80 — files/screenshots an admin attached as extra context before dispatching.
+  // Session 83 — a file can now come from a bucket other than session-context-files (e.g.
+  // a client's feedback attachment, living in project-files); bucket defaults to
+  // session-context-files when omitted so every existing caller is unaffected.
   // Control-plane half only: this signs read URLs and threads them into the dispatch
   // payload, but nothing in wst-orchestrator-runner reads them into a run yet. See
   // ORCHESTRATOR_DESIGN.md §4.
-  contextFiles?: { file_name: string; storage_path: string; content_type?: string }[];
+  contextFiles?: { file_name: string; storage_path: string; content_type?: string; bucket?: string }[];
 }): Promise<DispatchResult> {
   const runnerRepo = process.env.WST_ORCHESTRATOR_RUNNER_REPO;
   if (!runnerRepo) {
@@ -147,8 +158,14 @@ export async function dispatchOrchestratorSession({
       const signed: { file_name: string; url: string; content_type: string | null }[] = [];
       for (const file of contextFiles) {
         try {
+          const bucket = file.bucket ?? "session-context-files";
+          if (!ALLOWED_CONTEXT_BUCKETS.includes(bucket)) {
+            console.error("[orchestrator-dispatch] context file rejected, unrecognized bucket:", bucket);
+            continue;
+          }
+
           const { data: signedUrlData, error: signError } = await supabase.storage
-            .from("session-context-files")
+            .from(bucket)
             .createSignedUrl(file.storage_path, 60 * 60 * 24);
           if (signError || !signedUrlData) {
             console.error("[orchestrator-dispatch] context file sign failed:", signError?.message);
@@ -160,6 +177,7 @@ export async function dispatchOrchestratorSession({
             file_name: file.file_name,
             storage_path: file.storage_path,
             content_type: file.content_type ?? null,
+            bucket,
           });
           if (insertError) {
             console.error("[orchestrator-dispatch] context file insert failed:", insertError.message);

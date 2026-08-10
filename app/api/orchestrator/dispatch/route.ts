@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       brief?: string;
       source_review_item_id?: string;
       resume_from_session_id?: string;
-      context_files?: { file_name: string; storage_path: string; content_type?: string }[];
+      context_files?: { file_name: string; storage_path: string; content_type?: string; bucket?: string }[];
     };
 
   if (!repo_id || !session_type || !brief) {
