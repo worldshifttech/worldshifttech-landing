@@ -227,6 +227,26 @@ export default function RepoDetailClient({
   const [feedbackError, setFeedbackError] = useState("");
   const [resolvingId, setResolvingId] = useState<string | null>(null);
 
+  // Run a planning session directly from one of this repo's own feedback tickets — same
+  // "Run Planning Session" pattern as worldshifttech-landing's own Client Feedback section
+  // (see app/admin/projects/[id]/ProjectDetailClient.tsx), adapted for the fact that this
+  // repo is already known (no client_project_id lookup needed) and these tickets carry no
+  // attachment of their own (app_feedback/feedback_tickets have no file column at all —
+  // only worldshifttech-landing's own project_feedback does, since Session 78). Separate
+  // state from the Settings tab's own "Run Planning Session" box above so opening a
+  // ticket's panel never clobbers whatever's mid-typed there, or vice versa.
+  const [openPlanningTicketId, setOpenPlanningTicketId] = useState<string | null>(null);
+  const [ticketPlanningNote, setTicketPlanningNote] = useState("");
+  const [ticketPlanningPendingKey, setTicketPlanningPendingKey] = useState<string | null>(null);
+  const [ticketPlanningContextFiles, setTicketPlanningContextFiles] = useState<
+    { fileName: string; storagePath: string; contentType: string }[]
+  >([]);
+  const [attachingTicketPlanningFile, setAttachingTicketPlanningFile] = useState(false);
+  const [ticketPlanningAttachError, setTicketPlanningAttachError] = useState("");
+  const [dispatchingTicketPlanningId, setDispatchingTicketPlanningId] = useState<string | null>(null);
+  const [ticketPlanningDispatchError, setTicketPlanningDispatchError] = useState("");
+  const [ticketPlanningSentId, setTicketPlanningSentId] = useState<string | null>(null);
+
   // Client Portal — the linked project's own client-facing URL + password. Keyed off
   // the dropdown's current value, not a separate "is this saved yet" check: the
   // /projects/[slug] link works regardless of whether repos.client_project_id itself has
@@ -392,6 +412,144 @@ export default function RepoDetailClient({
       setFeedbackError("Something went wrong. Please try again.");
     } finally {
       setResolvingId(null);
+    }
+  }
+
+  function toggleTicketPlanningPanel(id: string) {
+    if (openPlanningTicketId === id) {
+      setOpenPlanningTicketId(null);
+      return;
+    }
+    setOpenPlanningTicketId(id);
+    setTicketPlanningNote("");
+    setTicketPlanningPendingKey(null);
+    setTicketPlanningContextFiles([]);
+    setTicketPlanningAttachError("");
+    setTicketPlanningDispatchError("");
+  }
+
+  async function handleAttachTicketPlanningFile(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    setTicketPlanningAttachError("");
+    setAttachingTicketPlanningFile(true);
+
+    let key = ticketPlanningPendingKey;
+    if (!key) {
+      key = crypto.randomUUID();
+      setTicketPlanningPendingKey(key);
+    }
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      for (const file of Array.from(fileList)) {
+        if (file.size > 25 * 1024 * 1024) {
+          setTicketPlanningAttachError(`${file.name} is over 25MB and was skipped.`);
+          continue;
+        }
+        if (!isAcceptedContextFileType(file)) {
+          setTicketPlanningAttachError(`${file.name} isn't a supported file type and was skipped.`);
+          continue;
+        }
+
+        const urlRes = await fetch("/api/admin-repos/context-files/upload-url", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ pendingKey: key, fileName: file.name, fileSize: file.size }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok) {
+          setTicketPlanningAttachError(urlData.error ?? `Could not start upload for ${file.name}`);
+          continue;
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("session-context-files")
+          .uploadToSignedUrl(urlData.path, urlData.token, file);
+        if (uploadError) {
+          setTicketPlanningAttachError(uploadError.message);
+          continue;
+        }
+
+        setTicketPlanningContextFiles((prev) => [
+          ...prev,
+          { fileName: file.name, storagePath: urlData.path, contentType: file.type || "application/octet-stream" },
+        ]);
+      }
+    } finally {
+      setAttachingTicketPlanningFile(false);
+    }
+  }
+
+  function handleRemoveTicketPlanningFile(storagePath: string) {
+    setTicketPlanningContextFiles((prev) => prev.filter((f) => f.storagePath !== storagePath));
+  }
+
+  async function handleDispatchPlanningFromTicket(item: FeedbackItem) {
+    setDispatchingTicketPlanningId(item.id);
+    setTicketPlanningDispatchError("");
+
+    const briefParts = [`Client feedback ticket: "${item.title}"`];
+    if (item.body) {
+      briefParts.push(item.body);
+    }
+    if (ticketPlanningNote.trim()) {
+      briefParts.push(`Additional context from Drew: ${ticketPlanningNote.trim()}`);
+    }
+    const brief = briefParts.join("\n\n");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/orchestrator/dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          repo_id: repo.id,
+          session_type: "planning",
+          brief,
+          ...(ticketPlanningContextFiles.length > 0
+            ? {
+                context_files: ticketPlanningContextFiles.map((f) => ({
+                  file_name: f.fileName,
+                  storage_path: f.storagePath,
+                  content_type: f.contentType,
+                })),
+              }
+            : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setTicketPlanningDispatchError(data.error ?? "Failed to dispatch");
+        return;
+      }
+
+      setOpenPlanningTicketId(null);
+      setTicketPlanningNote("");
+      setTicketPlanningPendingKey(null);
+      setTicketPlanningContextFiles([]);
+      setTicketPlanningSentId(item.id);
+      setTimeout(() => setTicketPlanningSentId((prev) => (prev === item.id ? null : prev)), 4000);
+    } catch {
+      setTicketPlanningDispatchError("Something went wrong. Please try again.");
+    } finally {
+      setDispatchingTicketPlanningId(null);
     }
   }
 
@@ -1206,22 +1364,125 @@ export default function RepoDetailClient({
                   ) : (
                     <div className="space-y-3">
                       {feedbackItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="border border-[#00205C]/[0.1] rounded-xl p-4 flex items-start justify-between gap-4"
-                        >
-                          <div className="min-w-0">
-                            <p className="text-[#00205C] text-sm font-medium">{item.title}</p>
-                            {item.body && <p className="text-[#76777A] text-xs mt-1">{item.body}</p>}
-                            <p className="text-[#76777A] text-xs mt-1 uppercase tracking-wide">{item.status}</p>
+                        <div key={item.id} className="border border-[#00205C]/[0.1] rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-[#00205C] text-sm font-medium">{item.title}</p>
+                              {item.body && <p className="text-[#76777A] text-xs mt-1">{item.body}</p>}
+                              <p className="text-[#76777A] text-xs mt-1 uppercase tracking-wide">{item.status}</p>
+                            </div>
+                            <div className="flex-shrink-0 flex items-center gap-2">
+                              <button
+                                onClick={() => handleResolveFeedback(item.id)}
+                                disabled={resolvingId === item.id}
+                                className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
+                              >
+                                {resolvingId === item.id ? "Resolving..." : "Resolve"}
+                              </button>
+                              <button
+                                onClick={() => toggleTicketPlanningPanel(item.id)}
+                                disabled={!repo.github_app_installation_id}
+                                className="text-xs font-semibold px-4 py-2 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              >
+                                {openPlanningTicketId === item.id ? "Close" : "Run Planning Session"}
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleResolveFeedback(item.id)}
-                            disabled={resolvingId === item.id}
-                            className="text-xs font-semibold px-4 py-2 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors flex-shrink-0"
-                          >
-                            {resolvingId === item.id ? "Resolving..." : "Resolve"}
-                          </button>
+
+                          {openPlanningTicketId === item.id && (
+                            <div className="mt-3 pt-3 border-t border-[#00205C]/[0.08] space-y-3">
+                              <div>
+                                <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                                  Additional context for the planning session (optional)
+                                </label>
+                                <textarea
+                                  value={ticketPlanningNote}
+                                  onChange={(e) => setTicketPlanningNote(e.target.value)}
+                                  placeholder="Anything else the planning session should know..."
+                                  rows={3}
+                                  className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 resize-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                                  Attach additional files (optional)
+                                </label>
+                                <input
+                                  type="file"
+                                  multiple
+                                  accept={ACCEPTED_CONTEXT_FILE_ACCEPT_ATTR}
+                                  disabled={attachingTicketPlanningFile}
+                                  onChange={(e) => {
+                                    handleAttachTicketPlanningFile(e.target.files);
+                                    e.target.value = "";
+                                  }}
+                                  className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors disabled:opacity-50"
+                                />
+                                <p className="text-[#76777A] text-xs mt-1.5">{ACCEPTED_CONTEXT_FILE_HELP_TEXT}</p>
+                                {ticketPlanningContextFiles.length > 0 && (
+                                  <ul className="flex flex-wrap gap-2 mt-2">
+                                    {ticketPlanningContextFiles.map((cf) => (
+                                      <li
+                                        key={cf.storagePath}
+                                        className="flex items-center gap-2 bg-[#F4F2EE] rounded-full pl-3 pr-2 py-1 text-xs text-[#00205C]"
+                                      >
+                                        <span className="truncate max-w-[160px]">{cf.fileName}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveTicketPlanningFile(cf.storagePath)}
+                                          className="text-[#76777A] hover:text-red-500 font-bold leading-none"
+                                          aria-label={`Remove ${cf.fileName}`}
+                                        >
+                                          &times;
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                                {ticketPlanningAttachError && (
+                                  <p className="text-red-400 text-xs mt-2">{ticketPlanningAttachError}</p>
+                                )}
+                              </div>
+                              {ticketPlanningDispatchError && (
+                                <p className="text-red-400 text-xs">{ticketPlanningDispatchError}</p>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleDispatchPlanningFromTicket(item)}
+                                  disabled={
+                                    dispatchingTicketPlanningId === item.id ||
+                                    attachingTicketPlanningFile ||
+                                    !repo.github_app_installation_id
+                                  }
+                                  className="text-sm font-bold px-5 py-2 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  {dispatchingTicketPlanningId === item.id ? "Dispatching..." : "Start Planning Session"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenPlanningTicketId(null)}
+                                  className="text-sm font-semibold px-4 py-2 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                              {!repo.github_app_installation_id && (
+                                <p className="text-[#76777A] text-xs">
+                                  Set a GitHub App Installation ID on the Settings tab first.
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {ticketPlanningSentId === item.id && (
+                            <p className="mt-2 text-[#4B858E] text-xs font-medium">
+                              Dispatched — check the{" "}
+                              <Link href="/admin/reviews" className="underline hover:text-[#3a6b73]">
+                                Reviews inbox
+                              </Link>
+                              .
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -1,4 +1,49 @@
-﻿Last session: 84
+﻿Last session: 85
+
+## Recent Changes (Session 85, August 10, 2026)
+
+**"Run Planning Session" on the per-repo Feedback tab too, not just client submissions**
+
+Ask, from a screenshot of `forgotten-realms-dm`'s Feedback tab: "Looks like I cant run a
+planning session from here. This was submitted on the forgotten realms app. Should have
+the same functionality like running a planning session for a client submission." Session
+82 built this for `worldshifttech-landing`'s own `project_feedback` (client submissions on
+a project page); the repo Feedback tab shows a *different* ticket source entirely — each
+managed repo's own `app_feedback`/`feedback_tickets` table, normalized through
+`lib/feedback-adapters.ts` and fetched via `/api/admin-repos/[id]/feedback`. That tab only
+ever had a "Resolve" button; there was no way to turn a ticket straight into a planning
+session without leaving the page and re-typing everything into the Settings tab's generic
+box.
+
+`app/admin/repos/[id]/RepoDetailClient.tsx` now gives each ticket in the Feedback tab the
+same per-item "Run Planning Session" affordance as `ProjectDetailClient.tsx`'s Client
+Feedback section: a toggle button next to Resolve opens an inline panel with an optional
+note textarea, an optional multi-file attach (`session-context-files` bucket, same
+`/api/admin-repos/context-files/upload-url` signed-upload flow the Settings-tab box
+already used, gated through `isAcceptedContextFileType`), a Start/Cancel pair, and a
+post-dispatch "Dispatched — check the Reviews inbox" line linking to `/admin/reviews`.
+Dispatches straight to `/api/orchestrator/dispatch` with `repo_id: repo.id` (no
+`linkedRepo` lookup needed here the way Session 82 needed one — the repo is already the
+page) and a brief built from the ticket's title, body, and Drew's optional note.
+
+New state block (`openPlanningTicketId`, `ticketPlanningNote`, `ticketPlanningPendingKey`,
+`ticketPlanningContextFiles`, `attachingTicketPlanningFile`, `ticketPlanningAttachError`,
+`dispatchingTicketPlanningId`, `ticketPlanningDispatchError`, `ticketPlanningSentId`) and
+handlers (`toggleTicketPlanningPanel`, `handleAttachTicketPlanningFile`,
+`handleRemoveTicketPlanningFile`, `handleDispatchPlanningFromTicket`) are separate from
+the Settings tab's own `planningBrief`/`contextFiles` box above, so opening a ticket's
+panel never clobbers whatever's mid-typed in that one or vice versa.
+
+Deliberately not done: no attachment threading from the ticket itself, unlike Session 82's
+client-submission version. `app_feedback` and `feedback_tickets` (see
+`lib/feedback-adapters.ts`) have no file column at all — only `worldshifttech-landing`'s
+own `project_feedback` gained one, in Session 78. A ticket here can only ever pick up
+*newly* attached files via the panel's own upload field, not something the ticket reporter
+attached, because there's nothing of that kind to attach.
+
+Verified: `tsc --noEmit`, `eslint` on the touched file, and `npm run build` all clean.
+
+---
 
 ## Recent Changes (Session 84, August 10, 2026)
 
