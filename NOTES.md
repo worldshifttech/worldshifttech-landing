@@ -1,4 +1,73 @@
-﻿Last session: 80
+﻿Last session: 81
+
+## Recent Changes (Session 81, August 10, 2026)
+
+**Client-facing edit and delete for Open Items**
+
+Build prompt, directly: a client can delete an open item they submitted, or edit its
+message and attach additional files, as long as it hasn't been marked resolved by Drew yet.
+There's no client-account system anywhere in this app — one shared password per project or
+client hub — so "items they created" means "client-submitted items in general," the same
+trust boundary `app/api/project-files/[id]/route.ts`'s client-delete branch already uses.
+Every `project_feedback` row is already client-originated (no admin-side writer for that
+table besides the resolve-only PATCH), so no per-row origin check was needed beyond project
+access.
+
+**Schema — two additive columns.** `project_feedback.updated_at` (nullable, set only by the
+new edit PATCH, never on insert — null means never edited) and `project_files.feedback_id`
+(mirrors `milestone_id` exactly — `ON DELETE SET NULL`, so deleting the feedback row unlinks
+the file rather than deleting it). `attached_file_id` (Session 78) is completely untouched.
+
+**New `app/api/project-feedback/[id]/route.ts`** (PATCH + DELETE) — the exact dual-actor
+pattern already in `project-files/[id]`: body carries `slug`, checked via
+`verifyClientAccess()`, no admin bearer-token branch (Drew has no separate edit/delete
+surface to build here). Both actions return 409 once `status === 'resolved'`. PATCH updates
+`message` + `updated_at`, and bumps a `read` item back to `new` — an edit is new information
+Drew hasn't seen the updated form of. DELETE deletes the row outright (linked files just
+become unlinked, never touched in storage or `project_files`) and fires a fire-and-forget
+`feedback_deleted` Slack ping. No Turnstile on either action, matching the file-delete
+route's own precedent — modifying/removing an already-created, already-access-gated row is
+treated differently from creating new content.
+
+**`app/api/project-files/route.ts`** (the upload-confirm POST) now accepts an optional
+`feedbackId`, passed through as `feedback_id: feedbackId ?? null`, mirroring `milestoneId`
+exactly. `upload-url/route.ts` deliberately left alone — it already accepts-but-ignores
+`milestoneId` for the same reason (a signed upload URL doesn't need to know the eventual
+link target), so `feedbackId` follows the identical do-nothing precedent there.
+
+**`app/projects/[slug]/page.tsx`** — `openItems` now carries `updated_at` and an
+`attached_files` array: the Session 78 `attached_file_id` resolution plus every already-
+fetched `files` row whose `feedback_id` matches, grouped in JS (no new query), same pattern
+as `MilestoneActionPanel`'s `milestone_id` grouping.
+
+**`app/projects/[slug]/OpenItems.tsx`** is now a client component. Each non-resolved item
+gets an inline Edit control (textarea pre-filled with the current message, an optional file
+input, Save/Cancel) and a Delete control (`window.confirm()` then the DELETE route). Editing
+the text alone never touches Turnstile — the new PATCH route doesn't check it. Only when a
+file is actually chosen does a Turnstile widget render (its own id,
+`cf-widget-edit-{item.id}`, same explicit-render-in-useEffect pattern as every other widget
+on this page), reusing the exact upload-url → upload → confirm sequence `SubmitFeedback.tsx`
+already has, now passing `feedbackId: item.id` on the confirm call. A small "(edited)" label
+shows next to the relative timestamp once `updated_at` is set. `openList`'s resolved-item
+filter, the status badge/label maps, and `relativeDate()` are all untouched.
+
+**Known limitation, by design:** edits overwrite the message in place — no history is kept
+beyond the single `updated_at` timestamp. If Drew ever wants to see what an item said before
+an edit, that's not recoverable from this schema; would need its own audit-log table if it
+comes up.
+
+Verified with `npx tsc --noEmit`, `npm run build`, and a full `npm run lint` pass (one
+pre-existing, unrelated warning in `curriculum/[domain]/[module]/[lesson]/page.tsx`) — all
+clean. Not verified live in this session — no interactive terminal/browser available in this
+CI run to click through a real edit/delete against a live project.
+
+**SQL to run:**
+```sql
+ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+ALTER TABLE project_files ADD COLUMN IF NOT EXISTS feedback_id uuid REFERENCES project_feedback(id) ON DELETE SET NULL;
+```
+
+---
 
 ## Recent Changes (Session 80, August 9, 2026)
 
