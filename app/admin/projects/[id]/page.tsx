@@ -113,6 +113,24 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
     };
   });
 
+  // The repo (if any) this project's own codebase lives in — lets "Run Planning Session"
+  // on a feedback item dispatch to the right place. A project with no linked repo (e.g.
+  // one that's roadmap-only, no orchestrator-managed codebase yet) just won't offer it.
+  const { data: linkedRepoRow } = await serviceClient
+    .from("repos")
+    .select("id, name, github_app_installation_id")
+    .eq("client_project_id", id)
+    .limit(1)
+    .maybeSingle();
+
+  const linkedRepo = linkedRepoRow
+    ? {
+        id: linkedRepoRow.id as string,
+        name: linkedRepoRow.name as string,
+        hasInstallation: linkedRepoRow.github_app_installation_id != null,
+      }
+    : null;
+
   return (
     <ProjectDetailClient
       project={{
@@ -141,6 +159,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
       costLogged={costLogged}
       files={files}
       feedback={feedback}
+      linkedRepo={linkedRepo}
     />
   );
 }

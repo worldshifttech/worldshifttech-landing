@@ -51,6 +51,14 @@ type FeedbackItem = {
   attachedFile: { file_name: string; downloadUrl: string | null } | null;
 };
 
+type LinkedRepo = {
+  id: string;
+  name: string;
+  hasInstallation: boolean;
+} | null;
+
+type PlanningContextFile = { fileName: string; storagePath: string; contentType: string };
+
 const STATUS_OPTIONS: { value: Milestone["status"]; label: string }[] = [
   { value: "not_started", label: "Not started" },
   { value: "in_progress", label: "In progress" },
@@ -80,6 +88,7 @@ export default function ProjectDetailClient({
   costLogged,
   files,
   feedback,
+  linkedRepo,
 }: {
   project: ProjectFields;
   initialMilestones: Milestone[];
@@ -87,6 +96,7 @@ export default function ProjectDetailClient({
   costLogged: number;
   files: ProjectFile[];
   feedback: FeedbackItem[];
+  linkedRepo: LinkedRepo;
 }) {
   const [title, setTitle] = useState(project.title);
   const [clientName, setClientName] = useState(project.client_name ?? "");
@@ -103,6 +113,21 @@ export default function ProjectDetailClient({
   const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones);
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>(feedback);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+
+  // Run a planning session directly from an Open Item/feedback row — the feedback message
+  // (and a note that a file was attached, if any) becomes the dispatch brief, with room for
+  // Drew to add more context and extra files before it actually fires. Reuses the exact
+  // same session-context-files upload flow and /api/orchestrator/dispatch endpoint the
+  // repo's own "Run Planning Session" box uses — see RepoDetailClient.tsx.
+  const [openPlanningId, setOpenPlanningId] = useState<string | null>(null);
+  const [planningNote, setPlanningNote] = useState("");
+  const [planningPendingKey, setPlanningPendingKey] = useState<string | null>(null);
+  const [planningContextFiles, setPlanningContextFiles] = useState<PlanningContextFile[]>([]);
+  const [attachingPlanningFile, setAttachingPlanningFile] = useState(false);
+  const [planningAttachError, setPlanningAttachError] = useState("");
+  const [dispatchingPlanningId, setDispatchingPlanningId] = useState<string | null>(null);
+  const [planningDispatchError, setPlanningDispatchError] = useState("");
+  const [planningSentId, setPlanningSentId] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -161,6 +186,141 @@ export default function ProjectDetailClient({
       }
     } finally {
       setResolvingId(null);
+    }
+  }
+
+  function togglePlanningPanel(id: string) {
+    if (openPlanningId === id) {
+      setOpenPlanningId(null);
+      return;
+    }
+    setOpenPlanningId(id);
+    setPlanningNote("");
+    setPlanningPendingKey(null);
+    setPlanningContextFiles([]);
+    setPlanningAttachError("");
+    setPlanningDispatchError("");
+  }
+
+  async function handleAttachPlanningFile(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    setPlanningAttachError("");
+    setAttachingPlanningFile(true);
+
+    let key = planningPendingKey;
+    if (!key) {
+      key = crypto.randomUUID();
+      setPlanningPendingKey(key);
+    }
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      for (const file of Array.from(fileList)) {
+        if (file.size > 25 * 1024 * 1024) {
+          setPlanningAttachError(`${file.name} is over 25MB and was skipped.`);
+          continue;
+        }
+
+        const urlRes = await fetch("/api/admin-repos/context-files/upload-url", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ pendingKey: key, fileName: file.name, fileSize: file.size }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok) {
+          setPlanningAttachError(urlData.error ?? `Could not start upload for ${file.name}`);
+          continue;
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("session-context-files")
+          .uploadToSignedUrl(urlData.path, urlData.token, file);
+        if (uploadError) {
+          setPlanningAttachError(uploadError.message);
+          continue;
+        }
+
+        setPlanningContextFiles((prev) => [
+          ...prev,
+          { fileName: file.name, storagePath: urlData.path, contentType: file.type || "application/octet-stream" },
+        ]);
+      }
+    } finally {
+      setAttachingPlanningFile(false);
+    }
+  }
+
+  function handleRemovePlanningFile(storagePath: string) {
+    setPlanningContextFiles((prev) => prev.filter((f) => f.storagePath !== storagePath));
+  }
+
+  async function handleDispatchPlanningFromFeedback(item: FeedbackItem) {
+    if (!linkedRepo) return;
+    setDispatchingPlanningId(item.id);
+    setPlanningDispatchError("");
+
+    const briefParts = [`Client feedback: "${item.message}"`];
+    if (item.attachedFile) {
+      briefParts.push(`The client attached a file with this feedback: ${item.attachedFile.file_name}`);
+    }
+    if (planningNote.trim()) {
+      briefParts.push(`Additional context from Drew: ${planningNote.trim()}`);
+    }
+    const brief = briefParts.join("\n\n");
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      const res = await fetch("/api/orchestrator/dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          repo_id: linkedRepo.id,
+          session_type: "planning",
+          brief,
+          ...(planningContextFiles.length > 0
+            ? {
+                context_files: planningContextFiles.map((f) => ({
+                  file_name: f.fileName,
+                  storage_path: f.storagePath,
+                  content_type: f.contentType,
+                })),
+              }
+            : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPlanningDispatchError(data.error ?? "Failed to dispatch");
+        return;
+      }
+
+      setOpenPlanningId(null);
+      setPlanningNote("");
+      setPlanningPendingKey(null);
+      setPlanningContextFiles([]);
+      setPlanningSentId(item.id);
+      setTimeout(() => setPlanningSentId((prev) => (prev === item.id ? null : prev)), 4000);
+    } catch {
+      setPlanningDispatchError("Something went wrong. Please try again.");
+    } finally {
+      setDispatchingPlanningId(null);
     }
   }
 
@@ -471,33 +631,132 @@ export default function ProjectDetailClient({
             ) : (
               <div className="space-y-3">
                 {feedbackItems.map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex items-start justify-between gap-3 border border-[#00205C]/[0.08] rounded-xl px-4 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-[#00205C] text-sm">{f.message}</p>
-                      {f.attachedFile && f.attachedFile.downloadUrl && (
-                        <a
-                          href={f.attachedFile.downloadUrl}
-                          className="inline-block mt-1.5 text-xs font-semibold px-3 py-1 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                  <div key={f.id} className="border border-[#00205C]/[0.08] rounded-xl px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[#00205C] text-sm">{f.message}</p>
+                        {f.attachedFile && f.attachedFile.downloadUrl && (
+                          <a
+                            href={f.attachedFile.downloadUrl}
+                            className="inline-block mt-1.5 text-xs font-semibold px-3 py-1 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 transition-colors"
+                          >
+                            {f.attachedFile.file_name}
+                          </a>
+                        )}
+                        <p className="text-[#76777A] text-xs mt-1">
+                          {f.milestoneTitle ?? "General"} &middot; {relativeDate(f.created_at)} &middot;{" "}
+                          {f.status === "resolved" ? "Resolved" : "New"}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-2">
+                        {f.status !== "resolved" && (
+                          <button
+                            onClick={() => handleResolveFeedback(f.id)}
+                            disabled={resolvingId === f.id}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
+                          >
+                            {resolvingId === f.id ? "..." : "Mark Resolved"}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => togglePlanningPanel(f.id)}
+                          disabled={!linkedRepo}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
-                          {f.attachedFile.file_name}
-                        </a>
-                      )}
-                      <p className="text-[#76777A] text-xs mt-1">
-                        {f.milestoneTitle ?? "General"} &middot; {relativeDate(f.created_at)} &middot;{" "}
-                        {f.status === "resolved" ? "Resolved" : "New"}
-                      </p>
+                          {openPlanningId === f.id ? "Close" : "Run Planning Session"}
+                        </button>
+                      </div>
                     </div>
-                    {f.status !== "resolved" && (
-                      <button
-                        onClick={() => handleResolveFeedback(f.id)}
-                        disabled={resolvingId === f.id}
-                        className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#4B858E] text-[#4B858E] hover:bg-[#4B858E]/10 disabled:opacity-50 transition-colors"
-                      >
-                        {resolvingId === f.id ? "..." : "Mark Resolved"}
-                      </button>
+
+                    {openPlanningId === f.id && (
+                      <div className="mt-3 pt-3 border-t border-[#00205C]/[0.08] space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                            Additional context for the planning session (optional)
+                          </label>
+                          <textarea
+                            value={planningNote}
+                            onChange={(e) => setPlanningNote(e.target.value)}
+                            placeholder="Anything else the planning session should know..."
+                            rows={3}
+                            className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 resize-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                            Attach additional files (optional)
+                          </label>
+                          <input
+                            type="file"
+                            multiple
+                            disabled={attachingPlanningFile}
+                            onChange={(e) => {
+                              handleAttachPlanningFile(e.target.files);
+                              e.target.value = "";
+                            }}
+                            className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors disabled:opacity-50"
+                          />
+                          {planningContextFiles.length > 0 && (
+                            <ul className="flex flex-wrap gap-2 mt-2">
+                              {planningContextFiles.map((cf) => (
+                                <li
+                                  key={cf.storagePath}
+                                  className="flex items-center gap-2 bg-[#F4F2EE] rounded-full pl-3 pr-2 py-1 text-xs text-[#00205C]"
+                                >
+                                  <span className="truncate max-w-[160px]">{cf.fileName}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePlanningFile(cf.storagePath)}
+                                    className="text-[#76777A] hover:text-red-500 font-bold leading-none"
+                                    aria-label={`Remove ${cf.fileName}`}
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {planningAttachError && <p className="text-red-400 text-xs mt-2">{planningAttachError}</p>}
+                        </div>
+                        {planningDispatchError && <p className="text-red-400 text-xs">{planningDispatchError}</p>}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDispatchPlanningFromFeedback(f)}
+                            disabled={
+                              dispatchingPlanningId === f.id || attachingPlanningFile || !linkedRepo?.hasInstallation
+                            }
+                            className="text-sm font-bold px-5 py-2 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {dispatchingPlanningId === f.id ? "Dispatching..." : "Start Planning Session"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOpenPlanningId(null)}
+                            className="text-sm font-semibold px-4 py-2 rounded-full border border-[#00205C]/20 text-[#76777A] hover:border-[#00205C]/40 hover:text-[#00205C] transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        {linkedRepo && !linkedRepo.hasInstallation && (
+                          <p className="text-[#76777A] text-xs">
+                            {linkedRepo.name} has no GitHub App Installation ID set yet — add one on its{" "}
+                            <Link href={`/admin/repos/${linkedRepo.id}`} className="text-[#4B858E] hover:underline">
+                              admin page
+                            </Link>{" "}
+                            first.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {planningSentId === f.id && (
+                      <p className="mt-2 text-[#4B858E] text-xs font-medium">
+                        Dispatched — check the{" "}
+                        <Link href="/admin/reviews" className="underline hover:text-[#3a6b73]">
+                          Reviews inbox
+                        </Link>
+                        .
+                      </p>
                     )}
                   </div>
                 ))}

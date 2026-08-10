@@ -1,4 +1,44 @@
-﻿Last session: 81
+﻿Last session: 82
+
+## Recent Changes (Session 82, August 9, 2026)
+
+**Run a planning session directly from a Client Feedback item**
+
+Ask: "the ability to run a planning session from the open [item] and from the feedback
+that they provide. Next to the mark result, there could be 'Run planning session', but
+then there's also an additional text field and maybe another upload field."
+
+`app/admin/projects/[id]/ProjectDetailClient.tsx`: each Client Feedback row now has a "Run
+Planning Session" button next to "Mark Resolved". Clicking it opens an inline panel (a
+textarea for extra context + a multi-file attach input, same `file:` pill styling as
+`SubmitFeedback.tsx`/`RepoDetailClient.tsx`) with "Start Planning Session" / "Cancel". The
+dispatch brief is built from the feedback message itself (plus a note that a file was
+attached, if any — the actual attachment isn't threaded through as a `context_file` since
+it lives in the `project-files` bucket, not `session-context-files`, and the runner doesn't
+consume `context_files` yet regardless per Session 80's own caveat) plus Drew's added text.
+Reuses the exact same upload flow and endpoint the repo-level "Run Planning Session" box
+uses — `/api/admin-repos/context-files/upload-url` → `uploadToSignedUrl` →
+`/api/orchestrator/dispatch` — no new API routes, no changes to the dispatch function
+itself.
+
+`app/admin/projects/[id]/page.tsx`: resolves which `repos` row (if any) has
+`client_project_id` equal to this project and passes it down as `linkedRepo`. A project
+with no linked repo just disables the button (nothing to dispatch to); a linked repo with
+no GitHub App Installation ID set yet lets the panel open but disables the actual dispatch
+button with a link to that repo's admin page, same disabled-state convention as the
+repo-level box.
+
+Deliberately not done: resolving the feedback's own attached file into a real
+`context_file`, and auto-marking feedback resolved on dispatch — neither was asked for,
+and the first would mean either mixing storage buckets or teaching the dispatch function
+about a second file source it doesn't otherwise know about, not a small change.
+
+Verified with `npx tsc --noEmit`, `npm run build`, `npx eslint` on both changed files — all
+clean. **Not verified live** — no admin credentials or configured repo/installation
+available in this session to actually click through a real dispatch. No SQL — no new
+tables or columns, only new client-side calls to already-existing endpoints.
+
+---
 
 ## Recent Changes (Session 81, August 9, 2026)
 
