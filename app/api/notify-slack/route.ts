@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
     text = `📎 File uploaded: *${fileName}* on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\nhttps://worldshifttech.com/admin/projects/${projectId}`;
   } else if (type === "milestone_response") {
     text = `💬 Client response on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\n"${message}"\nhttps://worldshifttech.com/admin/projects/${projectId}`;
+  } else if (type === "feedback_deleted") {
+    text = `🗑️ Open item deleted on *${projectTitle}*${milestoneTitle ? ` (milestone: ${milestoneTitle})` : ""}\n"${message}"\nhttps://worldshifttech.com/admin/projects/${projectId}`;
   } else if (type === "audit") {
     const {
       business_name,

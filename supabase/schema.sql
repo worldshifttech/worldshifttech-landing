@@ -662,3 +662,13 @@ WHERE slug = 'client-onboarding' AND client_id IS NULL;
 -- delete the ticket, just drop its attachment.
 -- ============================================================
 ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS attached_file_id uuid REFERENCES project_files(id) ON DELETE SET NULL;
+
+-- ============================================================
+-- MIGRATION: client-facing edit/delete for Open Items (Session 81)
+-- updated_at is set only by the new edit PATCH, never on insert — null means never edited.
+-- feedback_id mirrors project_files.milestone_id exactly: deleting the feedback row
+-- unlinks the file (SET NULL) rather than deleting it, same asymmetric precedent already
+-- established for milestones. attached_file_id (Session 78) is untouched.
+-- ============================================================
+ALTER TABLE project_feedback ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+ALTER TABLE project_files ADD COLUMN IF NOT EXISTS feedback_id uuid REFERENCES project_feedback(id) ON DELETE SET NULL;

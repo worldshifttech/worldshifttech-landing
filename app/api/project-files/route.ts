@@ -26,9 +26,10 @@ export async function POST(req: NextRequest) {
     uploadedBy?: "client" | "drew";
     note?: string;
     milestoneId?: string;
+    feedbackId?: string;
   };
 
-  const { projectId, slug, storagePath, fileName, uploadedBy, note, milestoneId } = body;
+  const { projectId, slug, storagePath, fileName, uploadedBy, note, milestoneId, feedbackId } = body;
 
   if (!projectId || !slug || !storagePath || !fileName || !uploadedBy) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       uploaded_by: uploadedBy,
       note: note || null,
       milestone_id: milestoneId ?? null,
+      feedback_id: feedbackId ?? null,
     })
     .select("id")
     .single();
