@@ -1,6 +1,6 @@
-﻿Last session: 80
+﻿Last session: 81
 
-## Recent Changes (Session 80, August 9, 2026)
+## Recent Changes (Session 81, August 9, 2026)
 
 **Fix: Bot detected on attach-a-file submissions**
 
@@ -25,6 +25,109 @@ the client-facing `OpenItems.tsx`.
 
 Verified with `npx tsc --noEmit`, `npm run build`, `npx eslint` on both changed files — all
 clean. No SQL — read path only, `attached_file_id` already existed on the table.
+
+---
+
+## Recent Changes (Session 80, August 9, 2026)
+
+**Attach files/screenshots to Run Planning Session — control-plane half only**
+
+Build prompt, directly: give the "Run Planning Session" box on `/admin/repos/[id]` the
+ability to attach files or screenshots as extra context, mirroring the signed-upload-URL
+pattern already used for client file uploads (`lib/project-files.ts`,
+`/api/project-files/upload-url`, `SubmitFeedback.tsx`) but for an admin-only, no-Turnstile
+context. Same split as Session 68's checkpoint/resume mechanism: `worldshifttech-landing`
+uploads the files, signs read URLs, and threads them into the `repository_dispatch`
+payload; actually downloading those URLs into the runner's sandboxed checkout and pointing
+Claude Code's Read tool at them during a run is a separate, not-yet-built
+`wst-orchestrator-runner` session.
+
+**New bucket + helper.** `lib/session-context-files.ts` (new) — same shape as
+`lib/project-files.ts`: `BUCKET = "session-context-files"`, `MAX_FILE_SIZE = 25MB`,
+`buildStoragePath(pendingKey, fileName)`. Deliberately a separate bucket from
+`project-files` — this is planning-session context, not a client project file, and the two
+concerns shouldn't share storage just because the upload mechanics look identical.
+
+**New upload-URL route.** `app/api/admin-repos/context-files/upload-url/route.ts` (new),
+admin-only (same bearer-token-against-`drew@worldshifttech.com` `verifyAdmin()` pattern
+duplicated in every other admin route — not extracted into a shared helper, that's a
+separate session's call to make). Takes `{ pendingKey, fileName, fileSize }`, rejects over
+25MB, returns a signed upload URL. No DB write here — there's no `agent_sessions` row yet
+at upload time (dispatch is what creates it), so uploaded-file metadata lives only in the
+admin UI's own component state until Run Planning Session is actually clicked.
+
+**UI, inside the existing Run Planning Session box only** (`RepoDetailClient.tsx`) — a
+lazily-created `pendingContextKey` (`crypto.randomUUID()`, browser-native, regenerated
+after a successful dispatch), a `contextFiles` array, a multi-file `<input type="file"
+multiple>` below the Brief textarea styled with the same `file:` pill-button Tailwind
+variant `SubmitFeedback.tsx` already uses (`hover:file:bg-[#5a9aa4]`), removable chips
+(filename + size + × — the × only drops it from local state, the underlying storage object
+is deliberately left behind, matching this codebase's existing tolerance for similar minor
+leaks elsewhere), and one caption line making the current limitation explicit rather than
+letting this read as a fully-working feature: "Files upload now, but a
+wst-orchestrator-runner update is still needed before a planning session actually reads
+them, tracked separately." The "Run Planning Session" button disables while a file is
+mid-upload. `handleRunPlanningSession`'s POST body gains `context_files` (mapped to
+`{file_name, storage_path, content_type}`, omitted when empty — no change to the existing
+body shape for a brief with no attachments) and clears `contextFiles`/regenerates
+`pendingContextKey` on a successful dispatch.
+
+**Contract shape, threaded through the rest of the chain unchanged in spirit from every
+other optional dispatch field:** `/api/orchestrator/dispatch` destructures an optional
+`context_files?: {file_name, storage_path, content_type?}[]` and passes it to
+`dispatchOrchestratorSession()` as `contextFiles` — no change to the existing required-field
+validation. Inside that function, right alongside where the Session 68 resume-context
+lookup already runs, a non-empty `contextFiles` gets signed one file at a time
+(`createSignedUrl`, 24h expiry) and recorded into the new `agent_session_context_files`
+table; each file is its own try/catch, same fail-open posture already used for the
+`reuse_count` bump and the resume lookup in this exact function — a signing hiccup on one
+attachment must never block the dispatch Drew explicitly clicked. The successfully-signed
+files become `context_files: {file_name, url, content_type}[]` on the `client_payload` sent
+to `wst-orchestrator-runner`, `null` when empty — same null-when-absent convention already
+used for `resume_context`/`knowledge_context`.
+
+**`ORCHESTRATOR_DESIGN.md` §4** — step 2's payload shape line now lists `context_files?`,
+plus a new callout in the same style as the existing "Proposed, not yet designed" note and
+the Session 68 checkpoint callout, stating plainly that the control-plane half (upload,
+storage, signed URLs, dispatch payload) is done as of this session, but the runner-side
+half is a separate, not-yet-built `wst-orchestrator-runner` session — a planning session
+dispatched with attachments today will simply ignore them until that lands.
+
+**Verified:** `npx tsc --noEmit`, `npm run build`, and `npx eslint` on every changed file —
+all clean. **Not verified live** — no real end-to-end attach-and-dispatch click-through, and
+no live repo with a GitHub App Installation ID configured was available in this session to
+actually fire a dispatch against. Flagged for Drew to click through once deployed: attach a
+file on a repo with a real Installation ID, confirm it uploads and shows as a chip, confirm
+"Run Planning Session" still dispatches successfully with an attachment present, and confirm
+the caption text reads clearly as "not yet consumed by the runner" rather than as a
+finished feature.
+
+**SQL to run — before deploy, not after**, same discipline as Session 76/78's own
+migrations:
+```sql
+-- ============================================================
+-- MIGRATION: session-context-files bucket + agent_session_context_files (Session 80)
+-- Lets an admin attach files/screenshots to a Run Planning Session dispatch as extra
+-- context. Same private-bucket-plus-signed-URL convention as the existing project-files
+-- bucket (Session 47) — no storage.objects RLS policies, every read/write goes through
+-- the service-role client. No RLS on the new table either, service-role only, same
+-- convention as agent_sessions/review_items. Control-plane half only — see
+-- ORCHESTRATOR_DESIGN.md §4 for what's still pending on the wst-orchestrator-runner side.
+-- ============================================================
+
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('session-context-files', 'session-context-files', false, 26214400)
+on conflict (id) do nothing;
+
+CREATE TABLE IF NOT EXISTS agent_session_context_files (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id    uuid NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  file_name     text NOT NULL,
+  storage_path  text NOT NULL,
+  content_type  text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+```
 
 ---
 
