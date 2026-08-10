@@ -95,6 +95,90 @@ export default function RepoDetailClient({
   const [dispatching, setDispatching] = useState(false);
   const [dispatchError, setDispatchError] = useState("");
 
+  // Attach files/screenshots to a planning dispatch as extra context (Session 80).
+  // pendingContextKey groups uploads made before a session_id exists yet (dispatch is what
+  // creates the agent_sessions row) — regenerated after a successful dispatch so a stray
+  // reload doesn't reuse a key whose files already got threaded into a prior session.
+  // Control-plane half only: the runner doesn't read these files yet, see the caption below.
+  const [pendingContextKey, setPendingContextKey] = useState<string | null>(null);
+  const [contextFiles, setContextFiles] = useState<
+    { fileName: string; storagePath: string; contentType: string; fileSize: number }[]
+  >([]);
+  const [attachingFile, setAttachingFile] = useState(false);
+  const [attachError, setAttachError] = useState("");
+  const CONTEXT_FILE_MAX_SIZE = 25 * 1024 * 1024;
+
+  async function handleAttachContextFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setAttachError("");
+    setAttachingFile(true);
+
+    let key = pendingContextKey;
+    if (!key) {
+      key = crypto.randomUUID();
+      setPendingContextKey(key);
+    }
+
+    const supabase = getSupabaseBrowser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    try {
+      for (const file of Array.from(files)) {
+        if (file.size > CONTEXT_FILE_MAX_SIZE) {
+          setAttachError(`${file.name} is over 25MB and was skipped.`);
+          continue;
+        }
+
+        const urlRes = await fetch("/api/admin-repos/context-files/upload-url", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ pendingKey: key, fileName: file.name, fileSize: file.size }),
+        });
+        const urlData = await urlRes.json();
+        if (!urlRes.ok) {
+          setAttachError(urlData.error ?? `Could not start upload for ${file.name}`);
+          continue;
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("session-context-files")
+          .uploadToSignedUrl(urlData.path, urlData.token, file);
+        if (uploadError) {
+          setAttachError(uploadError.message);
+          continue;
+        }
+
+        setContextFiles((prev) => [
+          ...prev,
+          {
+            fileName: file.name,
+            storagePath: urlData.path,
+            contentType: file.type || "application/octet-stream",
+            fileSize: file.size,
+          },
+        ]);
+      }
+    } finally {
+      setAttachingFile(false);
+    }
+  }
+
+  function handleRemoveContextFile(storagePath: string) {
+    setContextFiles((prev) => prev.filter((f) => f.storagePath !== storagePath));
+  }
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   // Custom Build Session — same free-text-brief pattern as planning above, for
   // session_type: "build". The only other way to fire a build was the fixed
   // "Run Build Session" button on an answered consolidated_review card in
@@ -323,6 +407,15 @@ export default function RepoDetailClient({
           repo_id: repo.id,
           session_type: "planning",
           brief: planningBrief,
+          ...(contextFiles.length > 0
+            ? {
+                context_files: contextFiles.map((f) => ({
+                  file_name: f.fileName,
+                  storage_path: f.storagePath,
+                  content_type: f.contentType,
+                })),
+              }
+            : {}),
         }),
       });
 
@@ -332,6 +425,8 @@ export default function RepoDetailClient({
         return;
       }
 
+      setContextFiles([]);
+      setPendingContextKey(null);
       router.push("/admin/reviews");
     } catch {
       setDispatchError("Something went wrong. Please try again.");
@@ -939,12 +1034,55 @@ export default function RepoDetailClient({
                 className="w-full bg-[#F4F2EE] border border-[#00205C]/[0.1] rounded-lg px-3 py-2 text-sm text-[#00205C] focus:outline-none focus:border-[#4B858E]/60 resize-none"
               />
             </div>
+            <div>
+              <label className="block text-xs font-medium text-[#76777A] mb-1.5">
+                Attach files or screenshots (optional)
+              </label>
+              <input
+                type="file"
+                multiple
+                disabled={attachingFile}
+                onChange={(e) => {
+                  handleAttachContextFiles(e.target.files);
+                  e.target.value = "";
+                }}
+                className="block w-full text-sm text-[#00205C] cursor-pointer file:cursor-pointer file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#4B858E] file:text-white hover:file:bg-[#5a9aa4] file:transition-colors disabled:opacity-50"
+              />
+              {contextFiles.length > 0 && (
+                <ul className="flex flex-wrap gap-2 mt-3">
+                  {contextFiles.map((f) => (
+                    <li
+                      key={f.storagePath}
+                      className="flex items-center gap-2 bg-[#F4F2EE] rounded-full pl-3 pr-2 py-1 text-xs text-[#00205C]"
+                    >
+                      <span className="truncate max-w-[200px]">{f.fileName}</span>
+                      <span className="text-[#76777A]">{formatFileSize(f.fileSize)}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveContextFile(f.storagePath)}
+                        className="text-[#76777A] hover:text-red-500 font-bold leading-none"
+                        aria-label={`Remove ${f.fileName}`}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {attachError && <p className="text-red-400 text-xs mt-2">{attachError}</p>}
+              <p className="text-[#76777A] text-xs mt-2">
+                Files upload now, but a wst-orchestrator-runner update is still needed before a
+                planning session actually reads them, tracked separately.
+              </p>
+            </div>
             {dispatchError && <p className="text-red-400 text-xs">{dispatchError}</p>}
             {draftError && <p className="text-red-400 text-xs">{draftError}</p>}
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleRunPlanningSession}
-                disabled={dispatching || !planningBrief.trim() || !repo.github_app_installation_id}
+                disabled={
+                  dispatching || attachingFile || !planningBrief.trim() || !repo.github_app_installation_id
+                }
                 className="text-sm font-bold px-6 py-2.5 rounded-full bg-[#4B858E] text-white hover:bg-[#5a9aa4] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {dispatching ? "Dispatching..." : "Run Planning Session"}

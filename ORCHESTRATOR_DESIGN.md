@@ -234,7 +234,7 @@ itself, so the control plane can dispatch to it):
    or the scheduler in §7 fires automatically).
 2. `worldshifttech-landing` creates an `agent_sessions` row (`status: 'running'`), exchanges
    the GitHub App for a token, fires `repository_dispatch` on `wst-orchestrator-runner` with
-   `{ repo_id, session_id, session_type, brief, resume_context? }`.
+   `{ repo_id, session_id, session_type, brief, resume_context?, context_files? }`.
 3. The Actions workflow exchanges its own installation token for the *target* repo,
    clones it, and runs Claude Code non-interactively, instructed to follow that repo's own
    README's Planning Mode or Build Mode exactly as written — the orchestrator does not
@@ -244,6 +244,17 @@ itself, so the control plane can dispatch to it):
    a bearer secret (`WST_ORCHESTRATOR_SECRET`), a fixed JSON body.
 5. `worldshifttech-landing` updates the `agent_sessions` row and creates a `review_items`
    row from the result.
+
+**Session 80 — attaching files/screenshots to a planning dispatch, control-plane half only.**
+An admin can attach files on `/admin/repos/[id]`'s Run Planning Session box; they upload to
+a new `session-context-files` storage bucket, and `dispatchOrchestratorSession()` signs a
+24h read URL per file, records it in `agent_session_context_files`, and sends
+`{ file_name, url, content_type }[]` as `context_files` on step 2's payload above. That's as
+far as this lands: nothing in `wst-orchestrator-runner`'s own workflow downloads those URLs
+into the sandboxed checkout or points Claude Code's `Read` tool at them before a run starts.
+A planning session dispatched with attachments today uploads and threads the URLs through
+fine, but the run itself simply ignores `context_files` until a separate
+`wst-orchestrator-runner` session builds that consumption side.
 
 ---
 
