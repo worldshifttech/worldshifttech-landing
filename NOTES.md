@@ -1,4 +1,73 @@
-﻿Last session: 85
+﻿Last session: 86
+
+## Recent Changes (Session 86, August 12, 2026)
+
+**Concurrency guard on dispatch + visibility into what's currently running, so mixing app and interactive sessions is actually safe**
+
+Ask: "Can I now start a planning session with WST or the app and still get the same
+results. Without risk of branch issues or breaking code... Scan through all routes and
+potential breaks or issues to ensure I'm safe to build in any type of session (App or
+Claude interface) without messing up repos."
+
+**What actually protects against collisions today, confirmed by reading every repo's own
+Build Mode convention, not assumed:** every headless/app-dispatched session (planning or
+build) always commits to a new branch and opens a PR — never pushes to the default branch
+directly (`wst-orchestrator-runner`'s own build-job prompt is explicit about this). That
+PR sits in the Reviews inbox until Drew clicks Merge to Production, which now (Session
+85's forgotten-realms-dm work) also actually deploys via Vercel's Git integration. An
+*interactive* Claude Code session — this kind of session — is the opposite: every repo's
+own README Build Mode section (`worldshifttech-landing`, `entos-group-website`,
+`drew-griffiths-speak-easy`, `forgotten-realms-dm`'s own `CLAUDE.md`) says the same thing
+in each repo's own words — commit, push straight to `main`, deploy with `vercel --prod`
+directly, no branch, no PR, no review gate. That asymmetry is intentional (an interactive
+session assumes a human is watching in real time and can react), not a gap, but it's the
+reason mixing the two needs a real answer rather than an assumption: an interactive push
+landing on `main` at the same moment an orchestrator PR merges is exactly what Session
+80's real non-fast-forward push rejection was.
+
+**Real gap found, not assumed:** `scheduler-tick` has always checked for an already-open
+`agent_sessions` row on a repo before auto-dispatching a scheduled planning session — but
+`dispatchOrchestratorSession()` itself (`lib/orchestrator-dispatch.ts`), the one shared
+function every OTHER caller goes through (every "Run Planning/Build Session" button in
+the admin UI, the per-feedback-item dispatch panels on both the repo Feedback tab and
+project Client Feedback section), had no such check at all. Two sessions could fire
+concurrently on the same repo — each in its own isolated GitHub Actions checkout, neither
+aware the other exists, both reading the same "Last session: N," both able to open a
+branch/PR referencing it. Fixed by moving the same check scheduler-tick already used into
+`dispatchOrchestratorSession` itself, so every caller gets it automatically and a future
+caller can't forget to add it the way every existing manual-dispatch path already had.
+Returns a clear 409 ("This repo already has a session in progress") that surfaces
+directly in whichever UI panel triggered it, since every dispatch handler already
+forwards `data.error` from a non-ok response. Not fully race-proof — two dispatches
+landing in the exact same instant could both pass the check before either row exists —
+accepted as a real but low-probability gap for a single-operator system, not worth a
+DB-level lock for.
+
+**What that guard still can't see:** an interactive session never creates an
+`agent_sessions` row at all (it never dispatches anything), so there is no way for the
+system to warn Drew off starting one while an orchestrator session is mid-flight on that
+same repo. Added the best available substitute instead of pretending this doesn't exist:
+`app/admin/repos/[id]/page.tsx` now queries for a repo's own currently-open session (same
+`status not in (done, failed)` filter as the guard and scheduler-tick), and
+`RepoDetailClient.tsx` shows it as an amber banner right under the repo name — session
+type, status, how long it's been running, and a link to the actual GitHub Actions run —
+so a two-second glance at the repo's admin page before starting an interactive session is
+enough to know it's clear. Purely informational; nothing blocks Drew from starting one
+anyway if he chooses to.
+
+**Bottom line for the actual question asked:** yes, safe to mix, with the one real
+practical habit worth keeping — glance at a repo's admin page (the new banner) before
+starting an interactive session there, same as the fetch-before-push discipline already
+adopted for pushing (`git fetch origin && git log HEAD..origin/main --oneline`, standing
+since Session 80's real collision). No other independent automation exists that could
+touch these repos outside of `dispatchOrchestratorSession` — checked every managed repo's
+own `.github/workflows/` directly: none exist outside `wst-orchestrator-runner`'s own
+single workflow file, so there's no hidden second path (a target repo's own cron, a
+Dependabot auto-merge, etc.) that could land a surprise commit.
+
+Verified: `tsc --noEmit`, `eslint` on all three touched files, `npm run build` all clean.
+
+---
 
 ## Recent Changes (Session 85, August 10, 2026)
 

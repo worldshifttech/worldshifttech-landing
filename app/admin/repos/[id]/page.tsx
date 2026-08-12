@@ -62,6 +62,31 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
 
   if (!repo) notFound();
 
+  // Session 86 — surfaced so Drew can check "is anything running on this repo right now"
+  // before starting an interactive Claude Code session on it — the one thing dispatch's
+  // own new concurrency guard (lib/orchestrator-dispatch.ts) can't see, since an
+  // interactive session never creates an agent_sessions row at all. Same "not done/failed"
+  // filter as that guard and scheduler-tick's own pre-check, for the same definition of
+  // "still open." Most-recent-first + limit 1 since only the single most current one
+  // matters here, not a full history (that's what the Reviews tab is for).
+  const { data: openSessionRows } = await serviceClient
+    .from("agent_sessions")
+    .select("id, session_type, status, created_at, github_run_id")
+    .eq("repo_id", id)
+    .not("status", "in", "(done,failed)")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const activeSession = openSessionRows && openSessionRows.length > 0
+    ? {
+        id: openSessionRows[0].id as string,
+        session_type: openSessionRows[0].session_type as string,
+        status: openSessionRows[0].status as string,
+        created_at: openSessionRows[0].created_at as string,
+        github_run_id: openSessionRows[0].github_run_id as number | null,
+      }
+    : null;
+
   const { data: rawProjects } = await serviceClient
     .from("projects")
     .select("id, title, slug, access_mode, access_password_hash")
@@ -227,6 +252,7 @@ export default async function AdminRepoDetailPage({ params }: PageProps) {
       projects={projects}
       reviewItems={reviewItems}
       initialDrafts={drafts}
+      activeSession={activeSession}
     />
   );
 }

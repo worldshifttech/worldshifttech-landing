@@ -55,6 +55,19 @@ export type SessionDraft = {
   created_at: string;
 };
 
+// Session 86 — the one thing dispatch's own concurrency guard can't see: an interactive
+// Claude Code session running locally never creates an agent_sessions row, so this is
+// purely informational, not enforced. Lets Drew check "is anything running here right
+// now" before starting one, so an interactive push and an in-flight orchestrator PR don't
+// land on top of each other the way Session 80's real collision did.
+export type ActiveSession = {
+  id: string;
+  session_type: string;
+  status: string;
+  created_at: string;
+  github_run_id: number | null;
+};
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function RepoDetailClient({
@@ -62,11 +75,13 @@ export default function RepoDetailClient({
   projects,
   reviewItems,
   initialDrafts,
+  activeSession,
 }: {
   repo: RepoFields;
   projects: ProjectOption[];
   reviewItems: ReviewItem[];
   initialDrafts: SessionDraft[];
+  activeSession: ActiveSession | null;
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"settings" | "feedback" | "reviews">("settings");
@@ -776,6 +791,41 @@ export default function RepoDetailClient({
             </Link>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00205C] mt-1">{name || "Untitled Repo"}</h1>
           </div>
+
+          {/* Session 86 — an interactive Claude Code session never shows up in this
+              table (it never dispatches, so it never creates an agent_sessions row) —
+              this can only ever tell Drew about an orchestrator-side session, not warn
+              him off starting an interactive one. Still the best available signal: check
+              here before starting interactive work on this repo, so it doesn't land on
+              top of an in-flight PR the way Session 80's real collision did. */}
+          {activeSession && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 flex items-start gap-3">
+              <span className="text-amber-500 text-lg leading-none">⚠</span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-900">
+                  A {activeSession.session_type} session is currently {activeSession.status} on this repo
+                </p>
+                <p className="text-amber-800 text-xs mt-1">
+                  Started {new Date(activeSession.created_at).toLocaleString()}. Starting an interactive
+                  Claude Code session on this repo right now risks a branch/push collision with it — wait
+                  for it to finish, or check its progress first.
+                  {activeSession.github_run_id && (
+                    <>
+                      {" "}
+                      <a
+                        href={`https://github.com/worldshifttech/wst-orchestrator-runner/actions/runs/${activeSession.github_run_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-amber-950"
+                      >
+                        View run &rarr;
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="flex items-center gap-1 border-b border-[#00205C]/[0.10]">

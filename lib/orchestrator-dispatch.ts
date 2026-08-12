@@ -71,6 +71,36 @@ export async function dispatchOrchestratorSession({
     };
   }
 
+  // Session 86 — scheduler-tick has always checked this before calling this function, but
+  // every OTHER caller (every "Run Planning/Build Session" button in the admin UI, the
+  // per-feedback-item dispatch panels) went straight here with no such check at all. Two
+  // sessions firing concurrently on the same repo each run in their own isolated GitHub
+  // Actions checkout, neither aware the other exists — both can read the same "Last
+  // session: N" from NOTES.md, both open a PR/branch referencing it, and the second one to
+  // merge collides with the first (the exact class of problem Session 80's real push
+  // rejection came from, just one layer further back — before that fix, the collision was
+  // caught at git-push time; this catches it before a second session is ever dispatched at
+  // all). Moved here instead of duplicated in every caller specifically so a future caller
+  // can't forget it the way every existing manual-dispatch path already had. Same filter
+  // scheduler-tick's own pre-check already uses, not a new threshold. Not fully race-proof
+  // (two dispatches arriving in the same instant could both pass this check before either
+  // row exists) — accepted as a real but low-probability gap for a single-operator system,
+  // not worth a DB-level lock for.
+  const { data: openSessions } = await supabase
+    .from("agent_sessions")
+    .select("id")
+    .eq("repo_id", repoId)
+    .not("status", "in", "(done,failed)")
+    .limit(1);
+
+  if (openSessions && openSessions.length > 0) {
+    return {
+      ok: false,
+      error: "This repo already has a session in progress — wait for it to finish before starting another.",
+      status: 409,
+    };
+  }
+
   const { data: session, error: sessionError } = await supabase
     .from("agent_sessions")
     .insert({
