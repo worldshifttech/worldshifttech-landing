@@ -7,6 +7,7 @@ import { clientAccessCookieName } from "@/lib/client-access";
 import { BUCKET } from "@/lib/project-files";
 import PasswordGate from "./PasswordGate";
 import ClientPasswordGate from "@/app/components/ClientPasswordGate";
+import SecurityBadge from "@/app/components/SecurityBadge";
 import FileUploads from "./FileUploads";
 import MilestoneActionPanel from "./MilestoneActionPanel";
 import OpenItems from "./OpenItems";
@@ -160,7 +161,7 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
     <div className="min-h-screen flex flex-col bg-[#F4F2EE]">
       {/* Nav */}
       <nav className="w-full bg-white border-b border-[#00205C]/10">
-        <div className="flex items-center px-6 py-5 max-w-3xl mx-auto w-full">
+        <div className="flex items-center justify-between px-6 py-5 max-w-3xl mx-auto w-full">
           <Image
             src="/World_shift_tech_LOGO_PRIMARY.png"
             alt="World Shift Technologies"
@@ -169,6 +170,7 @@ export default async function ProjectRoadmapPage({ params }: PageProps) {
             className="object-contain"
             priority
           />
+          <SecurityBadge />
         </div>
       </nav>
 

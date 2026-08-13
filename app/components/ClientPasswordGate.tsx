@@ -78,8 +78,18 @@ export default function ClientPasswordGate({ slug }: { slug: string }) {
             priority
           />
         </div>
-        <p className="text-center text-[#76777A] text-sm mb-6">
+        <p className="text-center text-[#76777A] text-sm mb-2">
           This project area is password protected. One password unlocks everything in it.
+        </p>
+        <p className="text-center text-xs mb-6">
+          <a
+            href="/security"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#4B858E] hover:underline"
+          >
+            How your project data is protected
+          </a>
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
