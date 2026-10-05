@@ -64,6 +64,17 @@
   border-bottom: 1px solid var(--line);
 }
 
+.logoLink {
+  display: inline-block;
+  line-height: 0;
+  border-radius: 4px;
+}
+
+.logoLink:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+}
+
 .logo {
   height: auto;
   width: 170px;

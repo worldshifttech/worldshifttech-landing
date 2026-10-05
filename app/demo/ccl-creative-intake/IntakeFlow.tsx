@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./intake.module.css";
 import { FieldInput, Globe, Icon, LevelCard, SectionIntro } from "./parts";
 import {
@@ -51,14 +52,16 @@ function Header() {
         Working prototype. Nothing you enter is saved or sent.
       </div>
       <header className={styles.top}>
-        <Image
-          src="/World_shift_tech_LOGO_PRIMARY.png"
-          alt="World Shift Technologies"
-          width={1773}
-          height={435}
-          className={styles.logo}
-          priority
-        />
+        <Link href="/" aria-label="World Shift Technologies home" className={styles.logoLink}>
+          <Image
+            src="/World_shift_tech_LOGO_PRIMARY.png"
+            alt="World Shift Technologies"
+            width={1773}
+            height={435}
+            className={styles.logo}
+            priority
+          />
+        </Link>
         <span className={styles.badge}>CCL Creative Studio &middot; Creative Intake</span>
       </header>
     </>
