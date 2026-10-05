@@ -1,6 +1,36 @@
-﻿Last session: 87
+﻿Last session: 89
 
-## Recent Changes (Session 87, August 12, 2026)
+## Recent Changes (Session 89, October 5, 2026)
+
+**CCL Creative Intake demo, built as a client-demonstration route from a standalone HTML prototype**
+
+Ask: turn `ccl-marketing-intake-prototype.html` (a bundled React artifact) into a landing
+page and structure for demonstrating to a client.
+
+New route `/demo/ccl-creative-intake` (noindex, no backend, nothing saved or sent). It is a
+guided intake for the Center for Creative Leadership's Creative Studio: landing screen,
+basics, group-code routing (Marketing codes get the three-level workflow, every other code
+gets a "hands off to the existing BAU form" screen), Level 1/2/3 flip cards, per-level
+chapters with conditional questions, a review screen with Edit links, and a final
+"submission preview" listing each answer against the ClickUp field it would write to.
+
+- `app/demo/ccl-creative-intake/spec.ts` - all structure as data: group codes, levels,
+  chapters, fields (`cu` = ClickUp field name, `n` = question number on CCL's source form),
+  `showIf` conditionals, validation. Re-pointing this at a real form means editing this file.
+- `IntakeFlow.tsx` (client, state + steps), `parts.tsx` (field renderer, flip card, icons),
+  `intake.module.css` (scoped; prototype tokens live on `.app`, nothing leaks site-wide),
+  `page.tsx` (server, metadata + `robots: noindex`).
+- No new dependency: the prototype's 8 lucide icons are inlined in `parts.tsx`.
+- Fixed a prototype bug: the "When to choose" back face overflowed its fixed-height card at
+  narrow card widths. Both faces now share one grid cell so the card sizes to the taller one.
+- Group code list is copied verbatim from the prototype, including CCL's own typos
+  ("Commercializtion", "Ofice").
+
+**Not done / worth knowing:** submit is simulated. A real build still needs the ClickUp task
+creation (API route + field-ID mapping from each `cu` name) and the "Start HERE" SharePoint
+guide link, which is a placeholder in the prototype too.
+
+## Session 87 (August 12, 2026)
 
 **The two Session 86 safety habits, written into every repo's own Planning/Build Mode convention, not just explained**
 
