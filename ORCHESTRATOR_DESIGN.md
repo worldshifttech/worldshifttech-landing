@@ -46,8 +46,10 @@ clean on both before committing — no `.env`/`.env.local` in either repo's hist
 
 Three more client repos surfaced under the `worldshifttech` org while installing the
 GitHub App that weren't in the original audit: `mt-courses-training`,
-`carri-cameron-ai-social-media-manager`, `c4vl-intake-api`. Not yet folded into the fleet
-— decide later whether they join `repos`.
+`carri-cameron-ai-social-media-manager`, `c4vl-intake-api`. `mt-courses-training` and
+`carri-cameron-ai-social-media-manager` were dropped as projects in October 2026 (Drew no
+longer wants them) and will never join `repos`. `c4vl-intake-api` is not yet folded into the
+fleet — decide later whether it joins `repos`.
 
 Per Drew: all repos here are his own except `entos-group-website`, which is client work
 (currently just a marketing site, no app layer yet).
