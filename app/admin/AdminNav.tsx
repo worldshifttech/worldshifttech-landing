@@ -13,13 +13,7 @@ import SignOutButton from "@/app/components/SignOutButton";
 
 const NAV_ITEMS = [
   { key: "dashboard", href: "/admin", label: "Dashboard" },
-  { key: "repos", href: "/admin/repos", label: "Repos" },
-  { key: "reviews", href: "/admin/reviews", label: "Reviews" },
   { key: "knowledge-base", href: "/admin/knowledge-base", label: "Knowledge Base" },
-  // Session 72 — cost_usd wasn't tracked anywhere until wst-orchestrator-runner's own
-  // Session 10 started sending it; nothing to show for sessions dispatched before that.
-  { key: "spend", href: "/admin/spend", label: "Spend" },
-  { key: "guide", href: "/admin/guide", label: "Guide" },
 ] as const;
 
 export type AdminNavSection = (typeof NAV_ITEMS)[number]["key"];

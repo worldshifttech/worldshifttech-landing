@@ -112,12 +112,10 @@ export default function AdminDashboard({
   initialProjects,
   clients,
   auditEstimates,
-  linkedRepos,
 }: {
   initialProjects: AdminProject[];
   clients: AdminClient[];
   auditEstimates: AuditEstimate[];
-  linkedRepos: Record<string, { id: string; label: string }[]>;
 }) {
   const router = useRouter();
   const [projects] = useState<AdminProject[]>(initialProjects);
@@ -710,7 +708,6 @@ export default function AdminDashboard({
 
                       <div className="space-y-3">
                         {group.projects.map((project) => {
-                          const repoChips = linkedRepos[project.id] ?? [];
                           return (
                           <Link
                             key={project.id}
@@ -731,21 +728,6 @@ export default function AdminDashboard({
                                 >
                                   {project.client_name ?? "No client name set"}
                                 </p>
-                              )}
-                              {repoChips.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                  {repoChips.map((chip) => (
-                                    <a
-                                      key={chip.id}
-                                      href={`/admin/repos/${chip.id}`}
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#91B6BB]/20 text-[#00205C] border border-[#91B6BB]/40 hover:bg-[#91B6BB]/30 transition-colors"
-                                      style={{ fontFamily: "var(--font-poppins)" }}
-                                    >
-                                      {chip.label}
-                                    </a>
-                                  ))}
-                                </div>
                               )}
                             </div>
 

@@ -1,6 +1,43 @@
-﻿Last session: 89
+﻿Last session: 90
 
-## Recent Changes (Session 89, October 5, 2026)
+## Recent Changes (Session 90, November 5, 2026)
+
+**Retired the WST orchestrator; Claude Code (cloud sessions) is the orchestrator now**
+
+Ask: Drew stopped using the app-driven orchestrator and wants to use Claude Code directly,
+from the phone and desktop, against each repo's own `CLAUDE.md`.
+
+Stage 1 (`d8b060c`): removed both Vercel crons (`scheduler-tick`, `drift-check`) by making
+`vercel.json` `{}`, and removed the "check for an active dispatched session" step from the
+Planning and Build Mode text in this repo's README and in the speak-easy, entos and
+forgotten-realms docs.
+
+Stage 2: removed `/api/orchestrator/*`, `/api/admin-repos/*`, `/api/admin-reviews/*`,
+`/api/admin-orchestrator-settings`, `/api/ingest-repo-registration`, the `/admin/repos`,
+`/admin/reviews`, `/admin/spend` and `/admin/guide` pages, `lib/orchestrator-dispatch.ts`,
+`lib/github-app.ts`, `lib/session-context-files.ts`, `lib/target-supabase.ts` and
+`lib/feedback-adapters.ts`. Removed the Run Planning Session buttons from a project's client
+feedback list, the repo chips on the dashboard's project rows, and the dead `session_failed`
+Slack branch. AdminNav now has Dashboard and Knowledge Base only. `wst-build-manager`'s
+`bootstrap.js` no longer registers new projects here (its step 9b).
+
+Kept: `knowledge_base_entries`, `lib/knowledge-base.ts`, `lib/voyage.ts` (the public audit
+uses them), client projects and hubs, the feedback portal, curriculum, build costs. The
+database tables `repos`, `agent_sessions`, `review_items`, `orchestrator_settings` and the
+`session-context-files` storage bucket are untouched (dropping them is optional, Stage 3).
+Full design is in git history: `git show d8b060c:ORCHESTRATOR_DESIGN.md`.
+
+Gotchas: the KB entry drafts that came from review cards (`approve-kb-entry`) are gone, so
+KB entries are now added only by hand on `/admin/knowledge-base`. A stale `.next/dev` folder
+of generated types broke `next build` after the deletes; removing `.next/dev` and
+`.next/types` fixed it (generated files, git-ignored). The per-repo app feedback tab
+(reading each app's own feedback tickets) went with `/admin/repos`; apps still expose their
+tickets through their own `scripts/list-feedback.js`.
+
+Still to do outside the code (Drew): archive the `wst-orchestrator-runner` repo, uninstall
+the GitHub App, remove the orchestrator env vars and GitHub secrets.
+
+## Previous Changes (Session 89, October 5, 2026)
 
 **CCL Creative Intake demo, built as a client-demonstration route from a standalone HTML prototype**
 

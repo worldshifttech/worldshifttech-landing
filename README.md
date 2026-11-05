@@ -9,10 +9,10 @@ Next.js marketing site at worldshifttech.com. Personalized front door: visitors 
 - `WST_BRAND_GUIDE_2026.md` — brand colors, fonts, tone
 - `AGENTS.md` — Next.js version warnings (read before writing any framework code)
 
-**Orchestrator work:** read `ORCHESTRATOR_DESIGN.md` before touching `/admin/repos`,
-`/admin/reviews`, or the `repos` / `agent_sessions` / `review_items` /
-`knowledge_base_entries` tables — it's the source of truth for the multi-repo Claude Code
-orchestration system (design locked, Phase 1 of 6 built as of Session 48).
+**Orchestrator:** retired in Session 90 (November 2026). `/admin/repos`, `/admin/reviews`,
+`/api/orchestrator/*` and the runner integration are gone; see `ORCHESTRATOR_DESIGN.md` for
+what was removed and where the old design lives in git history. The `repos`, `agent_sessions`,
+`review_items` and `orchestrator_settings` tables are still in the database, unused.
 
 ---
 
