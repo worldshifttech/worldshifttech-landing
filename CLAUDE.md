@@ -4,6 +4,23 @@
 
 ---
 
+## Start Here
+
+- This repo is now two things: the public site at worldshifttech.com, and the **control plane** for the WST orchestrator (admin dashboard, client portals, dispatch of Claude Code sessions to the fleet of repos).
+- Current state and history: `NOTES.md` (reverse-chronological, one entry per session; the top entry is the latest). Orchestrator design and known risks: `ORCHESTRATOR_DESIGN.md`. Next.js rules for this version: `AGENTS.md`.
+- Plans from planning sessions go in `docs/plans/` (create it if missing), committed and pushed, so the next chat can find them. A new chat starts with no memory of the last one.
+- Cross-project knowledge (fleet registry, the WST App Standard, the pricing guide) lives in the sibling repo `wst-build-manager`. A chat in this repo cannot read other repos, so ask Drew to paste anything needed from there.
+- The product concept described below (personalized front door, content pipeline) is the original vision. Where it conflicts with `NOTES.md` or the code, trust those.
+
+## Working Rules
+
+- **"Deploy" means push.** When Drew says "deploy", commit and push to `origin/main` right away with no confirmation. Still show what was pushed. There is no staging: `main` is production and Vercel auto-deploys from it. In a cloud session that cannot push to `main` directly, push the branch and say so.
+- **Case study copy describes outcomes, not method.** Anything public (the `story` field in `content/case-studies/*.md`, `/case-studies/[slug]` pages) says what the tool accomplished, never exactly how it was built: no field counts, filter order, branch logic or named engineering techniques. Good altitude: task, mechanism in one clause, outcome. The `pain_points` and `results` arrays can stay detailed. Reason: these files render verbatim to visitors, and Drew does not want readers replicating the build instead of hiring him.
+- **Subpages duplicate their own nav and footer inline** (`/clickup`, `/your-team-and-ai`, `/operational-tools`, and so on) instead of sharing a layout component. Match that convention for new landing pages.
+- **No public pricing** (see "What NOT to Do"). The only disclosed price is the audit's flat fee.
+
+---
+
 ## Who This Is For
 
 **Drew Griffiths** — founder of World Shift Technologies (worldshifttech.com), also branded as Fractional Business Companion. Drew builds AI Super Agents and workflow automation systems for growing businesses. His core value proposition: **"I build digital copies of you."**
@@ -217,32 +234,4 @@ Generate:
 
 ## Current Status
 
-- [x] Next.js scaffold deployed to Vercel
-- [x] GitHub repo: worldshifttech/worldshifttech-landing
-- [x] ANTHROPIC_API_KEY set in Vercel environment variables
-- [ ] Home page built
-- [ ] Question flow built
-- [ ] Claude API personalization route built
-- [ ] Personalized result page built
-- [ ] Case study content files created
-- [ ] Content pipeline (Zapier webhook) built
-
----
-
-## First Session Goal
-
-Build the home page (`/app/page.tsx`) and question flow (`/app/meet/page.tsx`).
-
-The home page should:
-- Feel personal and clean
-- Show Drew's headshot prominently
-- Have a clear headline and 2-3 sentence intro
-- Single CTA: "See What I'd Build For You" → goes to /meet
-
-The question flow should:
-- Ask 2 questions conversationally, one at a time
-- Question 1: How did you find this site? (4 options as clickable cards)
-- Question 2: Briefly describe what you do (text input)
-- On submit: store in cookie, redirect to /for-you
-
-Start with the home page. Get it looking right before moving on.
+The original build checklist is out of date. The front door (`/meet`, `/for-you`, `/api/personalize`) and the case study pages exist, and the site has grown well past them into the admin dashboard, client portals, orchestrator and demos. The Zapier content pipeline (`/api/ingest-case-study`) was never built: there is no such route. The live status is the top entry of `NOTES.md`. Do not treat the original first-session goal as a task.
