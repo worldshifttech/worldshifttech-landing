@@ -18,6 +18,7 @@
 - **Case study copy describes outcomes, not method.** Anything public (the `story` field in `content/case-studies/*.md`, `/case-studies/[slug]` pages) says what the tool accomplished, never exactly how it was built: no field counts, filter order, branch logic or named engineering techniques. Good altitude: task, mechanism in one clause, outcome. The `pain_points` and `results` arrays can stay detailed. Reason: these files render verbatim to visitors, and Drew does not want readers replicating the build instead of hiring him.
 - **Subpages duplicate their own nav and footer inline** (`/clickup`, `/your-team-and-ai`, `/operational-tools`, and so on) instead of sharing a layout component. Match that convention for new landing pages.
 - **No public pricing** (see "What NOT to Do"). The only disclosed price is the audit's flat fee.
+- **Learning loop.** If a session produces something reusable across Drew's apps, or ports a pattern from another app, add or update its entry in `wst-build-manager/docs/patterns/catalog.md` (in the WST cloud environment that repo is at `../wst-build-manager`; otherwise tell Drew). Before designing something with AI calls, auth, cost tracking or tests, read that catalog and reuse what fits.
 
 ---
 
