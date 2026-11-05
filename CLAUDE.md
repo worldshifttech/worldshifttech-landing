@@ -6,7 +6,7 @@
 
 ## Start Here
 
-- This repo is now two things: the public site at worldshifttech.com, and the **control plane** for the WST orchestrator (admin dashboard, client portals, dispatch of Claude Code sessions to the fleet of repos).
+- This repo is the public site at worldshifttech.com plus the admin dashboard and client portals. It was also the control plane for the WST orchestrator, which Drew is **retiring** in favor of using Claude Code directly (cloud sessions). The scheduled crons are already removed; the remaining orchestrator code (`/api/orchestrator/*`, `lib/orchestrator-dispatch.ts`, `/admin/repos`, `/admin/reviews`, the Run Planning Session buttons) is scheduled for removal, so do not build on it. `ORCHESTRATOR_DESIGN.md` is historical.
 - Current state and history: `NOTES.md` (reverse-chronological, one entry per session; the top entry is the latest). Orchestrator design and known risks: `ORCHESTRATOR_DESIGN.md`. Next.js rules for this version: `AGENTS.md`.
 - Plans from planning sessions go in `docs/plans/` (create it if missing), committed and pushed, so the next chat can find them. A new chat starts with no memory of the last one.
 - Cross-project knowledge (fleet registry, the WST App Standard, the pricing guide) lives in the sibling repo `wst-build-manager`. A chat in this repo cannot read other repos, so ask Drew to paste anything needed from there.

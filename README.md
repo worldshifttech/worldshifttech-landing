@@ -23,18 +23,6 @@ Always read this README and NOTES.md before doing anything else.
 ### Planning Mode
 Triggered when Drew opens with: "Planning session" or "Let's plan [feature/fix]"
 
-- **First, check whether an orchestrator session is already running on this repo** — a
-  headless/app-dispatched planning or build session in flight right now, on the same repo
-  this interactive session is about to touch. This repo is its own control plane, so the
-  check is local:
-  ```
-  curl -s "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/agent_sessions?select=id,session_type,status,created_at&repo_id=eq.86516016-b558-4982-9a59-6b21b636f9f3&status=not.in.(done,failed)" \
-    -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
-  ```
-  (both env vars are in this repo's own `.env.local`). Any rows back means a session is
-  active — stop and tell Drew before doing anything else; starting real work now risks a
-  branch/push collision with it. See NOTES.md Session 80 (the real collision this is
-  named after) and Session 86 (why this check exists).
 - Read README.md, NOTES.md, and any files relevant to the scope being discussed
 - Do not write, edit, or create any files
 - Do not run any commands
@@ -59,9 +47,6 @@ Output all SQL at the end for Drew to paste into Supabase. Deploy with `vercel -
 ### Build Mode
 Triggered when Drew pastes a build prompt directly.
 
-- If this Build Mode session wasn't immediately preceded by a Planning Mode session in
-  the same conversation (e.g. Drew pasted a saved build prompt cold), run the same
-  already-running-session check Planning Mode does above before touching anything.
 - Execute the prompt exactly as written
 - Read every file listed before touching anything
 - Do not re-plan or suggest alternatives unless something is broken
