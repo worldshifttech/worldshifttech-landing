@@ -22,6 +22,20 @@
 
 ---
 
+## How to end every reply (Drew's standing rule, 2026-11-15)
+
+Drew presents each app to clients and to UX/UI people, so every reply that finishes a piece of work ends with the same three parts, in this order, in plain language (no file names or jargon in parts 1 and 2):
+
+1. **What was done, as the user will experience it.** What a visitor, client or admin will see, tap and feel now: the screens, the steps, the wording, what happens on a phone, what happens when something goes wrong. Write it the way a designer would present it to the client.
+2. **What to review.** The specific thing Drew should look at or try (a link, a screen, a flow), or "nothing to review yet, here is the summary". Never leave it empty.
+3. **What Drew needs to do.** A short, numbered list headed **Drew, you need to:** with every question to answer and everything to provide or click. If there is nothing, say "Nothing needed from you."
+
+Technical detail stays out unless it needs a decision from Drew. If a technical choice is minor or you are confident, pick the default, say in one line what you chose, and move on. Only raise a technical question when it is a major decision (money, security, data, hard to reverse), and then give a recommendation and make it one of the numbered items in part 3. Keep the plain-words summary honest: say what was not tested or is not live yet.
+
+This applies in every routed session in any app repo, whatever that repo's own CLAUDE.md says (a repo's CLAUDE.md that lacks this section does not switch it off). When you bootstrap or touch an app's `CLAUDE.md`, copy this section in. This is the same section as in `wst-build-manager/CLAUDE.md` and `starter-template/CLAUDE.md`; keep them in step.
+
+---
+
 ## Who This Is For
 
 **Drew Griffiths** — founder of World Shift Technologies (worldshifttech.com), also branded as Fractional Business Companion. Drew builds AI Super Agents and workflow automation systems for growing businesses. His core value proposition: **"I build digital copies of you."**
