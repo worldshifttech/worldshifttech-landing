@@ -1,5 +1,10 @@
 ﻿Last session: 91
 
+## 2026-11-20: CI now tests on the same Node major as production
+
+Branch `ci-node-match-production`. **Not deployed** (CI and `engines` only; no app code). Production on Vercel runs Node 24.x (read from the Vercel project settings); CI ran Node 22. CI now uses Node 24 and `package.json` has `engines.node` = `24.x`, matching the Vercel setting. Found by the WST Build Manager research (`wst-build-manager/docs/plans/research-quick-checks-2026-11-20.md`). **Not verified:** that lint and build pass on Node 24 until CI has run on the branch.
+
+
 ## Recent Changes (Session 91, November 20, 2026)
 
 **Front door moved off the retired model, and now fails soft**
