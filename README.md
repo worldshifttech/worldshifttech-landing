@@ -93,7 +93,7 @@ npm run dev  # http://localhost:3000
 - **Framework:** Next.js 16 (App Router) + React 19 + TypeScript 5
 - **Styling:** Tailwind CSS v4 + PostCSS
 - **Database/Auth:** Supabase (PostgreSQL + Row Level Security)
-- **AI:** Anthropic SDK v0.90 — model `claude-sonnet-4-20250514`
+- **AI:** Anthropic SDK v0.90 — model `claude-sonnet-5-5` (personalize route; thinking set explicitly to `between_tools`)
 - **Email:** Resend
 - **Bot protection:** Cloudflare Turnstile
 - **GitHub App auth:** `@octokit/auth-app` — exchanges the WST orchestrator's GitHub App for installation tokens (`lib/github-app.ts`)
@@ -110,7 +110,7 @@ npm run dev  # http://localhost:3000
 - [x] All Vercel environment variables set (see table below)
 - [x] Brand fonts (Playfair Display, DM Sans) and CSS variables configured
 - [x] `/meet` — 4-question conversational flow, cookie write, redirect
-- [x] Personalization system — `/api/personalize`, `/for-you/[industry]/[solution]`, Supabase cache
+- [x] Personalization system — `/api/personalize`, `/for-you/[industry]/[solution]`, Supabase cache. Fails soft (Session 91): if the model call or its JSON fails, the visitor lands on a built-in default page at `/for-you/general/overview` (`lib/default-page.ts`) instead of being bounced back to `/meet`; the default is never saved to the cache
 - [x] Bot protection — honeypot + Cloudflare Turnstile on `/meet` + `/api/personalize`
 - [x] `/fractional` — static ClickUp consultant landing page
 - [x] Session 46 — client accounts retired everywhere (projects wizard, audit save-flow). Drew is the only login.

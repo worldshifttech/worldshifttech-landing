@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_PAGE, isDefaultSlug, type PageContent } from "@/lib/default-page";
 
 interface PageProps {
   params: Promise<{ industry: string; solution: string }>;
@@ -10,15 +11,21 @@ interface PageProps {
 export default async function PersonalizedPage({ params }: PageProps) {
   const { industry, solution } = await params;
 
-  const { data, error } = await getSupabase()
-    .from("generated_pages")
-    .select("*")
-    .eq("industry", industry)
-    .eq("solution", solution)
-    .single();
-
-  if (!data || error) {
-    redirect("/meet");
+  // The built-in default page (shown when personalization fails) needs no database row.
+  let data: PageContent;
+  if (isDefaultSlug(industry, solution)) {
+    data = DEFAULT_PAGE;
+  } else {
+    const res = await getSupabase()
+      .from("generated_pages")
+      .select("*")
+      .eq("industry", industry)
+      .eq("solution", solution)
+      .single();
+    if (!res.data || res.error) {
+      redirect("/meet");
+    }
+    data = res.data as PageContent;
   }
 
   const useCases: { title: string; description: string }[] = data.use_cases ?? [];

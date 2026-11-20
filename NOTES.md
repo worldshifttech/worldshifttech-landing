@@ -1,6 +1,36 @@
-﻿Last session: 90
+﻿Last session: 91
 
-## Recent Changes (Session 90, November 5, 2026)
+## Recent Changes (Session 91, November 20, 2026)
+
+**Front door moved off the retired model, and now fails soft**
+
+Problem: `/api/personalize` called `claude-sonnet-4-20250514`, which the API now answers with 404
+("deprecated, end-of-life June 15th, 2026"; confirmed with a direct call). Every visitor who
+finished `/meet` hit a 500 and was bounced back to `/meet`.
+
+Changes (`app/api/personalize/route.ts`):
+- Both calls (classify and generate) use `claude-sonnet-5-5` with `thinking: { type: "between_tools" }`
+  (wst-build-manager catalog entry 7). `max_tokens` raised: classify 500 to 1000, generate 1000 to 2000.
+- Haiku 5.5 was tried for classify and rejected: on sample visitors it answered solution `other` for a
+  nonprofit director and a SaaS consultant, where Sonnet 5.5 chose `donor-retention` and
+  `workflow-optimization`. A vague slug also means fewer shared cached pages.
+- Replies are parsed tolerantly (fences or stray text stripped), slugs are checked against the allowed
+  lists (anything else becomes `other`), and a generated page missing fields is rejected, never cached.
+- Fail soft: any classify or generate failure returns HTTP 200 with `fallback: true` and the built-in
+  default page (`lib/default-page.ts`, slugs `general` / `overview`). `/for-you/[industry]/[solution]`
+  renders that page without a database row. It is never written to `generated_pages`.
+- SDK left at 0.90 (its types do not know `between_tools`, hence one `as never` cast).
+
+Tested locally against the real API: a marketing agency and a nonprofit director each got a custom page
+(`agency/reporting-automation`, `nonprofit/donor-retention`); with an invalid key both got the default
+page, HTTP 200. Lint and build pass. Supabase was pointed at nothing during the test, so no test rows
+were written.
+
+Gotchas: `app/api/generate-audit/route.ts` still calls `claude-sonnet-4-6` with no thinking setting;
+not touched here (out of scope), check it. The Turnstile widget means a Preview cannot be driven by
+script; Drew's own click-through on the Preview is the final check.
+
+## Previous Changes (Session 90, November 5, 2026)
 
 **Retired the WST orchestrator; Claude Code (cloud sessions) is the orchestrator now**
 

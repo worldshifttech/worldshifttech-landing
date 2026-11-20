@@ -197,7 +197,7 @@ story: [markdown narrative, 200-400 words]
 
 ## Claude API Usage
 
-Model: `claude-sonnet-4-20250514`
+Model: `claude-sonnet-5-5` (the 4-20250514 snapshot is retired and returns 404). Claude 5.x thinks by default and thinking tokens use `max_tokens`, so every call sets thinking explicitly: Sonnet 5.5 takes `{ type: "between_tools" }` (it rejects `disabled` with a 400).
 
 **Personalization prompt structure:**
 ```
